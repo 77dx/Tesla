@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+	<title>VForm Demo</title>
+	<link rel="stylesheet" href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/element-plus/2.0.4/index.min.css" />
+	<link rel="stylesheet" href="https://ks3-cn-beijing.ksyun.com/vform3/render.style.css?t=20220129">
+	<style type="text/css">
+	</style>
+</head>
+<body>
+
+  <div id="app">
+    <v-form-render :form-json="formJson" :form-data="formData" :option-data="optionData" ref="vFormRef">
+    </v-form-render>
+    <el-button type="primary" @click="submitForm">Submit</el-button>
+  </div>
+
+<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/vue/3.2.30/vue.global.min.js"></script>
+<script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/element-plus/2.0.4/index.full.min.js"></script>
+<script src="https://ks3-cn-beijing.ksyun.com/vform3/render.umd.js?t=20220129"></script>
+<script>
+  const { createApp } = Vue;
+	const app = createApp({
+      data() {
+        return {
+          formJson: {"widgetList":[{"key":16101,"type":"picture-upload","icon":"picture-upload-field","formItemFlag":true,"options":{"name":"pictureupload89851","label":"","labelAlign":"label-left-align","labelWidth":null,"labelHidden":false,"columnWidth":"200px","disabled":false,"hidden":false,"required":false,"requiredHint":"","customRule":"","customRuleHint":"","uploadURL":"","uploadTip":"","withCredentials":false,"multipleSelect":false,"showFileList":true,"limit":3,"fileMaxSize":5,"fileTypes":["jpg","jpeg","png"],"customClass":[],"labelIconClass":null,"labelIconPosition":"rear","labelTooltip":null,"onCreated":"","onMounted":"","onBeforeUpload":"","onUploadSuccess":"","onUploadError":"","onFileRemove":"","onValidate":""},"id":"pictureupload89851"},{"key":109022,"type":"static-text","icon":"static-text","formItemFlag":false,"options":{"name":"statictext85165","columnWidth":"200px","hidden":false,"textContent":"提交成功","textAlign":"center","fontSize":"30px","preWrap":false,"customClass":"","onCreated":"","onMounted":"","label":"static-text"},"id":"statictext85165"}],"formConfig":{"modelName":"formData","refName":"vForm","rulesName":"rules","labelWidth":80,"labelPosition":"left","size":"","labelAlign":"label-left-align","cssCode":"","customClass":[],"functions":"","layoutType":"PC","jsonVersion":3,"onFormCreated":"","onFormMounted":"","onFormDataChange":""}},
+          formData: {},
+          optionData: {}
+        }
+      },
+      methods: {
+        submitForm() {
+          this.$refs.vFormRef.getFormData().then( (formData) => {
+            // Form Validation OK
+            alert( JSON.stringify(formData) )
+          }).catch( function(error) {
+            // Form Validation Failed
+            alert(error)
+          })
+        }
+      }
+	});
+	app.use(ElementPlus)
+	app.use(VFormRender)
+	app.mount("#app");
+</script>
+</body>
+</html>

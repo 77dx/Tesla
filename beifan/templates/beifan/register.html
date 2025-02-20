@@ -1,0 +1,31 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'beifan/style.css' %}">
+<body>
+    <form action="/beifan/register/" method="post">-->
+        {% csrf_token %}
+        <div class="form-row">
+          <label>用户名:</label>
+          <input id="username" type="text">
+        </div>
+        <div class="form-row">
+          <label>密码:</label>
+          <input id="password" type="password">
+        </div>
+        <div class="form-row">
+          <label>确认密码:</label>
+          <input id="password_confirm" type="password">
+        </div>
+        <div class="form-row">
+          <label>邮箱:</label>
+          <input id="email" type="email">
+        </div>
+        <div class="submit-row">
+          <input type="submit" value="注册">
+        </div>
+        <div class="submit-row">
+          <a href="/admin/login/"/>去登录
+        </div>
+    </form>
+</body>
+

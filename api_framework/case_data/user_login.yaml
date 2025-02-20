@@ -1,0 +1,4 @@
+test_cases:
+  - username: "momo"
+    password: "123456"
+    expected_status: 200

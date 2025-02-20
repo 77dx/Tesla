@@ -1,0 +1,22 @@
+test_name: 百度首页的测试用例
+
+story: 标签功能
+title: 创建新的标签
+
+request:
+  method: get
+  url: http://www.baidu.com
+  params:
+    wd: 老师真帅
+  json:
+    tag: 广东
+
+extract:
+  wx_tag_id: ["json", "$.tag.id", 0]
+
+validate:
+  equals:
+    断言状态码等于200: ["status_code", 200]
+
+project: 1
+endpoint: 1

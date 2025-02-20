@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+	<title>VForm Demo</title>
+	<link rel="stylesheet" href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/element-plus/2.0.4/index.min.css" />
+	<link rel="stylesheet" href="https://ks3-cn-beijing.ksyun.com/vform3/render.style.css?t=20220129">
+	<style type="text/css">
+	</style>
+</head>
+<body>
+
+  <div id="app">
+    <v-form-render :form-json="formJson" :form-data="formData" :option-data="optionData" ref="vFormRef">
+    </v-form-render>
+    <el-button type="primary" @click="submitForm">Submit</el-button>
+  </div>
+
+<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/vue/3.2.30/vue.global.min.js"></script>
+<script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/element-plus/2.0.4/index.full.min.js"></script>
+<script src="https://ks3-cn-beijing.ksyun.com/vform3/render.umd.js?t=20220129"></script>
+<script>
+  const { createApp } = Vue;
+	const app = createApp({
+      data() {
+        return {
+          formJson: {"widgetList":[{"key":44000,"type":"rate","icon":"rate-field","formItemFlag":true,"options":{"name":"rate29998","label":"商品","labelAlign":"","defaultValue":null,"columnWidth":"200px","labelWidth":null,"labelHidden":false,"disabled":false,"hidden":false,"required":false,"requiredHint":"","validation":"","validationHint":"","customClass":[],"labelIconClass":null,"labelIconPosition":"rear","labelTooltip":null,"max":5,"lowThreshold":2,"highThreshold":4,"allowHalf":false,"showText":false,"showScore":false,"onCreated":"","onMounted":"","onChange":"","onValidate":""},"id":"rate29998"},{"key":44000,"type":"rate","icon":"rate-field","formItemFlag":true,"options":{"name":"rate46464","label":"快递","labelAlign":"","defaultValue":null,"columnWidth":"200px","labelWidth":null,"labelHidden":false,"disabled":false,"hidden":false,"required":false,"requiredHint":"","validation":"","validationHint":"","customClass":"","labelIconClass":null,"labelIconPosition":"rear","labelTooltip":null,"max":5,"lowThreshold":2,"highThreshold":4,"allowHalf":false,"showText":false,"showScore":false,"onCreated":"","onMounted":"","onChange":"","onValidate":""},"id":"rate46464"},{"key":44000,"type":"rate","icon":"rate-field","formItemFlag":true,"options":{"name":"rate52355","label":"平台","labelAlign":"","defaultValue":null,"columnWidth":"200px","labelWidth":null,"labelHidden":false,"disabled":false,"hidden":false,"required":false,"requiredHint":"","validation":"","validationHint":"","customClass":"","labelIconClass":null,"labelIconPosition":"rear","labelTooltip":null,"max":5,"lowThreshold":2,"highThreshold":4,"allowHalf":false,"showText":false,"showScore":false,"onCreated":"","onMounted":"","onChange":"","onValidate":""},"id":"rate52355"},{"key":54641,"type":"textarea","icon":"textarea-field","formItemFlag":true,"options":{"name":"textarea75379","label":"意见反馈","labelAlign":"","rows":3,"defaultValue":"","placeholder":"","columnWidth":"200px","size":"","labelWidth":null,"labelHidden":false,"readonly":false,"disabled":false,"hidden":false,"required":false,"requiredHint":"","validation":"","validationHint":"","customClass":"","labelIconClass":null,"labelIconPosition":"rear","labelTooltip":null,"minLength":null,"maxLength":null,"showWordLimit":false,"onCreated":"","onMounted":"","onInput":"","onChange":"","onFocus":"","onBlur":"","onValidate":""},"id":"textarea75379"}],"formConfig":{"modelName":"formData","refName":"vForm","rulesName":"rules","labelWidth":80,"labelPosition":"left","size":"","labelAlign":"label-left-align","cssCode":"","customClass":[],"functions":"","layoutType":"PC","jsonVersion":3,"onFormCreated":"","onFormMounted":"","onFormDataChange":""}},
+          formData: {},
+          optionData: {}
+        }
+      },
+      methods: {
+        submitForm() {
+          this.$refs.vFormRef.getFormData().then( (formData) => {
+            // Form Validation OK
+            alert( JSON.stringify(formData) )
+          }).catch( function(error) {
+            // Form Validation Failed
+            alert(error)
+          })
+        }
+      }
+	});
+	app.use(ElementPlus)
+	app.use(VFormRender)
+	app.mount("#app");
+</script>
+</body>
+</html>

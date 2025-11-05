@@ -1,0 +1,12 @@
+pytest
+pytest-html
+pytest-xdist
+pytest-ordering
+pytest-rerunfailures
+base-url
+allure-pytest
+requests
+pyyaml
+jsonpath
+pymysql
+cryptography

@@ -1,0 +1,20 @@
+-
+  feature: 用户模块
+  story: 订单列表
+  title: 测试用户是否下过单
+  request:
+    url: ${env(user-site)}/order/merge/list
+    method: post
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    data:
+      startTime: 2023-03-01
+      endTime: 2023-06-28
+      subUserId: all
+      page: 1
+      orderStatus: all
+      pageSize: 10
+      userId: ${yaml_read(userId)}
+  validate:
+    equals:
+      响应码200: [200, status_code]

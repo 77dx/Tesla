@@ -1,0 +1,30 @@
+-
+  feature: 用户模块
+  story: 用户登录
+  title: 测试用户登录成功
+  request:
+    url: ${env(user-site)}/user/security/login
+    method: post
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    data:
+      principal: 18791716437
+      password: Cathy8877
+      userType: user
+      isRemember: true
+      companyName:
+      verifyCode:
+      loginType: password
+  validate:
+    equals:
+      响应code返回sucess: [success, [json, $.code, 0]]
+      响应码200: [200, status_code]
+    contains:
+      响应数据code是success: [success_ok, [json, $.code, 0]]
+#    db_equals:
+#      ...
+#    db_contains:
+#      ...
+  extract:
+    token: [json, $.data.appToken, 0]
+    userId: [json, $.data.userId, 0]

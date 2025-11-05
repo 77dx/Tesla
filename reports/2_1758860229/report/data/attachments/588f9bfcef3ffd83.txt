@@ -1,0 +1,1 @@
+ERROR    apiframetest.commons.log_util:main_util.py:31 数据提取失败: ExtractUtil.extract_key() takes 7 positional arguments but 16 were given

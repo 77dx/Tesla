@@ -1,0 +1,23 @@
+-
+  feature: 用户模块
+  story: 用户登录
+  title: 测试用户登录成功
+  request:
+    url: ${env(user-site)}/user/security/login
+    method: post
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    data:
+      principal: $ddt{principal}
+      password: $ddt{password}
+      userType: user
+      isRemember: true
+      companyName:
+      verifyCode:
+      loginType: passward
+  parametrize:
+    - [principal, password]
+    - [18791716437, Cathy8877]
+    - [18740778077, 123456]
+    - [18791716437, 123]
+  validate: null

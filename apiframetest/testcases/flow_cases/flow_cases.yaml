@@ -1,0 +1,56 @@
+-
+  feature: 用户模块
+  story: 用户登录
+  title: 测试用户登录成功
+  request:
+    url: https://user-site-api.wanshifu.com/user/security/login
+    method: post
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    data:
+      principal: 18791716437
+      password: Cathy8877
+      userType: user
+      isRemember: true
+      companyName:
+      verifyCode:
+      loginType: password
+  extract:
+    token: [json, $.data.appToken, 0]
+    userId: [json, $.data.userId, 0]
+  validate:
+    equals:
+      响应码200: [200, status_code]
+      响应code返回sucess: [success, [json, $.code, 0]]
+    contains:
+      响应数据code是success: [success_ok, [json, $.code, 0]]
+-
+  feature: 用户模块
+  story: 用户信息
+  title: 检查用户信息
+  request:
+    url: https://user-site-api.wanshifu.com/topMenu/getUserInfo
+    method: get
+  validate:
+    equals:
+      响应码200: [200, status_code]
+-
+  feature: 用户模块
+  story: 订单列表
+  title: 测试用户是否下过单
+  request:
+    url: https://user-site-api.wanshifu.com/order/merge/list
+    method: post
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    data:
+      startTime: 2023-03-01
+      endTime: 2023-06-28
+      subUserId: all
+      page: 1
+      orderStatus: all
+      pageSize: 10
+      userId: ${yaml_read(userId)}
+  validate:
+    equals:
+      响应码200: [200, status_code]

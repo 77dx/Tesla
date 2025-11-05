@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","138","用户web端登录","tests","Fri Sep 26 14:55:42 CST 2025","passed","Fri Sep 26 14:55:42 CST 2025","TestAllCases","test_all_cases","",""
+"","295","用户web端登录","tests","Fri Sep 26 14:55:41 CST 2025","passed","Fri Sep 26 14:55:41 CST 2025","TestAllCases","test_all_cases","",""
+"","126","用户web端登录","tests","Fri Sep 26 14:55:41 CST 2025","passed","Fri Sep 26 14:55:42 CST 2025","TestAllCases","test_all_cases","",""

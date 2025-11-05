@@ -1,0 +1,10 @@
+-
+  feature: 用户模块
+  story: 用户信息
+  title: 检查用户信息
+  request:
+    url: ${env(user-site)}/topMenu/getUserInfo
+    method: get
+  validate:
+    equals:
+      响应码200: [200, status_code]

@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "case_data",
+                    "data",
                     models.JSONField(
                         blank=True, max_length=10240, null=True, verbose_name="表单参数"
                     ),

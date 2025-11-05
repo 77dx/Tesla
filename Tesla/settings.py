@@ -9,12 +9,27 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 import os
+import time
+
+from django.conf.global_settings import MEDIA_URL
+from sample_taggit.settings import BASE_DIR
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 测试用例的路径
+TEST_YAML_PATH = BASE_DIR / 'tests/test_case_yaml'
+TEST_ALL_CASES = BASE_DIR / 'tests/test_all_cases.py'
+
+# 测试报告的路径
+REPORT_DIR = BASE_DIR / 'reports'
+
+# 默认头像
+DEFAULT_PROFILE_ID = 13  # 或从环境变量获取
+DEFAULT_AVATAR_URL = '/media/avatar/wukong.jpg'
 
 # simpleui设置
 # STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -30,27 +45,34 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
-    # "simpleui",
-    "corsheaders",
+    # Django核心应用
     "django.contrib.admin",
     "django.contrib.auth",   # 包含了验证框架的内核和它的默认类型
     "django.contrib.contenttypes",  # 允许你创建的模型和权限相关联。
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # 第三方应用
+    # "simpleui",
+    "corsheaders",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "rest_framework",
+    # 'rest_framework_simplejwt',
     "rest_framework.authtoken",
+    "django_q",
+
+    # 自定义应用
     "beifan",
     "account",
     "system",
     "project",
     "case_api",
+    "case_ui",
+    "suite",
     "snippet",
 ]
 
@@ -59,7 +81,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -132,12 +154,22 @@ USE_I18N = True
 
 USE_TZ = False
 
+APPEND_SLASH=True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+# MEDIA_URL 是用于访问用户上传的文件的 URL 前缀，这些都是用户动态上传到服务器的。
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# STATIC_URL 是 Django 用来处理“静态资源”的 URL 前缀，这些是开发者写好的前端文件，不是用户动态生成的。
+# 这些文件你提前放在 static/ 目录下，部署时会统一收集到一个地方供服务器访问。
+STATIC_URL = "static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+#
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -145,24 +177,64 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # rest_framework的相关设置
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',   # 分页
+    'DEFAULT_PAGINATION_CLASS': 'Tesla.customPagination.CustomPageNumberPagination',   # 自己的分页
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',   # 如果全局开启权限认证，可以注释掉此行
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',   # TokenAuthentication 默认开启时会要求接口认证
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',   # TokenAuthentication 默认开启时会要求接口认证
         # 'rest_framework.authentication.SessionAuthentication',  # 如果你使用 session 认证，可以添加此行
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'EXCEPTION_HANDLER': 'snippet.myexception.customer_exception_handler',
+    'DEFAULT_RENDERER_CLASSES': [
+        'Tesla.renderer.CodeResultMessageRenderer'  # 自定义response返回格式
+    ]
 }
 
+# simple_jwt的配置
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),  # 设置 token 有效期
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1)
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": "",
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JSON_ENCODER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+
+    "JTI_CLAIM": "jti",
+
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'API接口文档',
@@ -173,10 +245,9 @@ SPECTACULAR_SETTINGS = {
 
 }
 
+CORS_ALLOW_ALL_ORIGINS = True  # 临时允许所有跨域请求（生产环境需细化配置）
+
 # 以下是simpleui的设置
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
 
 # 设置系统的logo
 SIMPLEUI_LOGO = '/static/image/star.png'
@@ -225,3 +296,54 @@ SIMPLEUI_CONFIG = {
         }]
     }]
 }
+
+# log的设置
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+# 生成当前日志文件名
+def get_current_logfile():
+    today = datetime.now().strftime("%Y%m%d")
+    filename = LOG_DIR / f"django_{today}.log"
+    return str(filename)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': get_current_logfile(),  # 每天的文件名
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        },
+    },
+}
+
+# django-q配置   python manage.py qcluster
+Q_CLUSTER= {
+    'orm': "default",
+    "timeout": 60 * 10,
+    "retry": 60 * 10 * 2,
+    "workers": 2,
+    "bulk": 10
+}
+# 动态分配任务
+# from django_q.tasks import schedule
+# schedule('suite.tasks._test_task', cron='* * * * *', schedule_type="C")

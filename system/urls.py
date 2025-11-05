@@ -8,7 +8,7 @@ from rest_framework import routers
 
 
 router = routers.SimpleRouter()
-router.register("department", DepartmentViewSet)
+router.register("department", DepartmentViewSet, "department")
 router.register("position", PositionViewSet)
 router.register("role", RoleViewSet)
 

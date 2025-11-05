@@ -1,7 +1,7 @@
 """
 @ Title:
 @ Author: Cathy
-@ Time: 2024/11/18 13:04
+@ Time: 2025/3/14 11:48
 """
 import os
 import subprocess
@@ -47,21 +47,12 @@ def parse(test_path):
 
 def main():
     current_path = Path(__file__)
-    tests_path = current_path.parent / "tests"
+    tests_path = current_path.parent / "testcases"
     parse(tests_path)
 
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
 
     # pytest.main()
     # time.sleep(3)

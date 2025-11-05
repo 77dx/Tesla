@@ -4,11 +4,6 @@ from .models import FeedBack
 import re
 
 
-admin.site.site_header = "鱼小七自动化测试系统"
-admin.site.site_title = "鱼小七"
-admin.site.index_title = "功能模块"
-
-
 # 在admin后台注册feedback这个model
 @admin.register(FeedBack)
 class FeedBackAdmin(admin.ModelAdmin):
@@ -16,6 +11,8 @@ class FeedBackAdmin(admin.ModelAdmin):
     list_display = ["id", "quality", "attitude", "speed", "text", "anonymous", "user"]
     # 修改后台详情页字段的顺序(要所有字段都写上，不然就不显示了)
     fields = ["quality", "attitude", "speed", "text", "anonymous", "user"]
+    # 搜索框
+    search_fields = ['id', 'user']
     # 列表分页
     list_per_page = 10
     # 查询模型的数据信息，用于展示在admin的数据列表页

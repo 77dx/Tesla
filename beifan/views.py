@@ -19,6 +19,14 @@ import json
 import re
 
 
+# 给大模型调用的接口，将二维数组的数据写进excel
+@api_view(['POST'])
+def write_excel(request):
+    req = json.loads(request.body)
+    print(req)
+    with open("case_excel.xlsx", "w") as f:
+        ...
+
 # rest_framework的接口
 # @action(method=['POST'], detail=True)
 @api_view(['POST'])
@@ -185,7 +193,9 @@ def my_view(request):
 
 
 def hello(request: HttpRequest):
-    return redirect("/beifan/my_view")
+    name = request.GET.get("name") or "world"
+    return HttpResponse(f"Hello, {name}!")
+    # return redirect("/beifan/my_view")
 
     # return redirect("my_view", foo="views.my_view")
 
@@ -254,6 +264,14 @@ def rating(request):
 
 
 
+# 对于settings文件的应用示例
+# 如果直接导入settings文件，会有3个问题：1. settings文件可能不存在；
+# 2. settings有的设置不存在；3. 第三方库会改变定义方式，导致访问失败。
 
+from django.conf import settings
+
+if __name__ == '__main__':
+    if settings.DEBUG:
+        ...
 
 

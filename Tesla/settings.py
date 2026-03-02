@@ -15,21 +15,57 @@ import os
 import time
 
 from django.conf.global_settings import MEDIA_URL
-from sample_taggit.settings import BASE_DIR
+# from sample_taggit.settings import BASE_DIR
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# ==================== 测试框架配置 ====================
 
 # 测试用例的路径
 TEST_YAML_PATH = BASE_DIR / 'tests/test_case_yaml'
 TEST_ALL_CASES = BASE_DIR / 'tests/test_all_cases.py'
 
+# 中间变量的保存路径
+EXTRACT_PATH = BASE_DIR / 'tests/extract.yaml'
+
 # 测试报告的路径
 REPORT_DIR = BASE_DIR / 'reports'
+
+# ==================== 测试套件执行配置 ====================
+
+# 测试套件执行结果存储目录
+# 每次执行会在此目录下创建 result_{result_id}_{timestamp}/ 子目录
+SUITE_EXECUTION_BASE_DIR = BASE_DIR / 'upload_yaml'
+
+# 线程池配置 - 控制同时执行的测试套件数量
+# 建议值: 4-8, 根据服务器性能调整
+MAX_CONCURRENT_SUITES = 6
+
+# pytest 执行超时时间(秒)
+# 单个测试套件的最大执行时间,超时会被终止
+PYTEST_EXECUTION_TIMEOUT = 300
+
+# Allure 报告生成超时时间(秒)
+ALLURE_GENERATION_TIMEOUT = 120
+
+# pytest 命令行参数
+# 可以添加更多参数,如 '--maxfail=1', '--reruns=2' 等
+PYTEST_ARGS = [
+    '-v',           # 详细输出
+    '--tb=short',   # 简洁的 traceback
+]
+
+# Allure 命令行参数
+ALLURE_ARGS = [
+    '--clean',      # 清理旧报告
+]
 
 # 默认头像
 DEFAULT_PROFILE_ID = 13  # 或从环境变量获取
 DEFAULT_AVATAR_URL = '/media/avatar/wukong.jpg'
+
+DJANGO_SETTINGS_MODULE = 'Tesla.settings'
 
 # simpleui设置
 # STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -74,6 +110,7 @@ INSTALLED_APPS = [
     "case_ui",
     "suite",
     "snippet",
+    "apiframetest",
 ]
 
 MIDDLEWARE = [

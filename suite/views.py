@@ -6,7 +6,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
-
 from case_api.views import run_pytest
 from suite.serializers import SuiteSerializer, RunResultSerializer
 from .models import Suite, RunResult

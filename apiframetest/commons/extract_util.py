@@ -7,6 +7,7 @@ import copy
 import re
 import yaml
 from jsonpath import jsonpath
+
 from apiframetest.commons import yaml_util
 from string import Template
 

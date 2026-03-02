@@ -4,7 +4,6 @@
 @ Time: 2024/12/9 15:20
 """
 from pathlib import Path
-
 from rest_framework import serializers
 from .models import Suite, RunResult
 

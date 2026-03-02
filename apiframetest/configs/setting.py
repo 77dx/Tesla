@@ -3,10 +3,14 @@
 @ Author: Cathy
 @ Time: 2025/3/10 16:58
 """
-from pathlib import Path
+
+
+from Tesla.settings import EXTRACT_PATH
 
 # 当前的环境配置   release，test, dev
 current_env = "release"
+
+current_url = 'https://user-site-api.wanshifu.com'
 
 # 数据库配置
 db_config = {
@@ -18,5 +22,6 @@ db_config = {
 }
 
 # 存储中间变量的文件
-base_dir = Path(__file__).resolve().parent.parent
-extract_path = base_dir / "extract.yaml"
+# base_dir = Path(__file__).resolve().parent.parent
+extract_path = EXTRACT_PATH
+

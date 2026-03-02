@@ -3,7 +3,9 @@
 @ Author: Cathy
 @ Time: 2025/3/3 15:02
 """
+import hashlib
 import logging
+import time
 
 import allure
 import pytest
@@ -43,8 +45,8 @@ def create_testcase(yaml_file):
 # 执行testcases中所有的yaml文件
 testcases = Path(__file__).parent
 yaml_list = testcases.glob("**/*.yaml")
-for yaml_file in yaml_list:
-    method_name = f'test_{yaml_file.stem}_{hash(yaml_file)}'
+for i, yaml_file in enumerate(yaml_list):
+    method_name = f'test_{yaml_file.stem}_i_{time.time()}'
     # 如果测试用例名称重复就抛出异常
     if hasattr(TestAllCases, method_name):
         raise ValueError(f"重复的测试方法名：{method_name}")

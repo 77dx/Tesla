@@ -3,10 +3,11 @@
 @ Author: Cathy
 @ Time: 2025/2/28 11:15
 """
+import logging
 import os
-from pathlib import Path
-
 import yaml
+
+logger = logging.getLogger(__name__)
 
 def read(file_path):
     with open(file_path, encoding='utf-8', mode='r') as f:

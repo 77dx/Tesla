@@ -5,15 +5,14 @@
 """
 import logging
 
-from apiframetest.commons import model_util
+from Tesla import settings
 from apiframetest.commons.extract_util import ExtractUtil
-from apiframetest.commons.log_util import logger
+# from apiframetest.commons.log_util import logger
 from apiframetest.commons.requests_util import RequestsUtil
 from apiframetest.commons.assert_util import AssertUtil
-from apiframetest.configs import setting
 
+logger = logging.getLogger(__name__)
 class MainUtil:
-    logger = logging.getLogger(__name__)
 
     def stand_case_flow(self, case_obj):
         logger.info(f"模块>功能>用例名称：{case_obj.feature}>{case_obj.story}>{case_obj.title}")
@@ -26,7 +25,7 @@ class MainUtil:
         try:
             if case_obj.extract:
                 for k, v in case_obj.extract.items():
-                    ExtractUtil().extract_key(setting.extract_path, res, k, *v)
+                    ExtractUtil().extract_key(settings.EXTRACT_PATH, res, k, *v)
         except Exception as e:
             logger.error(f'数据提取失败: {e}')
 

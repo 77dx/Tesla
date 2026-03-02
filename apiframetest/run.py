@@ -3,6 +3,7 @@
 @ Author: Cathy
 @ Time: 2025/2/27 14:53
 """
+import logging
 import os
 import shutil
 import time
@@ -36,7 +37,10 @@ def use_extract_value(request_data):
 
 if __name__ == '__main__':
     # print(get_token().json())
-    pytest.main()
-    os.system("allure generate ./temps -o ./reports --clean")
-    os.system("allure open ./reports")
+    # pytest.main()
+    # os.system("allure generate ./temps -o ./reports --clean")
+    # os.system("allure open ./reports")
     # shutil.move("logs/frame.log", "logs/frame_"+str(int(time.time())) + ".log")
+    print("开始执行....")
+    pytest.main()
+    print("执行结束...")

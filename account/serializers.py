@@ -65,13 +65,13 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 class ResetPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(required=True, min_length=6)
+    old_password = serializers.CharField(required=True, min_length=6)
     new_password = serializers.CharField(required=True, min_length=6)
 
     def validate(self, attrs):
-        password = attrs["password"]
+        old_password = attrs["old_password"]
         new_password = attrs["new_password"]
-        if password == new_password:
+        if old_password == new_password:
             raise serializers.ValidationError("新旧密码一致，请重新输入")
         return attrs
 

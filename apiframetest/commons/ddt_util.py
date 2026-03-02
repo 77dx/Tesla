@@ -23,6 +23,8 @@ def read(file_path):
                 else:  # 数据驱动
                     if "parametrize" in dict(*case_list).keys():
                         new_case_list = ddts(*case_list)
+                        logger.info(f"数据驱动用例列表为：{new_case_list}")
+                        logger.info(f"数据驱动用例类型为：{type(new_case_list)}")
                         return new_case_list
                     else: # 单用例
                         return case_list

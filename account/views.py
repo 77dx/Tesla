@@ -2,7 +2,7 @@ from django.core.serializers import serialize
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.authtoken.admin import User
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -41,6 +41,10 @@ class ProfileViewSet(viewsets.GenericViewSet):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if user := request.user:
+            # 验证旧密码
+            old_password = serializer.validated_data['old_password']
+            if not user.check_password(old_password):
+                return Response({"status": "旧密码错误"}, status=status.HTTP_400_BAD_REQUEST)
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             # serializer = ProfileSerializer(user)

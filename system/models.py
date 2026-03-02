@@ -18,16 +18,29 @@ class Position(models.Model):
 class Role(models.Model):
     objects: models.QuerySet
     name = models.CharField("角色名称", max_length=32, default="未命名")
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    position = models.ForeignKey(Position, on_delete=models.CASCADE)
+    users = models.ManyToManyField(
+        User,
+        through="User_Role",
+        through_fields=('role', 'user'),
+        related_name="roles",
+        verbose_name="用户"
+        )
+
+    class Meta:
+        verbose_name = "角色列表"
+        verbose_name_plural = "角色列表"
 
 
+class User_Role(models.Model):
+    objects: models.QuerySet
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, verbose_name="角色")
+    created_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
-
-
-
-
+    class Meta:
+        verbose_name = "用户角色关系"
+        verbose_name_plural = "用户角色关系"
+        unique_together = ('user', 'role')   # 防止重复关系
 
 
 

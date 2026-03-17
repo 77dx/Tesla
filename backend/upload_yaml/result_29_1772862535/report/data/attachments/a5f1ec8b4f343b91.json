@@ -1,0 +1,13 @@
+{
+  "code": "success",
+  "data": {
+    "appToken": "3256c25f-82ef-4b81-9b27-514021b0e20a",
+    "errorCount": 0,
+    "needActivationCode": false,
+    "riskRequestId": "dcd47a0242e848928d1b41b4ecfd5483",
+    "subUserId": 0,
+    "userId": 17084622134
+  },
+  "msg": "",
+  "status": "1"
+}

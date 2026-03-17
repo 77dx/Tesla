@@ -1,0 +1,1 @@
+[{"uid":"571c6525e44acdc5","name":"web端登录密码正确","time":{"start":1773212335612,"stop":1773212337104,"duration":1492},"status":"passed","severity":"normal"},{"uid":"ba5b0112daf3437d","name":"web端订单列表","time":{"start":1773212335612,"stop":1773212336865,"duration":1253},"status":"passed","severity":"normal"}]

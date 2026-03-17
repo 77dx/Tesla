@@ -1,0 +1,63 @@
+{
+  "uuid": "c5074079-7707-4c0f-a4af-1580eb9d4704",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "退款列表正常",
+  "fullName": "设置3个token / 退款列表正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773483667658,
+  "stop": 1773483667932,
+  "steps": [
+    {
+      "name": "status==200 ✓",
+      "status": "passed",
+      "start": 1773483667658,
+      "stop": 1773483667932,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code是success ✓",
+      "status": "passed",
+      "start": 1773483667658,
+      "stop": 1773483667932,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "c5074079-7707-4c0f-a4af-1580eb9d4704-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.274s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "设置3个token"
+    },
+    {
+      "name": "feature",
+      "value": "设置3个token"
+    },
+    {
+      "name": "story",
+      "value": "退款列表正常"
+    }
+  ],
+  "links": []
+}

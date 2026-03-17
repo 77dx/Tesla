@@ -1,0 +1,47 @@
+{
+  "uuid": "a5cac5a6-859f-4bed-a5aa-e1dc418d3815",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "主流程列表接口 / web端订单列表",
+  "status": "broken",
+  "statusDetails": {
+    "message": "HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /inbox/lists (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x10d68ca50>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)\"))",
+    "trace": "HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /inbox/lists (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x10d68ca50>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)\"))"
+  },
+  "start": 1773296434976,
+  "stop": 1773296434982,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "a5cac5a6-859f-4bed-a5aa-e1dc418d3815-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.006s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "feature",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

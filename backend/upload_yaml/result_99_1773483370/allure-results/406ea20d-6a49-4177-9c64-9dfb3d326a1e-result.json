@@ -1,0 +1,66 @@
+{
+  "uuid": "761bb459-3386-4ca0-8495-f7f9f873fcf1",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": "使用全局请求头token套件 / 售后列表功能正常",
+  "status": "failed",
+  "statusDetails": {
+    "message": "期望 'success'，实际 ''",
+    "trace": "期望 'success'，实际 ''"
+  },
+  "start": 1773483370375,
+  "stop": 1773483370430,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773483370375,
+      "stop": 1773483370430,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code是success：期望 'success'，实际 ''",
+      "status": "failed",
+      "start": 1773483370375,
+      "stop": 1773483370430,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "761bb459-3386-4ca0-8495-f7f9f873fcf1-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.055s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用全局请求头token套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用全局请求头token套件"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

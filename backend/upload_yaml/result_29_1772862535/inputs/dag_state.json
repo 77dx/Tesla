@@ -1,0 +1,24 @@
+{
+  "result_id": 29,
+  "endpoint_ids": [
+    2,
+    3
+  ],
+  "deps": {
+    "2": [],
+    "3": []
+  },
+  "reverse": {
+    "2": [],
+    "3": []
+  },
+  "pending": [],
+  "running": [],
+  "succeeded": [
+    2,
+    3
+  ],
+  "failed": [],
+  "skipped": [],
+  "wave": 1
+}

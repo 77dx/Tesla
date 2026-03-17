@@ -1,0 +1,2 @@
+INFO     pytest_result_log:plugin.py:122 --------Start: test_endpoint_2.yaml::test_endpoint_2.yaml::case_0_ddt_0---------
+INFO     pytest_result_log:plugin.py:128 ---------End: test_endpoint_2.yaml::test_endpoint_2.yaml::case_0_ddt_0----------

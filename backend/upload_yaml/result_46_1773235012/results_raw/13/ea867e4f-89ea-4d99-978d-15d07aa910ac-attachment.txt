@@ -1,0 +1,4 @@
+curl -X POST \
+  -H 'Authorization: Bearer ${token}' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  'https://user-site-api.wanshifu.com/afterSalesService/ticketList'

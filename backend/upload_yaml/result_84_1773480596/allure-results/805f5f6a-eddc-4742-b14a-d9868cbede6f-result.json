@@ -1,0 +1,54 @@
+{
+  "uuid": "694a78d2-fcd9-4410-a205-9345d0206d22",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": "web端登陆流程(套件) / 售后列表功能正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773480597104,
+  "stop": 1773480597217,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773480597104,
+      "stop": 1773480597217,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "694a78d2-fcd9-4410-a205-9345d0206d22-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.113s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "feature",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

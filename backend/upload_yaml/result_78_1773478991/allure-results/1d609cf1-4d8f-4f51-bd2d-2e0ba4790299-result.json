@@ -1,0 +1,63 @@
+{
+  "uuid": "b6864292-9bd9-42f1-a92d-890620f24e0c",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "web端登陆流程(套件) / web端订单列表",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773478992654,
+  "stop": 1773478992830,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773478992654,
+      "stop": 1773478992830,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773478992654,
+      "stop": 1773478992830,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "b6864292-9bd9-42f1-a92d-890620f24e0c-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.176s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "feature",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

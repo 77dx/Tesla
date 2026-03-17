@@ -1,0 +1,63 @@
+{
+  "uuid": "a7ee592f-2f46-4e69-a13f-7a28c4c9fc0e",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "有登录前置的套件 / web端订单列表",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773483063671,
+  "stop": 1773483063846,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773483063671,
+      "stop": 1773483063846,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773483063671,
+      "stop": 1773483063846,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "a7ee592f-2f46-4e69-a13f-7a28c4c9fc0e-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.175s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

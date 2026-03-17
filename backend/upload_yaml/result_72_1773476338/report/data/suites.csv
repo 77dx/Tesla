@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","64","web端订单列表","","2026-03-14","failed","2026-03-14","","测试执行策略的套件","",""
+"","334","web端登录密码正确","","2026-03-14","passed","2026-03-14","","测试执行策略的套件","",""
+"","99","售后列表功能正常","","2026-03-14","passed","2026-03-14","","测试执行策略的套件","",""

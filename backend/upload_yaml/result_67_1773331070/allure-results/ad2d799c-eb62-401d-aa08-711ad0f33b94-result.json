@@ -1,0 +1,63 @@
+{
+  "uuid": "f0719a8b-9e2b-4942-9159-7c6583b78203",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": " / web端订单列表",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773331071433,
+  "stop": 1773331071601,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773331071433,
+      "stop": 1773331071601,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773331071433,
+      "stop": 1773331071601,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "f0719a8b-9e2b-4942-9159-7c6583b78203-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.168s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

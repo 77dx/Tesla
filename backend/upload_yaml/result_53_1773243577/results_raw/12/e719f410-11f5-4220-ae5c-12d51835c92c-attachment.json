@@ -1,0 +1,13 @@
+{
+  "url": "https://user-site-api.wanshifu.com/inbox/lists",
+  "method": "POST",
+  "headers": {
+    "content-type": "application/x-www-form-urlencoded",
+    "cookie": "wsf_user_token=${token}"
+  },
+  "data": {
+    "messageType": "all",
+    "pageNum": "1",
+    "pageSize": "10"
+  }
+}

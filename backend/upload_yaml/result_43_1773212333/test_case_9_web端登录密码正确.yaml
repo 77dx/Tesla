@@ -1,0 +1,22 @@
+feature: 鲁班到家用户web端
+story: web端登录密码正确
+title: web端登录密码正确
+request:
+    url: https://user-site-api.wanshifu.com/user/security/login
+    method: POST
+    headers:
+        content-type: application/x-www-form-urlencoded
+    data:
+        principal: '18791716437'
+        password: Cathy8877
+parametrize: []
+extract:
+    token:
+    - json
+    - $.data.appToken
+    - 0
+validate:
+    equals:
+        响应码200:
+        - 200
+        - status_code

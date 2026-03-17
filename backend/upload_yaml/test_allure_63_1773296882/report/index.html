@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>测试报告 #63</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;margin:0;background:#f8f9fa;color:#333}
+.header{background:#e74c3c;color:white;padding:32px 40px}
+.header h1{margin:0 0 8px;font-size:28px}  .meta{font-size:14px;opacity:.85}
+.stats{display:flex;gap:24px;padding:24px 40px;background:white;border-bottom:1px solid #eee}
+.stat{text-align:center} .stat-val{font-size:32px;font-weight:700} .stat-label{font-size:13px;color:#888}
+.content{padding:24px 40px} table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+th{background:#f5f5f5;padding:12px 16px;text-align:left;font-size:13px;color:#666}
+</style></head><body>
+<div class="header">
+  <h1>测试报告 #63 — 失败</h1>
+  <div class="meta">耗时 0.04s · 通过率 0.0%</div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-val">3</div><div class="stat-label">总计</div></div>
+  <div class="stat"><div class="stat-val" style="color:#27ae60">0</div><div class="stat-label">通过</div></div>
+  <div class="stat"><div class="stat-val" style="color:#e74c3c">3</div><div class="stat-label">失败</div></div>
+  <div class="stat"><div class="stat-val" style="color:#3498db">0.0%</div><div class="stat-label">通过率</div></div>
+</div>
+<div class="content">
+<table><tr><th style="width:40px">结果</th><th>用例</th><th style="width:80px">状态码</th><th style="width:80px">耗时</th></tr>
+<tr style="border-bottom:1px solid #eee"><td style="padding:12px 16px;color:#e74c3c;font-size:18px">✗</td><td style="padding:12px 16px"><strong>#9 web端登录密码正确</strong><div style="color:#e74c3c;font-size:12px;margin-top:4px">HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /user/security/login (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10cc92270>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)"))</div></td><td style="padding:12px 16px;text-align:center">-</td><td style="padding:12px 16px;text-align:center">0.007s</td></tr><tr style="border-bottom:1px solid #eee"><td style="padding:12px 16px;color:#e74c3c;font-size:18px">✗</td><td style="padding:12px 16px"><strong>#13 售后列表功能正常</strong><div style="color:#e74c3c;font-size:12px;margin-top:4px">HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /afterSalesService/ticketList (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10cd84050>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)"))</div></td><td style="padding:12px 16px;text-align:center">-</td><td style="padding:12px 16px;text-align:center">0.004s</td></tr><tr style="border-bottom:1px solid #eee"><td style="padding:12px 16px;color:#e74c3c;font-size:18px">✗</td><td style="padding:12px 16px"><strong>#12 web端订单列表</strong><div style="color:#e74c3c;font-size:12px;margin-top:4px">HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /inbox/lists (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10cd84a50>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)"))</div></td><td style="padding:12px 16px;text-align:center">-</td><td style="padding:12px 16px;text-align:center">0.004s</td></tr>
+</table></div></body></html>

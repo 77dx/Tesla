@@ -1,0 +1,47 @@
+{
+  "uuid": "58aaffb6-d09a-413f-9cc3-51bea19d9b9a",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "主流程列表接口 / web端登录密码正确",
+  "status": "broken",
+  "statusDetails": {
+    "message": "HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /user/security/login (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x10d59a270>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)\"))",
+    "trace": "HTTPSConnectionPool(host='user-site-api.wanshifu.com', port=443): Max retries exceeded with url: /user/security/login (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x10d59a270>: Failed to resolve 'user-site-api.wanshifu.com' ([Errno 8] nodename nor servname provided, or not known)\"))"
+  },
+  "start": 1773296434961,
+  "stop": 1773296434969,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "58aaffb6-d09a-413f-9cc3-51bea19d9b9a-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.008s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "feature",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

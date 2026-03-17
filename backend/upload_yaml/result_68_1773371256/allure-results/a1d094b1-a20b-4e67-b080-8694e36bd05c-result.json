@@ -1,0 +1,54 @@
+{
+  "uuid": "409b9b72-7cef-459d-9010-f654f99a77ad",
+  "historyId": "10",
+  "testCaseId": "10",
+  "name": "web端登录账号错误",
+  "fullName": " / web端登录账号错误",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773371258014,
+  "stop": 1773371259545,
+  "steps": [
+    {
+      "name": "status是200 ✓",
+      "status": "passed",
+      "start": 1773371258014,
+      "stop": 1773371259545,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "409b9b72-7cef-459d-9010-f654f99a77ad-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "1.531s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "web端登录账号错误"
+    }
+  ],
+  "links": []
+}

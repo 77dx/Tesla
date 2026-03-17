@@ -1,0 +1,2 @@
+[2026-03-09 23:50:39,360: INFO/ForkPoolWorker-9] --------Start: test_endpoint_2.yaml::test_endpoint_2.yaml::case_0_ddt_2---------
+[2026-03-09 23:50:39,671: INFO/ForkPoolWorker-9] ---------End: test_endpoint_2.yaml::test_endpoint_2.yaml::case_0_ddt_2----------

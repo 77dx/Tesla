@@ -18,6 +18,9 @@ dependencies = [
     "httpie>=3.2.4",
     "ipython>=8.12.3",
     "django-cors-headers>=4.4.0",
+    "celery>=5.4.0",
+    "redis>=5.0.0",
+    "jsonpath-ng>=1.6.0",
 ]
 requires-python = "==3.8.*"
 readme = "README.md"

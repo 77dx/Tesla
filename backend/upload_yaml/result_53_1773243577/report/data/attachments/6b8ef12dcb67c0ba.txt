@@ -1,0 +1,9 @@
+
+**  请求方法  **: POST
+**  请求URL  **: https://user-site-api.wanshifu.com/afterSalesService/ticketList
+**  请求头   **: {
+  "Content-Type": "application/x-www-form-urlencoded",
+  "Cookies": "wsf_user_token=${token}"
+}
+**  请求参数  **: {}
+**  请求体  **: {}

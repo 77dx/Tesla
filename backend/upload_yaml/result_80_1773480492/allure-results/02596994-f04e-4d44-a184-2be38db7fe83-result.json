@@ -1,0 +1,68 @@
+{
+  "uuid": "280b9c3d-a2bd-450c-8b04-c85d5776f7fd",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "有登录前置的套件 / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773480494059,
+  "stop": 1773480495061,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773480494059,
+      "stop": 1773480495061,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773480494059,
+      "stop": 1773480495061,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "280b9c3d-a2bd-450c-8b04-c85d5776f7fd-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "280b9c3d-a2bd-450c-8b04-c85d5776f7fd-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "1.003s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

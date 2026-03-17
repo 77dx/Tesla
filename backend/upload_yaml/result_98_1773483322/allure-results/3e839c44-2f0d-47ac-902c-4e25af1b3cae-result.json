@@ -1,0 +1,63 @@
+{
+  "uuid": "ce8d4e15-d1a9-4270-8997-b2cf70e59887",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "使用套件变量token的套件 / web端订单列表",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773483323310,
+  "stop": 1773483323452,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773483323310,
+      "stop": 1773483323452,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773483323310,
+      "stop": 1773483323452,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "ce8d4e15-d1a9-4270-8997-b2cf70e59887-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.142s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

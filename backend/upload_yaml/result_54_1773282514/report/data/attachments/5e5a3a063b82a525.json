@@ -1,0 +1,12 @@
+{
+  "code": "success",
+  "data": {
+    "list": [],
+    "pageNum": 1,
+    "pageSize": 10,
+    "pages": 0,
+    "total": 0
+  },
+  "msg": "",
+  "status": "1"
+}

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: tesla_backend
+    restart: always
+    volumes:
+      - ./backend/static:/app/static
+      - ./backend/media:/app/media
+      - ./backend/data:/app/data
+    networks:
+      - tesla_network
+
+  frontend:
+    image: nginx:alpine
+    container_name: tesla_frontend
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./backend/static:/app/static
+      - ./backend/media:/app/media
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - tesla_network
+
+networks:
+  tesla_network:
+    driver: bridge

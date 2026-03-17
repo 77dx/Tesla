@@ -1,0 +1,13 @@
+
+**  请求方法  **: POST
+**  请求URL  **: https://user-site-api.wanshifu.com/inbox/lists
+**  请求头   **: {
+  "content-type": "application/x-www-form-urlencoded",
+  "cookie": "wsf_user_token=${token}"
+}
+**  请求参数  **: {}
+**  请求体  **: {
+  "messageType": "all",
+  "pageNum": "1",
+  "pageSize": "10"
+}

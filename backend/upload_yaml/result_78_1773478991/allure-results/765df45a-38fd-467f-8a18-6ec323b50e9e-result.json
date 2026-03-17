@@ -1,0 +1,68 @@
+{
+  "uuid": "3c56474f-312d-4c5d-bfb2-30cc251053ae",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "web端登陆流程(套件) / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773478992114,
+  "stop": 1773478992678,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773478992114,
+      "stop": 1773478992678,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773478992114,
+      "stop": 1773478992678,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "3c56474f-312d-4c5d-bfb2-30cc251053ae-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "3c56474f-312d-4c5d-bfb2-30cc251053ae-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.564s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "feature",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

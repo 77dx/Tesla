@@ -1,0 +1,54 @@
+{
+  "uuid": "f157df07-f9e0-4dae-98f1-b2321c9055bb",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "退款列表正常",
+  "fullName": "web端登陆流程(套件) / 退款列表正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773478992320,
+  "stop": 1773478992524,
+  "steps": [
+    {
+      "name": "status==200 ✓",
+      "status": "passed",
+      "start": 1773478992320,
+      "stop": 1773478992524,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "f157df07-f9e0-4dae-98f1-b2321c9055bb-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.204s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "feature",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "story",
+      "value": "退款列表正常"
+    }
+  ],
+  "links": []
+}

@@ -1,0 +1,68 @@
+{
+  "uuid": "62d6518e-5344-4f4c-9726-c8b6e392ae1d",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "测试执行策略的套件 / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773476344973,
+  "stop": 1773476345307,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773476344973,
+      "stop": 1773476345307,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773476344973,
+      "stop": 1773476345307,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "62d6518e-5344-4f4c-9726-c8b6e392ae1d-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "62d6518e-5344-4f4c-9726-c8b6e392ae1d-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.334s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "feature",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

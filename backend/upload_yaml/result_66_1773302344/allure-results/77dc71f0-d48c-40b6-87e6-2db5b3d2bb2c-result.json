@@ -1,0 +1,57 @@
+{
+  "uuid": "db9d80b0-da38-453e-9936-633959d120cd",
+  "historyId": "10",
+  "testCaseId": "10",
+  "name": "web端登录账号错误",
+  "fullName": "web端登陆流程(套件) / web端登录账号错误",
+  "status": "failed",
+  "statusDetails": {
+    "message": "期望 'success'，实际 'account-unregistered'",
+    "trace": "期望 'success'，实际 'account-unregistered'"
+  },
+  "start": 1773302345269,
+  "stop": 1773302345527,
+  "steps": [
+    {
+      "name": "code是success：期望 'success'，实际 'account-unregistered'",
+      "status": "failed",
+      "start": 1773302345269,
+      "stop": 1773302345527,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "db9d80b0-da38-453e-9936-633959d120cd-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.258s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "feature",
+      "value": "web端登陆流程(套件)"
+    },
+    {
+      "name": "story",
+      "value": "web端登录账号错误"
+    }
+  ],
+  "links": []
+}

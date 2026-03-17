@@ -1,0 +1,4 @@
+curl -X POST \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -d 'principal=18791916430&password=Cathy8877' \
+  'https://user-site-api.wanshifu.com/user/security/login'

@@ -1,0 +1,13 @@
+
+**  请求方法  **: post
+**  请求URL  **: https://user-site-api.wanshifu.com/user/security/login
+**  参数组  **: 第 3 组
+
+**  请求头   **: {
+  "content-type": "application/x-www-form-urlencoded"
+}
+**  请求参数  **: {}
+**  请求体  **: {
+  "principal": "18791716437",
+  "password": "123456"
+}

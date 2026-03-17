@@ -1,0 +1,29 @@
+-   feature: 鲁班到家用户web端
+    story: 用户web端登录
+    title: 用户web端登录
+    request:
+        url: https://user-site-api.wanshifu.com/user/security/login
+        method: POST
+        headers:
+            content-type: application/x-www-form-urlencoded
+        data:
+            principal: $ddt{principal}
+            password: $ddt{password}
+    parametrize:
+    -   - principal
+        - password
+    -   - '18791716437'
+        - Cathy8877
+    -   - '18791916430'
+        - Cathy8877
+    extract:
+        token:
+        - json
+        - $.data.appToken
+        - 0
+    validate:
+    -   name: code是success
+        type: eq
+        source: jsonpath
+        expr: $.code
+        expect: success

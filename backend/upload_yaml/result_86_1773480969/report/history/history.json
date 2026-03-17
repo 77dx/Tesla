@@ -1,0 +1,1 @@
+{"14":{"statistic":{"failed":1,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":1},"items":[{"uid":"dbc9471685265dd8","status":"failed","statusDetails":"期望 'success'，实际 ''","time":{"start":1773480970177,"stop":1773480970465,"duration":288}}]}}

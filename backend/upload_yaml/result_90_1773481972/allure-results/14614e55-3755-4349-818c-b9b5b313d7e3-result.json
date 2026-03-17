@@ -1,0 +1,66 @@
+{
+  "uuid": "3c061811-de18-42d9-a327-858e7d3529b3",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": "使用套件变量token的套件 / 售后列表功能正常",
+  "status": "failed",
+  "statusDetails": {
+    "message": "断言异常: Parse error near the end of string!",
+    "trace": "断言异常: Parse error near the end of string!"
+  },
+  "start": 1773481972902,
+  "stop": 1773481973233,
+  "steps": [
+    {
+      "name": "响应码200：期望 '200'，实际 None",
+      "status": "failed",
+      "start": 1773481972902,
+      "stop": 1773481973233,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code ✓",
+      "status": "passed",
+      "start": 1773481972902,
+      "stop": 1773481973233,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "3c061811-de18-42d9-a327-858e7d3529b3-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.331s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

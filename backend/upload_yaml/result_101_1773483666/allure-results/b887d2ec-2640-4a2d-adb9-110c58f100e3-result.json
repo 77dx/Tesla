@@ -1,0 +1,68 @@
+{
+  "uuid": "d15c32e9-2d0d-4a85-9ac9-3cf38e84ee4c",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "设置3个token / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773483667382,
+  "stop": 1773483667837,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773483667382,
+      "stop": 1773483667837,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773483667382,
+      "stop": 1773483667837,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "d15c32e9-2d0d-4a85-9ac9-3cf38e84ee4c-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "d15c32e9-2d0d-4a85-9ac9-3cf38e84ee4c-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.455s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "设置3个token"
+    },
+    {
+      "name": "feature",
+      "value": "设置3个token"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

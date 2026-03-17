@@ -1,0 +1,54 @@
+{
+  "uuid": "4b248e5f-a0bf-49ff-8707-7dc6f1cf3b80",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "退款列表正常",
+  "fullName": " / 退款列表正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773331071643,
+  "stop": 1773331071851,
+  "steps": [
+    {
+      "name": "status==200 ✓",
+      "status": "passed",
+      "start": 1773331071643,
+      "stop": 1773331071851,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "4b248e5f-a0bf-49ff-8707-7dc6f1cf3b80-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.208s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "退款列表正常"
+    }
+  ],
+  "links": []
+}

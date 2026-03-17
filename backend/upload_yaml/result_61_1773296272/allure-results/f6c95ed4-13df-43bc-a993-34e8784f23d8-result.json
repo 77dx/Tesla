@@ -1,0 +1,57 @@
+{
+  "uuid": "c04a3a36-cbbc-4f17-aff5-d8fa0d02b76b",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "主流程列表接口 / web端订单列表",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773296274504,
+  "stop": 1773296274656,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773296274504,
+      "stop": 1773296274656,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773296274504,
+      "stop": 1773296274656,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.152s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "feature",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

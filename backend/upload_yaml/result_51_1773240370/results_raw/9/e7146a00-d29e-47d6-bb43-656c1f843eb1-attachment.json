@@ -1,0 +1,11 @@
+{
+  "url": "https://user-site-api.wanshifu.com/user/security/login",
+  "method": "POST",
+  "headers": {
+    "content-type": "application/x-www-form-urlencoded"
+  },
+  "data": {
+    "principal": "18791716437",
+    "password": "Cathy8877"
+  }
+}

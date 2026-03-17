@@ -1,2 +1,0 @@
-ERROR    apiframetest.commons.log_util:main_util.py:30 数据提取失败: 'bool' object is not subscriptable
-ERROR    apiframetest.commons.log_util:main_util.py:42 断言失败：响应数据code是success

@@ -1,0 +1,68 @@
+{
+  "uuid": "a7ef4e35-c623-4271-befa-222176df16cf",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": " / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773331070990,
+  "stop": 1773331071480,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773331070990,
+      "stop": 1773331071480,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773331070990,
+      "stop": 1773331071480,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "a7ef4e35-c623-4271-befa-222176df16cf-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "a7ef4e35-c623-4271-befa-222176df16cf-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.490s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

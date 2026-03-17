@@ -1,0 +1,13 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"参数组 3:
+  参数1: 18791716437
+  参数2: 123456
+","2505","用户web端登录 - 数据组3","test_case_yaml","Sat Feb 28 14:20:59 CST 2026","passed","Sat Feb 28 14:21:01 CST 2026","test_用户web端登录_1772259652.yaml","test_用户web端登录_1772259652","",""
+"参数组 1:
+  参数1: 18791716437
+  参数2: Cathy8877
+","3843","用户web端登录 - 数据组1","test_case_yaml","Sat Feb 28 14:20:52 CST 2026","passed","Sat Feb 28 14:20:56 CST 2026","test_用户web端登录_1772259652.yaml","test_用户web端登录_1772259652","",""
+"参数组 2:
+  参数1: 18791916430
+  参数2: Cathy8877
+","2636","用户web端登录 - 数据组2","test_case_yaml","Sat Feb 28 14:20:56 CST 2026","passed","Sat Feb 28 14:20:59 CST 2026","test_用户web端登录_1772259652.yaml","test_用户web端登录_1772259652","",""

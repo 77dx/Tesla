@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","19","售后列表功能正常","","2026-03-14","broken","2026-03-14","","有登录前置的套件","",""
+"","157","web端订单列表","","2026-03-14","passed","2026-03-14","","有登录前置的套件","",""
+"","1002","web端登录密码正确","","2026-03-14","passed","2026-03-14","","有登录前置的套件","",""

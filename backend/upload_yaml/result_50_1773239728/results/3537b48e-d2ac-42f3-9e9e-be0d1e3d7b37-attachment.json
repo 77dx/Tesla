@@ -1,0 +1,8 @@
+{
+  "url": "https://user-site-api.wanshifu.com/afterSalesService/ticketList",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Cookies": "wsf_user_token=${token}"
+  }
+}

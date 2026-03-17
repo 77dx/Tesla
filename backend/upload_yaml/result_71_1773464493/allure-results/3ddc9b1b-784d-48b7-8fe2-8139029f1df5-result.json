@@ -1,0 +1,54 @@
+{
+  "uuid": "e2f3568e-0760-479b-acbf-2af6eba97142",
+  "historyId": "10",
+  "testCaseId": "10",
+  "name": "web端登录账号错误",
+  "fullName": "测试执行策略的套件 / web端登录账号错误",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773464493969,
+  "stop": 1773464494439,
+  "steps": [
+    {
+      "name": "status是200 ✓",
+      "status": "passed",
+      "start": 1773464493969,
+      "stop": 1773464494439,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "e2f3568e-0760-479b-acbf-2af6eba97142-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.470s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "feature",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端登录账号错误"
+    }
+  ],
+  "links": []
+}

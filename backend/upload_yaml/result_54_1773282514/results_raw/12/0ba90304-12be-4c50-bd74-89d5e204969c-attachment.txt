@@ -1,0 +1,5 @@
+curl -X POST \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -H 'cookie: wsf_user_token=492f35dd-c281-409f-b9a0-0aeff22214ec' \
+  -d 'messageType=all&pageNum=1&pageSize=10' \
+  'https://user-site-api.wanshifu.com/inbox/lists'

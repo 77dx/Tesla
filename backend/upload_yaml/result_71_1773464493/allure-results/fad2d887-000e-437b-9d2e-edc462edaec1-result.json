@@ -1,0 +1,66 @@
+{
+  "uuid": "bb8b333a-7d13-4a5a-9c85-1e9cb1f17357",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "测试执行策略的套件 / web端订单列表",
+  "status": "failed",
+  "statusDetails": {
+    "message": "期望 'success'，实际 ''",
+    "trace": "期望 'success'，实际 ''"
+  },
+  "start": 1773464499096,
+  "stop": 1773464499145,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773464499096,
+      "stop": 1773464499145,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success：期望 'success'，实际 ''",
+      "status": "failed",
+      "start": 1773464499096,
+      "stop": 1773464499145,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "bb8b333a-7d13-4a5a-9c85-1e9cb1f17357-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.049s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "feature",
+      "value": "测试执行策略的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

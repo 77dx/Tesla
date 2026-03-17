@@ -1,0 +1,1 @@
+[{"uid":"5d659d274d48d74b","name":"web端登录密码正确","time":{"start":1773302345009,"stop":1773302345466,"duration":457},"status":"passed","severity":"normal"},{"uid":"e3634bb18952f1c3","name":"web端登录账号错误","time":{"start":1773302345269,"stop":1773302345527,"duration":258},"status":"failed","severity":"normal"}]

@@ -1,0 +1,4 @@
+curl -X POST \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Cookies: wsf_user_token=492f35dd-c281-409f-b9a0-0aeff22214ec' \
+  'https://user-site-api.wanshifu.com/afterSalesService/ticketList'

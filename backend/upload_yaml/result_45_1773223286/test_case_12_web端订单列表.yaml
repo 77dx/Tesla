@@ -1,0 +1,20 @@
+feature: 北凡的第一个项目
+story: web端订单列表
+title: web端订单列表
+request:
+    url: https://user-site-api.wanshifu.com/inbox/lists
+    method: POST
+    headers:
+        content-type: application/x-www-form-urlencoded
+        cookie: wsf_user_token=${token}
+    data:
+        messageType: all
+        pageNum: 1
+        pageSize: 10
+parametrize: []
+extract: {}
+validate:
+    equals:
+        响应码200:
+        - 200
+        - status_code

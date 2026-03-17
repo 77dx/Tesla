@@ -1,0 +1,54 @@
+{
+  "uuid": "9f78bd36-e943-4b03-baae-fc5f28ba075f",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": " / 售后列表功能正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773331071263,
+  "stop": 1773331071534,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773331071263,
+      "stop": 1773331071534,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "9f78bd36-e943-4b03-baae-fc5f28ba075f-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.271s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

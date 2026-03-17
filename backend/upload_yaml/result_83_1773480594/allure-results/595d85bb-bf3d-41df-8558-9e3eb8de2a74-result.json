@@ -1,0 +1,54 @@
+{
+  "uuid": "7ec9961f-34b7-46f7-9ad6-3c12e6774b7d",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "退款列表正常",
+  "fullName": "使用全局请求头token套件 / 退款列表正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773480594762,
+  "stop": 1773480595049,
+  "steps": [
+    {
+      "name": "status==200 ✓",
+      "status": "passed",
+      "start": 1773480594762,
+      "stop": 1773480595049,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "7ec9961f-34b7-46f7-9ad6-3c12e6774b7d-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.287s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用全局请求头token套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用全局请求头token套件"
+    },
+    {
+      "name": "story",
+      "value": "退款列表正常"
+    }
+  ],
+  "links": []
+}

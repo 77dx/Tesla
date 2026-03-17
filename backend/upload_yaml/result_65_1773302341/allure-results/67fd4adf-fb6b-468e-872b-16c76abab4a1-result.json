@@ -1,0 +1,63 @@
+{
+  "uuid": "e18ef07d-0ec6-4471-944f-ed0465b2269a",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "主流程列表接口 / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1773302342076,
+  "stop": 1773302342683,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1773302342076,
+      "stop": 1773302342683,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1773302342076,
+      "stop": 1773302342683,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "提取变量",
+      "source": "e18ef07d-0ec6-4471-944f-ed0465b2269a-extracted.json",
+      "type": "application/json"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.607s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "feature",
+      "value": "主流程列表接口"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

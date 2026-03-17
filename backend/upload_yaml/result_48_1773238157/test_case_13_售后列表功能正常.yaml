@@ -1,0 +1,15 @@
+feature: 北凡的第一个项目
+story: 售后列表功能正常
+title: 售后列表功能正常
+request:
+    url: https://user-site-api.wanshifu.com/afterSalesService/ticketList
+    method: POST
+    headers:
+        Content-Type: application/x-www-form-urlencoded
+parametrize: []
+extract: {}
+validate:
+    equals:
+        响应码200:
+        - 200
+        - status_code

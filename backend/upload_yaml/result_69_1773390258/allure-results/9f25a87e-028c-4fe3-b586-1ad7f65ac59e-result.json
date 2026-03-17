@@ -1,0 +1,47 @@
+{
+  "uuid": "f4026e62-e8e5-4b13-b9fb-8b834223f557",
+  "historyId": "10",
+  "testCaseId": "10",
+  "name": "web端登录账号错误",
+  "fullName": " / web端登录账号错误",
+  "status": "broken",
+  "statusDetails": {
+    "message": "Invalid URL '/user/security/login': No scheme supplied. Perhaps you meant https:///user/security/login?",
+    "trace": "Invalid URL '/user/security/login': No scheme supplied. Perhaps you meant https:///user/security/login?"
+  },
+  "start": 1773390258455,
+  "stop": 1773390258460,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "f4026e62-e8e5-4b13-b9fb-8b834223f557-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.005s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "web端登录账号错误"
+    }
+  ],
+  "links": []
+}

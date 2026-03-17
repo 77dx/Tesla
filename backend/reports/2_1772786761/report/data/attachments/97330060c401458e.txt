@@ -1,0 +1,20 @@
+
+**  状态码  **: 200
+**  响应时间  **: 0.000秒
+**  响应头  **: {
+  "Date": "Fri, 06 Mar 2026 08:46:02 GMT",
+  "Content-Type": "application/json;charset=UTF-8",
+  "Transfer-Encoding": "chunked",
+  "Connection": "keep-alive",
+  "Set-Cookie": "acw_tc=2f6a1fd817727867617365616e76fe4abc249653f61f22a2511dc72d635df5;path=/;HttpOnly;Max-Age=1800, wsf_user_token=110eeced-3003-4043-8c4d-a8af359a463b; Max-Age=1209600; Expires=Fri, 20-Mar-2026 08:46:02 GMT; Domain=wanshifu.com; Path=/; secure; HttpOnly, hotline_id=17084622134_0; Max-Age=1209600; Expires=Fri, 20-Mar-2026 08:46:02 GMT; Domain=wanshifu.com; Path=/; secure, wsf_user_layout=1; Max-Age=1209600; Expires=Fri, 20-Mar-2026 08:46:02 GMT; Domain=wanshifu.com; Path=/; secure",
+  "X-Content-Type-Options": "nosniff",
+  "X-XSS-Protection": "1; mode=block",
+  "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+  "Pragma": "no-cache",
+  "Expires": "0",
+  "X-Frame-Options": "DENY",
+  "Content-Encoding": "gzip",
+  "xl-server": "izwz9b44670a4oda0jjxayz",
+  "Access-Control-Allow-Headers": "User-Agent,Keep-Alive,Content-Type,DEVICE_ID, WSF_DEVICE_ID,Wsf-Device-Id,wsf-device-id,deviceId,gw-sign,timestamp,packageType,project",
+  "Strict-Transport-Security": "max-age=31536000"
+}

@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","188","售后列表功能正常","","2026-03-11","passed","2026-03-11","test_case_13_售后列表功能正常.yaml","test_case_13_售后列表功能正常","",""
+"","646","web端登录密码正确","","2026-03-11","passed","2026-03-11","test_case_9_web端登录密码正确.yaml","test_case_9_web端登录密码正确","",""
+"","294","web端订单列表","","2026-03-11","passed","2026-03-11","test_case_12_web端订单列表.yaml","test_case_12_web端订单列表","",""

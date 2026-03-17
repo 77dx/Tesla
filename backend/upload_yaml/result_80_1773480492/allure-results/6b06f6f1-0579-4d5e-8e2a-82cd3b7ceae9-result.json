@@ -1,0 +1,47 @@
+{
+  "uuid": "c5ab6d79-961c-45e9-81fd-f2e50c85215b",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": "有登录前置的套件 / 售后列表功能正常",
+  "status": "broken",
+  "statusDetails": {
+    "message": "No connection adapters were found for '/https://user-site-api.wanshifu.com/afterSalesService/ticketList'",
+    "trace": "No connection adapters were found for '/https://user-site-api.wanshifu.com/afterSalesService/ticketList'"
+  },
+  "start": 1773480499246,
+  "stop": 1773480499265,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "c5ab6d79-961c-45e9-81fd-f2e50c85215b-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.019s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

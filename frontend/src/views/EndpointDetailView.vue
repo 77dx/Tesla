@@ -20,7 +20,12 @@
         <div class="info-grid">
           <div class="info-item full-width">
             <label>接口地址</label>
-            <code class="url-display">{{ endpoint.url }}</code>
+            <code class="url-display">
+              <span v-if="endpoint.service_key" class="url-service-tag">{{{ endpoint.service_key }}}</span>
+              <span v-if="endpoint.service_key" class="url-sep-text"> + </span>
+              <span>{{ endpoint.url }}</span>
+            </code>
+            <span v-if="endpoint.service_key" class="url-hint">执行时 {{{ endpoint.service_key }}} 将被替换为所选环境的实际 URL</span>
           </div>
           <div class="info-item">
             <label>所属项目</label>
@@ -206,9 +211,11 @@ import { confirm } from '@/composables/useConfirm'
 import { getCases } from '@/api/case'
 import { getProjects } from '@/api/project'
 import { getEnvironments, getServices } from '@/api/suite'
+import { useUserStore } from '@/stores/user'
 
 const route  = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const endpoint     = ref(null)
 const cases        = ref([])
@@ -374,11 +381,12 @@ const hasKeys = (val) => {
 }
 
 onMounted(async () => {
+  const plId = userStore.currentProductLine?.id
   const [, , pr, sr] = await Promise.all([
     loadEndpoint(),
     loadCases(),
-    getProjects({ page_size: 200 }),
-    getServices({ page_size: 200 }),
+    getProjects({ page_size: 200, ...(plId ? { product_line: plId } : {}) }),
+    getServices({ page_size: 200, ...(plId ? { product_line: plId } : {}) }),
   ])
   projects.value  = pr.result?.list || []
   services.value  = sr.result?.list || []
@@ -403,7 +411,10 @@ onMounted(async () => {
 .info-item { display: flex; flex-direction: column; gap: 6px; }
 .info-item.full-width { grid-column: 1/-1; }
 .info-item label { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.url-display { background: var(--bg); padding: 10px 14px; border-radius: 6px; font-family: 'Monaco','Courier New',monospace; font-size: 13px; color: var(--primary); display: block; }
+.url-display { background: var(--bg); padding: 10px 14px; border-radius: 6px; font-family: 'Monaco','Courier New',monospace; font-size: 13px; color: var(--primary); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.url-service-tag { background: #e3f2fd; color: #1565c0; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.url-sep-text { color: #aaa; font-size: 12px; }
+.url-hint { font-size: 11px; color: #aaa; margin-top: 4px; display: block; font-family: inherit; }
 .project-link { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .params-section { display: grid; gap: 16px; }
 .param-block h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }

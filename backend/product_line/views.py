@@ -28,18 +28,22 @@ class ProductLineViewSet(viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=False, url_path='mine')
     def mine(self, request):
-        """我所属的产品线列表"""
-        qs = ProductLine.objects.filter(members__user=request.user).order_by('id')
+        """我所属的产品线列表（超管返回全部）"""
+        user = request.user
+        if user.is_staff or user.is_superuser:
+            qs = ProductLine.objects.all().order_by('id')
+        else:
+            qs = ProductLine.objects.filter(members__user=user).order_by('id')
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
     @action(methods=['GET'], detail=True, url_path='permissions')
     def my_permissions(self, request, pk=None):
         """我在该产品线的权限码列表"""
-        pl = self.get_object()
         # 超管直接返回 '*'
-        if request.user.roles.filter(permissions__code='*').exists():
+        if request.user.is_staff or request.user.is_superuser:
             return Response(['*'])
+        pl = self.get_object()
         try:
             membership = pl.members.get(user=request.user)
             codes = membership.get_permissions()

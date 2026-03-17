@@ -10,13 +10,19 @@ from .models import Suite, SuiteCaseItem, RunResult, Environment, GlobalVariable
 
 class ServiceSerializer(serializers.ModelSerializer):
     project_name = serializers.SerializerMethodField(read_only=True)
+    product_line_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Service
-        fields = ['id', 'key', 'name', 'description', 'project', 'project_name', 'created_at']
+        fields = ['id', 'key', 'name', 'description', 'project', 'project_name', 'product_line_name', 'created_at']
 
     def get_project_name(self, obj):
         return obj.project.name if obj.project else None
+
+    def get_product_line_name(self, obj):
+        if obj.project and obj.project.product_line:
+            return obj.project.product_line.name
+        return None
 
 
 class EnvironmentSerializer(serializers.ModelSerializer):
@@ -25,7 +31,7 @@ class EnvironmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Environment
         fields = ['id', 'name', 'project', 'project_name', 'base_url', 'urls',
-                  'headers', 'variables', 'description', 'created_at']
+                  'headers', 'variables', 'mock_rules', 'description', 'created_at']
 
     def get_project_name(self, obj):
         return obj.project.name if obj.project else None

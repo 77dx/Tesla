@@ -120,11 +120,14 @@ class SuiteRunner:
             self._log(f'初始上下文: {list(initial_context.keys())}')
 
         # --- 加载变量（优先级由低到高：全局变量 < 环境变量 < 套件变量 < initial_context < 执行中提取值）---
+        suite_name = ''
+        _environment = None  # 提前初始化，防止 try 块异常时 MockManager 引用报错
         try:
             from suite.models import RunResult as _RR, GlobalVariable
             _db = _RR.objects.select_related('suite__environment', 'suite__project').get(id=self.result_id)
             _suite = _db.suite
             suite_name = _suite.name if _suite else ''
+            _environment = _suite.environment if _suite else None
 
             # 1. 全局变量（环境级）
             if _suite and _suite.environment:
@@ -177,6 +180,13 @@ class SuiteRunner:
         self._log(f'用例顺序: {case_api_ids}')
         self._log('=' * 60)
 
+        # --- 启动 Mock 服务 ---
+        from suite.mock_server import MockManager
+        mock_manager = MockManager.from_environment(_environment, log_file=self.log_file)
+        mock_started = mock_manager.start()
+        if mock_started:
+            self._log(f'[Mock] 已启动，共 {len(mock_manager.rules)} 条规则')
+
         # 初始化 Allure Reporter
         base_dir = self.log_file.parent.parent if self.log_file else None
         allure_reporter = AllureReporter(base_dir, log_file=self.log_file) if base_dir else None
@@ -190,14 +200,7 @@ class SuiteRunner:
             self._log(f'WARNING: 更新 RunResult 状态失败: {e}')
 
         # --- 逐条执行用例 ---
-        # 获取套件关联的环境对象，传给 CaseRunner 用于 URL 解析
-        _environment = None
-        try:
-            from suite.models import RunResult as _RR2
-            _db2 = _RR2.objects.select_related('suite__environment').get(id=self.result_id)
-            _environment = _db2.suite.environment if _db2.suite else None
-        except Exception:
-            pass
+        # 获取套件关联的环境对象，传给 CaseRunner 用于 URL 解析（_environment 已在上方赋值）
         runner = CaseRunner(ctx=self.ctx, log_file=self.log_file, environment=_environment)
         suite_result.total = len(case_api_ids)
 
@@ -250,6 +253,9 @@ class SuiteRunner:
         suite_result.duration = time.time() - t0
         suite_result.is_pass  = suite_result.failed == 0
         suite_result.success  = True  # 执行流程本身成功（不代表用例全部通过）
+
+        # --- 停止 Mock 服务 ---
+        mock_manager.stop()
 
         self._log('=' * 60)
         self._log(f'套件执行完毕')

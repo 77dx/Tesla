@@ -117,7 +117,7 @@ const router = createRouter({
         {
           path: 'product-lines',
           name: 'product-lines',
-          meta: { permission: 'system:manage' },
+          meta: { permission: 'product_line:list' },
           component: () => import('@/views/ProductLineView.vue')
         }
       ]

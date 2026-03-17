@@ -42,21 +42,43 @@ def run_suite_task(self, result_id: int, case_api_ids: list, initial_context: di
     try:
         db_result = RunResult.objects.get(id=result_id)
         base_dir  = Path(db_result.path)
-        base_dir.mkdir(parents=True, exist_ok=True)
-        log_file  = base_dir / 'log' / 'pytest.log'
+        log_dir   = base_dir / 'log'
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file  = log_dir / 'pytest.log'
     except Exception as e:
         logger.error(f'[run_suite_task] 初始化失败: {e}')
         return {'success': False, 'error': str(e)}
 
     runner = SuiteRunner(result_id=result_id, log_file=log_file)
-    suite_result = runner.run(
-        case_api_ids=case_api_ids,
-        initial_context=initial_context or {},
-        max_retries=max_retries,
-        retry_delay=retry_delay,
-        timeout_seconds=timeout_seconds,
-        fail_strategy=fail_strategy,
-    )
+    try:
+        suite_result = runner.run(
+            case_api_ids=case_api_ids,
+            initial_context=initial_context or {},
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            timeout_seconds=timeout_seconds,
+            fail_strategy=fail_strategy,
+        )
+    except Exception as e:
+        import traceback
+        err_msg = traceback.format_exc()
+        logger.error(f'[run_suite_task] 套件执行异常: {err_msg}')
+        # 写入日志文件，确保前端可见
+        try:
+            import time as _time
+            ts = _time.strftime('%Y-%m-%d %H:%M:%S')
+            with open(log_file, 'a', encoding='utf-8') as f:
+                f.write(f'[{ts}] ERROR: 套件执行异常\n{err_msg}\n')
+        except Exception:
+            pass
+        # 更新 RunResult 状态为出错
+        try:
+            db_result = RunResult.objects.get(id=result_id)
+            db_result.status = RunResult.RunStatus.Error
+            db_result.save(update_fields=['status'])
+        except Exception:
+            pass
+        return {'success': False, 'error': str(e)}
     return suite_result.to_dict()
 
 

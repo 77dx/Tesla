@@ -117,6 +117,54 @@
             <div v-if="!form.headerRows.length" class="kv-empty">暂未配置请求头</div>
           </div>
         </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label>Mock 规则<span class="label-hint">套件执行时自动拦截匹配请求并返回预设响应</span></label>
+            <button type="button" class="btn-add-row" @click="form.mockRows.push({url:'',method:'GET',status:200,body:'',headers:'',delay:0})">+ 添加规则</button>
+          </div>
+          <div v-if="form.mockRows.length" class="mock-editor">
+            <div v-for="(rule, idx) in form.mockRows" :key="idx" class="mock-rule-card">
+              <div class="mock-rule-header">
+                <span class="mock-rule-num">规则 {{ idx + 1 }}</span>
+                <button type="button" class="btn-del-row" @click="form.mockRows.splice(idx,1)">✕ 删除</button>
+              </div>
+              <div class="mock-rule-body">
+                <div class="mock-field-row">
+                  <div class="mock-field">
+                    <label>HTTP 方法</label>
+                    <select v-model="rule.method" class="kv-input">
+                      <option>GET</option><option>POST</option><option>PUT</option>
+                      <option>PATCH</option><option>DELETE</option><option value="*">* 所有</option>
+                    </select>
+                  </div>
+                  <div class="mock-field mock-field-wide">
+                    <label>拦截 URL <span class="label-hint">支持正则</span></label>
+                    <input v-model="rule.url" placeholder="https://api.example.com/user" class="kv-input" />
+                  </div>
+                  <div class="mock-field mock-field-sm">
+                    <label>状态码</label>
+                    <input v-model.number="rule.status" type="number" class="kv-input" placeholder="200" />
+                  </div>
+                  <div class="mock-field mock-field-sm">
+                    <label>延迟(ms)</label>
+                    <input v-model.number="rule.delay" type="number" class="kv-input" placeholder="0" />
+                  </div>
+                </div>
+                <div class="mock-field-row">
+                  <div class="mock-field mock-field-wide">
+                    <label>返回体 <span class="label-hint">JSON 或字符串</span></label>
+                    <textarea v-model="rule.body" rows="3" placeholder='{"code": 0, "data": {}}' class="kv-input mock-textarea" />
+                  </div>
+                  <div class="mock-field">
+                    <label>响应头 <span class="label-hint">JSON 格式</span></label>
+                    <textarea v-model="rule.headers" rows="3" placeholder='{"X-Mock": "true"}' class="kv-input mock-textarea" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="kv-empty">暂未配置 Mock 规则，套件执行时将正常发起真实请求</div>
+        </div>
       </div>
 
       <!-- 右：详情查看 -->
@@ -175,6 +223,24 @@
           </div>
           <div v-else class="kv-empty">未配置请求头</div>
         </div>
+        <div class="view-block">
+          <div class="view-block-title">Mock 规则 <span class="view-block-badge">{{ selectedEnv.mock_rules?.length || 0 }}</span></div>
+          <div v-if="selectedEnv.mock_rules?.length" class="mock-table-wrap">
+            <table class="mock-view-table">
+              <thead><tr><th>方法</th><th>拦截 URL</th><th>状态码</th><th>延迟(ms)</th><th>返回体</th></tr></thead>
+              <tbody>
+                <tr v-for="(rule, i) in selectedEnv.mock_rules" :key="i">
+                  <td><span class="method-badge" :class="'m-' + (rule.method||'GET').toLowerCase()">{{ rule.method || 'GET' }}</span></td>
+                  <td class="mock-url-cell">{{ rule.url }}</td>
+                  <td><span class="status-badge" :class="rule.status < 300 ? 'ok' : rule.status < 400 ? 'redirect' : 'err'">{{ rule.status }}</span></td>
+                  <td class="text-center">{{ rule.delay || 0 }}</td>
+                  <td class="mock-body-cell"><code>{{ typeof rule.body === 'object' ? JSON.stringify(rule.body) : rule.body }}</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-else class="kv-empty">未配置 Mock 规则</div>
+        </div>
       </div>
 
       <!-- 右：编辑模式 -->
@@ -189,6 +255,13 @@
         <div class="form-group">
           <label>环境名称 <span class="required">*</span></label>
           <input v-model="form.name" placeholder="如：测试环境、预发布环境" />
+        </div>
+        <div class="form-group">
+          <label>所属项目</label>
+          <select v-model="form.project">
+            <option :value="null">请选择项目</option>
+            <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
         </div>
         <div class="form-group">
           <label>备注</label>
@@ -241,6 +314,54 @@
             </div>
             <div v-if="!form.headerRows.length" class="kv-empty">暂未配置请求头</div>
           </div>
+        </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label>Mock 规则<span class="label-hint">套件执行时自动拦截匹配请求并返回预设响应</span></label>
+            <button type="button" class="btn-add-row" @click="form.mockRows.push({url:'',method:'GET',status:200,body:'',headers:'',delay:0})">+ 添加规则</button>
+          </div>
+          <div v-if="form.mockRows.length" class="mock-editor">
+            <div v-for="(rule, idx) in form.mockRows" :key="idx" class="mock-rule-card">
+              <div class="mock-rule-header">
+                <span class="mock-rule-num">规则 {{ idx + 1 }}</span>
+                <button type="button" class="btn-del-row" @click="form.mockRows.splice(idx,1)">✕ 删除</button>
+              </div>
+              <div class="mock-rule-body">
+                <div class="mock-field-row">
+                  <div class="mock-field">
+                    <label>HTTP 方法</label>
+                    <select v-model="rule.method" class="kv-input">
+                      <option>GET</option><option>POST</option><option>PUT</option>
+                      <option>PATCH</option><option>DELETE</option><option value="*">* 所有</option>
+                    </select>
+                  </div>
+                  <div class="mock-field mock-field-wide">
+                    <label>拦截 URL <span class="label-hint">支持正则</span></label>
+                    <input v-model="rule.url" placeholder="https://api.example.com/user" class="kv-input" />
+                  </div>
+                  <div class="mock-field mock-field-sm">
+                    <label>状态码</label>
+                    <input v-model.number="rule.status" type="number" class="kv-input" placeholder="200" />
+                  </div>
+                  <div class="mock-field mock-field-sm">
+                    <label>延迟(ms)</label>
+                    <input v-model.number="rule.delay" type="number" class="kv-input" placeholder="0" />
+                  </div>
+                </div>
+                <div class="mock-field-row">
+                  <div class="mock-field mock-field-wide">
+                    <label>返回体 <span class="label-hint">JSON 或字符串</span></label>
+                    <textarea v-model="rule.body" rows="3" placeholder='{"code": 0, "data": {}}' class="kv-input mock-textarea" />
+                  </div>
+                  <div class="mock-field">
+                    <label>响应头 <span class="label-hint">JSON 格式</span></label>
+                    <textarea v-model="rule.headers" rows="3" placeholder='{"X-Mock": "true"}' class="kv-input mock-textarea" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="kv-empty">暂未配置 Mock 规则，套件执行时将正常发起真实请求</div>
         </div>
       </div>
 
@@ -316,7 +437,7 @@
       </div>
       <div class="card table-card">
         <table class="table">
-          <thead><tr><th>服务名称</th><th>服务标识 (key)</th><th>所属项目</th><th>备注</th><th style="width:120px">操作</th></tr></thead>
+          <thead><tr><th>服务名称</th><th>服务标识 (key)</th><th>所属项目</th><th>产品线</th><th>备注</th><th style="width:120px">操作</th></tr></thead>
           <tbody>
             <tr v-for="(svc, idx) in services" :key="svc.id || 'new-'+idx">
               <td>
@@ -332,6 +453,10 @@
                   <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
                 <span v-else>{{ svc.project_name || '-' }}</span>
+              </td>
+              <td>
+                <span class="pl-tag" v-if="svc.product_line_name">{{ svc.product_line_name }}</span>
+                <span v-else class="text-muted">-</span>
               </td>
               <td>
                 <input v-if="svc._edit" v-model="svc.description" class="gv-input" placeholder="备注" />
@@ -387,7 +512,7 @@ const creating    = ref(false)
 const editing     = ref(false)
 const saving      = ref(false)
 
-const blankForm = () => ({ name: '', description: '', project: null, urlRows: [], varRows: [], headerRows: [] })
+const blankForm = () => ({ name: '', description: '', project: null, urlRows: [], varRows: [], headerRows: [], mockRows: [] })
 const form = ref(blankForm())
 
 const filteredGvs = computed(() =>
@@ -408,7 +533,7 @@ const loadAll = async () => {
   const [er, gr, sr] = await Promise.all([
     getEnvironments(params),
     getGlobalVariables({ page_size: 200 }),
-    getServices(params),
+    getServices({ page_size: 200 }),
   ])
   envs.value       = er.result?.list || []
   globalVars.value = (gr.result?.list || []).map(g => ({ ...g, _edit: false }))
@@ -426,9 +551,18 @@ const startEdit = () => {
   form.value = {
     name:        env.name,
     description: env.description || '',
+    project:     env.project || null,
     urlRows:     urlsToRows(env.urls),
     varRows:     objToRows(env.variables),
     headerRows:  objToRows(env.headers),
+    mockRows:    (env.mock_rules || []).map(r => ({
+      url:     r.url     || '',
+      method:  r.method  || 'GET',
+      status:  r.status  ?? 200,
+      body:    typeof r.body === 'object' ? JSON.stringify(r.body, null, 2) : (r.body || ''),
+      headers: typeof r.headers === 'object' ? JSON.stringify(r.headers) : (r.headers || ''),
+      delay:   r.delay   ?? 0,
+    })),
   }
   editing.value = true
 }
@@ -462,6 +596,16 @@ const saveEnv = async () => {
       variables:   rowsToObj(form.value.varRows),
       headers:     rowsToObj(form.value.headerRows),
       project:     form.value.project || selectedEnv.value?.project || (projects.value[0]?.id ?? 1),
+      mock_rules:  form.value.mockRows
+        .filter(r => r.url?.trim())
+        .map(r => ({
+          url:    r.url.trim(),
+          method: r.method || 'GET',
+          status: Number(r.status) || 200,
+          body:   (() => { try { return JSON.parse(r.body) } catch { return r.body || '' } })(),
+          ...(r.headers?.trim() ? { headers: (() => { try { return JSON.parse(r.headers) } catch { return {} } })() } : {}),
+          ...(Number(r.delay) > 0 ? { delay: Number(r.delay) } : {}),
+        })) || null,
     }
     if (creating.value) {
       await createEnvironment(payload)
@@ -564,9 +708,10 @@ const deleteSvc = async (svc, idx) => {
 }
 
 onMounted(async () => {
+  const plId = userStore.currentProductLine?.id
   const [, pr] = await Promise.all([
     loadAll(),
-    getProjects({ page_size: 200 }),
+    getProjects({ page_size: 200, ...(plId ? { product_line: plId } : {}) }),
   ])
   projects.value = pr.result?.list || []
 })
@@ -664,5 +809,43 @@ onMounted(async () => {
 .kv-field-label { font-size: 13px; color: var(--text-light); font-weight: 500; }
 .kv-field-value { font-size: 13px; color: var(--text); }
 .tag-code { background: #e8f4fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; white-space: nowrap; }
+.pl-tag { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.text-muted { color: #bbb; font-size: 12px; }
 .view-url { font-family: 'Monaco','Courier New',monospace; font-size: 13px; color: var(--text); word-break: break-all; }
+
+/* Mock 规则编辑器 */
+.mock-editor { display: flex; flex-direction: column; gap: 12px; }
+.mock-rule-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fafbfc; }
+.mock-rule-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: linear-gradient(135deg, #1a1a2e, #0f3460); color: white; }
+.mock-rule-num { font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.mock-rule-header .btn-del-row { color: rgba(255,255,255,.6); font-size: 12px; border: 1px solid rgba(255,255,255,.2); padding: 2px 10px; border-radius: 4px; background: rgba(255,255,255,.08); }
+.mock-rule-header .btn-del-row:hover { color: #ff6b6b; border-color: #ff6b6b; background: rgba(255,107,107,.1); }
+.mock-rule-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.mock-field-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.mock-field { display: flex; flex-direction: column; gap: 5px; min-width: 120px; }
+.mock-field label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: .04em; }
+.mock-field-wide { flex: 2; min-width: 200px; }
+.mock-field-sm { width: 90px; flex-shrink: 0; }
+.mock-textarea { resize: vertical; font-family: 'Monaco','Courier New',monospace; font-size: 12px; line-height: 1.5; min-height: 68px; }
+
+/* Mock 详情查看表格 */
+.mock-table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.mock-view-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mock-view-table th { background: var(--primary); color: white; padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; }
+.mock-view-table td { padding: 8px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+.mock-view-table tr:hover td { background: #f5f9ff; }
+.mock-url-cell { font-family: 'Monaco','Courier New',monospace; font-size: 12px; word-break: break-all; color: var(--text); }
+.mock-body-cell code { font-size: 11px; background: #f0f4f8; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+.text-center { text-align: center; }
+.method-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; font-family: monospace; }
+.method-badge.m-get    { background: #e3f2fd; color: #1565c0; }
+.method-badge.m-post   { background: #e8f5e9; color: #2e7d32; }
+.method-badge.m-put    { background: #fff3e0; color: #e65100; }
+.method-badge.m-patch  { background: #fce4ec; color: #880e4f; }
+.method-badge.m-delete { background: #ffebee; color: #b71c1c; }
+.method-badge.m-\*     { background: #f3e5f5; color: #6a1b9a; }
+.status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; font-family: monospace; }
+.status-badge.ok       { background: #e8f5e9; color: #2e7d32; }
+.status-badge.redirect { background: #fff3e0; color: #e65100; }
+.status-badge.err      { background: #ffebee; color: #b71c1c; }
 </style>

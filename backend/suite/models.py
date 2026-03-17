@@ -57,6 +57,22 @@ class Environment(models.Model):
     description = models.CharField('备注', max_length=250, blank=True)
     created_at  = models.DateTimeField('创建时间', auto_now_add=True, null=True)
 
+    # Mock 规则列表，格式：
+    # [
+    #   {
+    #     "url": "https://api.example.com/user",   # 拦截的完整 URL（支持正则）
+    #     "method": "GET",                          # HTTP 方法，* 表示所有
+    #     "status": 200,                            # 返回状态码
+    #     "body": {"code": 0, "data": {}},          # 返回体（dict 或字符串）
+    #     "headers": {"Content-Type": "application/json"},  # 返回头（可选）
+    #     "delay": 0                                # 延迟毫秒数（可选，模拟慢响应）
+    #   }
+    # ]
+    mock_rules  = models.JSONField(
+        'Mock 规则', blank=True, null=True,
+        help_text='Mock 拦截规则列表，套件执行时自动启用'
+    )
+
     class Meta:
         verbose_name = '运行环境'
         verbose_name_plural = '运行环境'

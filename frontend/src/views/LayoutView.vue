@@ -42,7 +42,7 @@
           <span class="icon">⚙️</span>
           <span>系统管理</span>
         </router-link>
-        <router-link v-if="hasPermission('system:manage')" to="/product-lines" class="nav-item">
+        <router-link v-if="hasPermission('product_line:list')" to="/product-lines" class="nav-item">
           <span class="icon">🏭</span>
           <span>产品线管理</span>
         </router-link>

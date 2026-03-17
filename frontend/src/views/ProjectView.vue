@@ -27,6 +27,7 @@
             <th>ID</th>
             <th>项目名称</th>
             <th>描述</th>
+            <th>负责人</th>
             <th>创建时间</th>
             <th>操作</th>
           </tr>
@@ -39,6 +40,13 @@
               <a @click.prevent="viewDetail(item.id)" class="link-text">{{ item.name }}</a>
             </td>
             <td class="cell-lg" :title="item.intro || ''">{{ item.intro || '-' }}</td>
+            <td class="cell-sm">
+              <span v-if="item.pm_name" class="pm-tag">
+                <span class="pm-avatar">{{ item.pm_name.charAt(0).toUpperCase() }}</span>
+                {{ item.pm_name }}
+              </span>
+              <span v-else>-</span>
+            </td>
             <td class="cell-md">{{ formatDate(item.created_at) }}</td>
             <td>
               <button @click="editProject(item)" class="btn-action">编辑</button>
@@ -82,6 +90,13 @@
             <label>项目地址</label>
             <input v-model="formData.url" placeholder="http://example.com" />
           </div>
+          <div class="form-group">
+            <label>项目负责人</label>
+            <select v-model="formData.pm">
+              <option :value="null">请选择负责人</option>
+              <option v-for="u in userList" :key="u.user_id" :value="u.user_id">{{ u.nickname || u.username }}</option>
+            </select>
+          </div>
           <div class="modal-actions">
             <button type="button" @click="closeDialog" class="btn">取消</button>
             <button type="submit" class="btn btn-primary">确定</button>
@@ -96,6 +111,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getProjects, createProject, updateProject, deleteProject } from '@/api/project'
+import { getAllUsers } from '@/api/account'
 import { confirm } from '@/composables/useConfirm'
 import { useUserStore } from '@/stores/user'
 
@@ -103,9 +119,10 @@ const userStore = useUserStore()
 
 const router = useRouter()
 const projects = ref([])
+const userList = ref([])
 const showCreateDialog = ref(false)
 const editingItem = ref(null)
-const formData = ref({ name: '', intro: '', url: '', product_line: userStore.currentProductLine?.id || null })
+const formData = ref({ name: '', intro: '', url: '', pm: null, product_line: userStore.currentProductLine?.id || null })
 const errors = ref({ name: '' })
 const pagination = ref({ page: 1, pageCount: 1, itemCount: 0 })
 
@@ -217,8 +234,12 @@ const formatDate = (date) => {
   return new Date(date).toLocaleString('zh-CN')
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadProjects()
+  try {
+    const res = await getAllUsers()
+    userList.value = res.result || res || []
+  } catch (e) { console.error('加载用户列表失败:', e) }
 })
 </script>
 
@@ -247,6 +268,32 @@ onMounted(() => {
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
+}
+
+.pm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #e8f4fd;
+  color: #1565c0;
+  padding: 2px 8px 2px 3px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.pm-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1565c0;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .btn-action:hover {

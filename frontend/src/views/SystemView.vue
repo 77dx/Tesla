@@ -283,7 +283,7 @@
               <span class="perm-group-title">{{ moduleLabel(group.module) }}</span>
             </div>
             <div class="perm-items">
-              <label v-for="perm in group.permissions" :key="perm.id" class="perm-item">
+              <label v-for="perm in group.permissions" :key="perm.id" class="perm-item" :title="perm.name + ' (' + perm.code + ')'">
                 <input type="checkbox" :value="perm.id" v-model="selectedPermIds" />
                 <span class="perm-name">{{ perm.name }}</span>
                 <span class="perm-code">{{ perm.code }}</span>
@@ -452,7 +452,7 @@ const selectedRoleUserIds = ref([])
 const MODULE_LABELS = {
   project: '项目管理', endpoint: '接口管理', case: '用例管理',
   suite: '套件管理', result: '执行结果', environment: '环境管理',
-  user: '用户管理', system: '系统管理',
+  user: '用户管理', system: '系统管理', product_line: '产品线管理',
 }
 const moduleLabel = (m) => MODULE_LABELS[m] || m
 
@@ -903,7 +903,7 @@ onMounted(() => { loadRoles() })
 /* ── 权限配置弹窗 ── */
 .perm-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
   max-height: 55vh;
   overflow-y: auto;
@@ -963,7 +963,7 @@ onMounted(() => { loadRoles() })
 
 .perm-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 7px 14px;
   font-size: 13px;
@@ -988,6 +988,13 @@ onMounted(() => { loadRoles() })
   flex: 1;
   font-size: 13px;
   color: var(--text, #333);
+  white-space: normal;
+  word-break: break-all;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .perm-code {

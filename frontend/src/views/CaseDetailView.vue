@@ -37,7 +37,11 @@
               </div>
               <div class="endpoint-info-row">
                 <span class="ep-label">URL</span>
-                <code class="ep-url">{{ caseData.endpoint.url }}</code>
+                <span class="ep-url-wrap">
+                  <span v-if="caseData.endpoint.service_key" class="ep-service-tag">{{{ caseData.endpoint.service_key }}}</span>
+                  <code class="ep-url">{{ caseData.endpoint.url }}</code>
+                  <span v-if="caseData.endpoint.service_key" class="ep-url-hint">(执行时替换为实际域名)</span>
+                </span>
               </div>
               <div v-if="caseData.endpoint.headers && Object.keys(caseData.endpoint.headers).length" class="endpoint-info-row">
                 <span class="ep-label">请求头</span>
@@ -800,6 +804,9 @@ onMounted(() => { loadCase(); loadProjects(); loadEndpoints() })
 .method-patch  { background: #f3e5f5; color: #6a1b9a; }
 .method-delete { background: #ffebee; color: #c62828; }
 .ep-url { font-family: 'Monaco','Courier New',monospace; font-size: 13px; color: #1a237e; background: #eef1fb; padding: 2px 8px; border-radius: 4px; word-break: break-all; }
+.ep-url-wrap { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.ep-service-tag { background: #e3f2fd; color: #1565c0; padding: 1px 7px; border-radius: 4px; font-family: 'Monaco','Courier New',monospace; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.ep-url-hint { font-size: 11px; color: #aaa; }
 .ep-json { margin: 4px 0 0; font-family: 'Monaco','Courier New',monospace; font-size: 12px; line-height: 1.6; color: var(--text); background: #f0f4ff; border-radius: 6px; padding: 8px 12px; overflow-x: auto; }
 
 /* ===== 执行日志区块 ===== */

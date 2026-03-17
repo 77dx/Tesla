@@ -25,6 +25,14 @@
             <span>{{ project.url || '-' }}</span>
           </div>
           <div class="info-item">
+            <label>项目负责人</label>
+            <span v-if="project.pm_name" class="pm-tag">
+              <span class="pm-avatar">{{ project.pm_name.charAt(0).toUpperCase() }}</span>
+              {{ project.pm_name }}
+            </span>
+            <span v-else>-</span>
+          </div>
+          <div class="info-item">
             <label>创建时间</label>
             <span>{{ formatDate(project.created_at) }}</span>
           </div>
@@ -84,6 +92,13 @@
             <label>项目地址</label>
             <input v-model="formData.url" placeholder="http://example.com" />
           </div>
+          <div class="form-group">
+            <label>项目负责人</label>
+            <select v-model="formData.pm">
+              <option :value="null">请选择负责人</option>
+              <option v-for="u in userList" :key="u.id" :value="u.id">{{ u.profile?.nickname || u.username }}</option>
+            </select>
+          </div>
           <div class="modal-actions">
             <button type="button" @click="closeDialog" class="btn">取消</button>
             <button type="submit" class="btn btn-primary">保存</button>
@@ -100,6 +115,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getProjectDetail, updateProject, deleteProject } from '@/api/project'
 import { getEndpoints, getCases } from '@/api/case'
 import { getSuites } from '@/api/suite'
+import { getAllUsers } from '@/api/account'
 import { confirm } from '@/composables/useConfirm'
 
 const route = useRoute()
@@ -109,9 +125,10 @@ const project = ref(null)
 const endpoints = ref([])
 const cases = ref([])
 const suites = ref([])
+const userList = ref([])
 const showEditDialog = ref(false)
 const errors = ref({ name: '' })
-const formData = ref({ name: '', intro: '', url: '' })
+const formData = ref({ name: '', intro: '', url: '', pm: null })
 
 const validate = () => {
   let valid = true
@@ -128,6 +145,7 @@ const loadProject = async () => {
       name: project.value.name,
       intro: project.value.intro || '',
       url: project.value.url || '',
+      pm: project.value.pm || null,
     }
   } catch (error) {
     console.error('加载项目详情失败:', error)
@@ -207,9 +225,13 @@ const formatDate = (date) => {
   return new Date(date).toLocaleString('zh-CN')
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadProject()
   loadRelatedData()
+  try {
+    const res = await getAllUsers()
+    userList.value = res.result || res || []
+  } catch (e) { console.error('加载用户列表失败:', e) }
 })
 </script>
 
@@ -400,9 +422,29 @@ onMounted(() => {
   }
 }
 
-.required {
-  color: var(--danger, #e74c3c);
-  margin-left: 2px;
+.pm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8f4fd;
+  color: #1565c0;
+  padding: 3px 10px 3px 4px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.pm-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1565c0;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .input-error {

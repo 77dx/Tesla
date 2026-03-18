@@ -20,11 +20,15 @@ def static_server(request, path, document_root=None, show_indexes=False):
     return resp
 
 
+from snippet.base_viewset import BaseViewSet
+
+
 @extend_schema(tags=["Suite"])
-class SuiteViewSet(viewsets.ModelViewSet):
+class SuiteViewSet(BaseViewSet):
     serializer_class = SuiteSerializer
     queryset = Suite.objects.all().order_by('-id')
     permission_classes = [permissions.AllowAny]
+    search_fields = ['name', 'id']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -34,15 +38,6 @@ class SuiteViewSet(viewsets.ModelViewSet):
         run_type = self.request.query_params.get('run_type')
         if run_type:
             qs = qs.filter(run_type=run_type)
-        search = self.request.query_params.get('search')
-        if search:
-            if search.isdigit():
-                qs = qs.filter(id=int(search))
-            else:
-                qs = qs.filter(name__icontains=search)
-        product_line_id = self.request.query_params.get('product_line')
-        if product_line_id:
-            qs = qs.filter(project__product_line_id=product_line_id)
         return qs
 
     @action(methods=['POST'], detail=True)
@@ -60,9 +55,6 @@ class SuiteViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         serializer.save(updated_by=user)
-
-    @action(methods=['POST'], detail=True)
-    def webhook(self, request, pk):
         """Webhook 触发执行"""
         obj: Suite = self.get_object()
         hook_key = request.query_params.get('key')

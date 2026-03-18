@@ -1,0 +1,66 @@
+# docker-compose.prod.yml
+# 生产环境覆盖配置
+# 使用方式：
+#   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# 生产环境必须设置以下环境变量（可用 .env.prod 文件或系统环境变量）：
+#   DJANGO_SECRET_KEY, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
+
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      - DJANGO_SETTINGS_MODULE=Tesla.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME:-tesla}
+      - DB_USER=${DB_USER:-tesla}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    # 生产用 gunicorn 多进程
+    command: gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 Tesla.wsgi:application
+
+  celery:
+    environment:
+      - DJANGO_SETTINGS_MODULE=Tesla.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME:-tesla}
+      - DB_USER=${DB_USER:-tesla}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST:-db}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    command: celery -A Tesla worker -l warning --concurrency=4
+
+  frontend:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+
+  # ─── MySQL（生产数据库）─────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: tesla_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-tesla}
+      MYSQL_USER: ${DB_USER:-tesla}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tesla_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

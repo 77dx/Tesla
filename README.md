@@ -1,23 +1,4 @@
 # Tesla 测试平台
-
-source ./venv/bin/activate
-
-<div align="center">
-
-![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
-![Python](https://img.shields.io/badge/python-3.8+-green.svg)
-![Django](https://img.shields.io/badge/django-4.2-green.svg)
-![Vue](https://img.shields.io/badge/vue-3.0-green.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-
-一个功能完整、性能优秀的接口自动化测试管理平台
-
-[快速开始](#快速开始) • [功能特性](#功能特性) • [文档](#文档) • [部署](#部署)
-
-</div>
-
----
-
 ## 📖 项目简介
 
 tar czf - -C /Users/cathy/python_project Tesla  | ssh Cathy@192.168.3.190 "cd /volume2/ssd_volume/projects && tar xzf -"
@@ -369,28 +350,3 @@ MIT License
 ---
 
 **Made with ❤️ by Tesla Team**
-
-
-1. 给执行结果增加2个功能，第一个是：增加删除结果的功能；第二个是：如果执行状态是准备开始状态，那么
-用户可以取消任务。
-
-2. 执行结果列表页，测试套件应该显示套件名称，不显示所属项目
-
-1. 账户管理详情页面，去掉用户列表，只保留用户详情
-2. 账户管理详情页，编辑功能需要和其他模块保持设计的一致，编辑页面缺少用户名，邮箱，角色的字段，并完善功能
-3. 加上用户头像，这个好像后端已经实现了，但是前端没有，需要联调
-
-6. 账户管理详情页，不显示状态，优化整个页面的排版，简洁大方
-
-1. 系统管理页面报错：[plugin:vite:vue] [vue/compiler-sfc] Unexpected token (95:4)
-
-/Users/cathy/python_project/Tesla/frontend/src/views/SystemView.vue
-313|  }
-314|        console.error('删除失败:', error)
-315|      }
-316|    }
-317|  }
-
-项目得关联上项目负责人，默认都是admin
-
-

@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from Tesla.customPagination import CustomPageNumberPagination
+from snippet.base_viewset import BaseViewSet
 from .models import Department, Position, Role, Permission
 from .serializers import (
     DepartmentDeleteSerializer, DepartmentSerializer, DepartmentListSerializer,
@@ -16,16 +17,14 @@ from .serializers import (
 
 
 @extend_schema(tags=["System"])
-class DepartmentViewSet(viewsets.ModelViewSet):
+class DepartmentViewSet(BaseViewSet):
     serializer_class = DepartmentDetailSerializer
     pagination_class = CustomPageNumberPagination
+    search_fields = ['name']
+    product_line_field = None
 
     def get_queryset(self):
-        qs = Department.objects.all().order_by('-id')
-        search = self.request.query_params.get('search', '')
-        if search:
-            qs = qs.filter(name__icontains=search)
-        return qs
+        return Department.objects.all().order_by('-id')
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -39,7 +38,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
             errors = serializer.errors.get('id', [])
             error_message = errors[0] if errors else '删除失败'
             return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
-
         department_id = serializer.validated_data.get('id')
         department = Department.objects.get(id=department_id)
         department_name = department.name
@@ -48,16 +46,15 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema(tags=["System"])
-class PositionViewSet(viewsets.ModelViewSet):
+class PositionViewSet(BaseViewSet):
     serializer_class = PositionSerializer
     pagination_class = CustomPageNumberPagination
+    search_fields = ['name']
+    product_line_field = None
 
     def get_queryset(self):
         qs = Position.objects.all().order_by('-id')
-        search = self.request.query_params.get('search', '')
         is_leader = self.request.query_params.get('is_leader', '')
-        if search:
-            qs = qs.filter(name__icontains=search)
         if is_leader == 'true':
             qs = qs.filter(is_leader=True)
         elif is_leader == 'false':
@@ -86,16 +83,13 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(tags=["System"])
-class RoleViewSet(viewsets.ModelViewSet):
+class RoleViewSet(BaseViewSet):
     serializer_class = RoleSerializer
     pagination_class = CustomPageNumberPagination
-
-    def get_queryset(self):
-        qs = Role.objects.all().order_by('-id')
-        search = self.request.query_params.get('search', '')
-        if search:
-            qs = qs.filter(name__icontains=search)
-        return qs
+    search_fields = ['name']
+    product_line_field = None
+    queryset = Role.objects.all().order_by('-id')
+    queryset = Role.objects.all().order_by('-id')
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'set_permissions', 'partial_update', 'update'):

@@ -1,32 +1,21 @@
-from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
 from .models import Project, Config
 from .serializers import ProjectSerializer, ConfigSerializer
+from snippet.base_viewset import BaseViewSet
 
 
 @extend_schema(tags=["Project"])
-class ProjectViewSet(viewsets.ModelViewSet):
+class ProjectViewSet(BaseViewSet):
     queryset = Project.objects.all().order_by('-id')
     serializer_class = ProjectSerializer
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        search = self.request.query_params.get('search')
-        if search:
-            if search.isdigit():
-                qs = qs.filter(id=int(search))
-            else:
-                qs = qs.filter(name__icontains=search)
-        product_line_id = self.request.query_params.get('product_line')
-        if product_line_id:
-            qs = qs.filter(product_line_id=product_line_id)
-        return qs
+    search_fields = ['name', 'id']
+    product_line_field = 'product_line_id'
 
 
 @extend_schema(tags=["Project"])
-class ConfigViewSet(viewsets.ModelViewSet):
+class ConfigViewSet(BaseViewSet):
     queryset = Config.objects.all().order_by('-id')
     serializer_class = ConfigSerializer
+    product_line_field = None
 
 

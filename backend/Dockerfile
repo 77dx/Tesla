@@ -25,11 +25,13 @@ RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple --upg
 # 复制项目代码
 COPY . .
 
-# 收集静态文件
-RUN python manage.py collectstatic --noinput
+# 复制并设置入口脚本权限
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # 暴露端口
 EXPOSE 8000
 
-# 使用 gunicorn 启动
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "Tesla.wsgi:application"]
+# 入口脚本：自动 migrate + collectstatic + init_permissions，然后启动 gunicorn
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "Tesla.wsgi:application"]

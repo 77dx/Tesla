@@ -17,10 +17,14 @@ from .util import GenerateCase
 
 logger = logging.getLogger(__name__)
 
+from snippet.base_viewset import BaseViewSet
+
+
 @extend_schema(tags=["Case_API"])
-class EndpointViewSet(viewsets.ModelViewSet):
+class EndpointViewSet(BaseViewSet):
     queryset = Endpoint.objects.all().order_by('-id')
     serializer_class = EndpointSerializer
+    search_fields = ['name', 'url']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -30,55 +34,24 @@ class EndpointViewSet(viewsets.ModelViewSet):
         method = self.request.query_params.get('method')
         if method:
             qs = qs.filter(method=method)
-        search = self.request.query_params.get('search')
-        if search:
-            from django.db.models import Q
-            qs = qs.filter(Q(name__icontains=search) | Q(url__icontains=search))
-        product_line_id = self.request.query_params.get('product_line')
-        if product_line_id:
-            qs = qs.filter(project__product_line_id=product_line_id)
         return qs
-
-    def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(created_by=user, updated_by=user)
-
-    def perform_update(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(updated_by=user)
 
 
 @extend_schema(tags=["Case_API"])
-class CaseViewSet(viewsets.ModelViewSet):
+class CaseViewSet(BaseViewSet):
     queryset = Case.objects.all().order_by('-id')
     serializer_class = CaseSerializer
+    search_fields = ['name', 'id']
 
     def get_queryset(self):
         qs = super().get_queryset()
         project_id = self.request.query_params.get('project')
-        endpoint_id = self.request.query_params.get('endpoint')
         if project_id:
             qs = qs.filter(project_id=project_id)
+        endpoint_id = self.request.query_params.get('endpoint')
         if endpoint_id:
             qs = qs.filter(endpoint_id=endpoint_id)
-        search = self.request.query_params.get('search')
-        if search:
-            if search.isdigit():
-                qs = qs.filter(id=int(search))
-            else:
-                qs = qs.filter(name__icontains=search)
-        product_line_id = self.request.query_params.get('product_line')
-        if product_line_id:
-            qs = qs.filter(project__product_line_id=product_line_id)
         return qs
-
-    def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(created_by=user, updated_by=user)
-
-    def perform_update(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(updated_by=user)
 
 @action(methods=["POST"], detail=False)
 def run_pytest(request):

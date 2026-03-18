@@ -1,12 +1,5 @@
 # Tesla 测试平台
 ## 📖 项目简介
-
-tar czf - -C /Users/cathy/python_project Tesla  | ssh Cathy@192.168.3.190 "cd /volume2/ssd_volume/projects && tar xzf -"
-
-sudo tar czf - -C /Users/cathy/python_project/Tesla Dockerfile | ssh Cathy@192.168.3.190 "cd /volume2/ssd_volume/projects/Tesla && tar xzf -"
-
-ssh Cathy@192.168.3.190
-
 Tesla 是一个基于 Django + Vue3 的接口自动化测试管理平台，提供项目管理、接口管理、用例管理、测试套件管理和执行结果查看等功能。
 
 ### 核心特性

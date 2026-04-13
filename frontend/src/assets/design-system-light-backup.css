@@ -1,0 +1,500 @@
+/* ════════════════════════════════════════════
+   Tesla Design System — Based on Claude (Anthropic)
+   基于DESIGN.md的设计系统，提供温暖的羊皮纸色调设计
+   ════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────
+   1. 颜色系统 (Color System)
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== 主色 (Primary Colors) ===== */
+  --color-anthropic-near-black: #141413;      /* 主要文本 - 温暖的近黑色 */
+  --color-terracotta-brand: #c96442;          /* 品牌色 - 陶土色 */
+  --color-coral-accent: #d97757;              /* 强调色 - 珊瑚色 */
+
+  /* ===== 语义色 (Semantic Colors) ===== */
+  --color-error-crimson: #b53333;             /* 错误状态 - 深红色 */
+  --color-focus-blue: #3898ec;                /* 焦点状态 - 蓝色（唯一冷色） */
+  --color-success: #27ae60;                   /* 成功状态 - 绿色（保持原系统） */
+  --color-warning: #f39c12;                   /* 警告状态 - 橙色（保持原系统） */
+
+  /* ===== 表面色 (Surface Colors) ===== */
+  --color-parchment: #f5f4ed;                 /* 页面背景 - 羊皮纸色 */
+  --color-ivory: #faf9f5;                     /* 卡片背景 - 象牙白 */
+  --color-warm-sand: #e8e6dc;                 /* 交互表面 - 暖沙色 */
+  --color-pure-white: #ffffff;                /* 纯白色 - 特定元素 */
+  --color-dark-surface: #30302e;              /* 深色表面 - 暖炭色 */
+  --color-deep-dark: #141413;                 /* 深色背景 - 近黑色 */
+
+  /* ===== 文本色 (Text Colors) ===== */
+  --color-text-primary: #4d4c48;              /* 主要文本 - 暖炭色 */
+  --color-text-secondary: #5e5d59;            /* 次要文本 - 橄榄灰色 */
+  --color-text-tertiary: #87867f;             /* 三级文本 - 石灰色 */
+  --color-text-dark: #3d3d3a;                 /* 深色文本链接 */
+  --color-text-on-dark: #b0aea5;              /* 深色表面文本 - 暖银色 */
+  --color-text-on-light: #4d4c48;             /* 浅色表面文本 */
+
+  /* ===== 边框色 (Border Colors) ===== */
+  --color-border-cream: #f0eee6;              /* 标准边框 - 奶油色 */
+  --color-border-warm: #e8e6dc;               /* 强调边框 - 暖色 */
+  --color-border-dark: #30302e;               /* 深色边框 */
+
+  /* ===== 环形阴影色 (Ring Shadow Colors) ===== */
+  --color-ring-warm: #d1cfc5;                 /* 环形阴影 - 暖色 */
+  --color-ring-subtle: #dedcd1;               /* 环形阴影 - 柔和 */
+  --color-ring-deep: #c2c0b6;                 /* 环形阴影 - 深色 */
+
+  /* ===== 兼容性映射 (兼容原系统) ===== */
+  --primary: var(--color-anthropic-near-black);
+  --primary-light: var(--color-dark-surface);
+  --accent: var(--color-terracotta-brand);
+  --accent-hover: var(--color-coral-accent);
+  --danger: var(--color-error-crimson);
+  --bg: var(--color-parchment);
+  --card-bg: var(--color-ivory);
+  --text: var(--color-text-primary);
+  --text-light: var(--color-text-secondary);
+  --border: var(--color-border-cream);
+  --shadow: rgba(0, 0, 0, 0.07);
+  --shadow-hover: rgba(0, 0, 0, 0.13);
+}
+
+/* ────────────────────────────────────────────
+   2. 字体系统 (Typography System)
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== 字体栈 (Font Stacks) ===== */
+  --font-family-chinese: -apple-system, BlinkMacSystemFont,
+                        'PingFang SC', 'Hiragino Sans GB',
+                        'Microsoft YaHei', sans-serif;
+  --font-family-serif: Georgia, 'Times New Roman', Times, serif;
+  --font-family-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --font-family-mono: 'Courier New', Courier, monospace;
+
+  /* ===== 应用层字体定义 ===== */
+  --font-family-base: var(--font-family-chinese), var(--font-family-sans);
+  --font-family-heading: var(--font-family-serif), var(--font-family-chinese);
+  --font-family-code: var(--font-family-mono), var(--font-family-chinese);
+  --font-family-ui: var(--font-family-sans), var(--font-family-chinese);
+
+  /* ===== 字号系统 (Font Sizes) ===== */
+  --font-size-micro: 10px;       /* 0.625rem - 最小文本 */
+  --font-size-overline: 11px;    /* 0.688rem - 上划线标签 */
+  --font-size-label: 13px;       /* 0.813rem - 标签、徽章 */
+  --font-size-caption: 14px;     /* 0.875rem - 说明文字 */
+  --font-size-body-sm: 15px;     /* 0.938rem - 小号正文 */
+  --font-size-body: 17px;        /* 1.063rem - 标准正文（增加1px） */
+  --font-size-body-lg: 19px;     /* 1.188rem - 大号正文 */
+  --font-size-ui-lg: 20px;       /* 1.25rem - 大号UI文本 */
+  --font-size-feature-title: 22px; /* 1.375rem - 功能标题（增加1.2px） */
+  --font-size-subheading-sm: 26px; /* 1.625rem - 小副标题（增加0.4px） */
+  --font-size-subheading: 30px;  /* 1.875rem - 副标题（减小2px，更平衡） */
+  --font-size-subheading-lg: 34px;   /* 2.125rem - 大副标题（减小2px） */
+  --font-size-heading: 48px;     /* 3rem - 章节标题（减小4px） */
+  --font-size-display: 60px;     /* 3.75rem - 显示/英雄标题（减小4px） */
+
+  /* ===== 行高系统 (Line Heights) ===== */
+  --line-height-tight: 1.15;     /* 紧凑标题（增加0.05） */
+  --line-height-normal: 1.25;    /* 正常标题（增加0.05） */
+  --line-height-relaxed: 1.35;   /* 宽松标题（增加0.05） */
+  --line-height-body-tight: 1.30; /* 紧凑正文（增加0.05） */
+  --line-height-body: 1.45;      /* 标准正文（增加0.05） */
+  --line-height-body-relaxed: 1.65; /* 宽松正文（编辑式，增加0.05） */
+  --line-height-body-loose: 1.85; /* 非常宽松（增加0.05） */
+
+  /* ===== 字重系统 (Font Weights) ===== */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;     /* Serif标题专用 */
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ===== 字间距 (Letter Spacing) ===== */
+  --letter-spacing-tight: -0.32px; /* 代码 */
+  --letter-spacing-normal: normal;
+  --letter-spacing-wide: 0.12px;   /* 小标签 */
+  --letter-spacing-wider: 0.5px;   /* 上划线标签 */
+  --letter-spacing-micro: 0.096px; /* 微文本 */
+}
+
+/* ────────────────────────────────────────────
+   3. 间距系统 (Spacing System)
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== 基础单位: 8px ===== */
+  --space-3xs: 4px;      /* 增加1px */
+  --space-2xs: 6px;      /* 增加2px */
+  --space-xs: 8px;       /* 增加2px */
+  --space-sm: 10px;      /* 增加2px */
+  --space-md: 14px;      /* 增加2px */
+  --space-lg: 18px;      /* 增加2px */
+  --space-xl: 22px;      /* 增加2px */
+  --space-2xl: 28px;     /* 增加4px */
+  --space-3xl: 34px;     /* 增加4px */
+  --space-4xl: 36px;     /* 增加4px */
+  --space-5xl: 44px;     /* 增加4px */
+  --space-6xl: 52px;     /* 增加4px */
+  --space-7xl: 60px;     /* 增加4px */
+  --space-8xl: 68px;     /* 增加4px */
+  --space-9xl: 76px;     /* 增加4px */
+  --space-10xl: 84px;    /* 增加4px */
+
+  /* ===== 组件间距 ===== */
+  --button-padding-x: 12px;
+  --button-padding-y: 8px;
+  --input-padding-x: 12px;
+  --input-padding-y: 8px;
+  --card-padding: var(--space-2xl);
+  --section-spacing: var(--space-8xl);
+}
+
+/* ────────────────────────────────────────────
+   4. 圆角系统 (Border Radius System)
+   ──────────────────────────────────────────── */
+
+:root {
+  --radius-sharp: 4px;           /* 最小内联元素 */
+  --radius-subtle: 6px;          /* 小按钮、次要交互元素 */
+  --radius-comfortable: 8px;     /* 标准按钮、卡片、容器 */
+  --radius-generous: 12px;       /* 主要按钮、输入框、导航元素 */
+  --radius-very-rounded: 16px;   /* 特色容器、视频播放器 */
+  --radius-highly-rounded: 24px; /* 标签式元素、高亮容器 */
+  --radius-maximum: 32px;        /* 英雄容器、嵌入式媒体、大卡片 */
+}
+
+/* ────────────────────────────────────────────
+   5. 阴影系统 (Shadow System)
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== 环形阴影 (Ring Shadows) ===== */
+  --shadow-ring-warm: 0px 0px 0px 1px var(--color-ring-warm);
+  --shadow-ring-subtle: 0px 0px 0px 1px var(--color-ring-subtle);
+  --shadow-ring-deep: 0px 0px 0px 1px var(--color-ring-deep);
+  --shadow-ring-brand: 0px 0px 0px 1px var(--color-terracotta-brand);
+  --shadow-ring-dark: 0px 0px 0px 1px var(--color-dark-surface);
+
+  /* ===== 投影阴影 (Drop Shadows) ===== */
+  --shadow-whisper: rgba(0, 0, 0, 0.05) 0px 4px 24px;
+  --shadow-soft: rgba(0, 0, 0, 0.08) 0px 6px 30px;
+  --shadow-medium: rgba(0, 0, 0, 0.12) 0px 8px 36px;
+
+  /* ===== 内阴影 (Inset Shadows) ===== */
+  --shadow-inset-subtle: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.15);
+  --shadow-inset-medium: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.25);
+
+  /* ===== 深度层级 (Elevation Levels) ===== */
+  --shadow-level-0: none;                                /* 平面 */
+  --shadow-level-1: var(--shadow-ring-warm);             /* 环形 */
+  --shadow-level-2: var(--shadow-whisper);               /* 低投影 */
+  --shadow-level-3: var(--shadow-soft);                  /* 中投影 */
+  --shadow-level-4: var(--shadow-medium);                /* 高投影 */
+}
+
+/* ────────────────────────────────────────────
+   6. 基础样式重置 (Base Resets)
+   ──────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px; /* 基础字号 */
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body-relaxed);
+  color: var(--color-text-primary);
+  background-color: var(--color-parchment);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* ────────────────────────────────────────────
+   7. 排版工具类 (Typography Utilities)
+   ──────────────────────────────────────────── */
+
+/* 标题样式 */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+}
+
+h1 {
+  font-size: var(--font-size-heading);
+  line-height: var(--line-height-tight);
+}
+
+h2 {
+  font-size: var(--font-size-subheading-lg);
+  line-height: var(--line-height-relaxed);
+}
+
+h3 {
+  font-size: var(--font-size-subheading);
+  line-height: var(--line-height-tight);
+}
+
+h4 {
+  font-size: var(--font-size-subheading-sm);
+  line-height: var(--line-height-normal);
+}
+
+h5 {
+  font-size: var(--font-size-feature-title);
+  line-height: var(--line-height-normal);
+}
+
+h6 {
+  font-size: var(--font-size-ui-lg);
+  line-height: var(--line-height-normal);
+}
+
+/* 正文样式 */
+p {
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+  line-height: var(--line-height-body-relaxed);
+}
+
+/* 链接样式 */
+a {
+  color: var(--color-terracotta-brand);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-coral-accent);
+  text-decoration: underline;
+}
+
+/* 代码样式 */
+code,
+pre {
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-relaxed);
+  background-color: var(--color-warm-sand);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-subtle);
+}
+
+pre {
+  padding: var(--space-lg);
+  overflow-x: auto;
+  margin-bottom: var(--space-lg);
+}
+
+/* 列表样式 */
+ul, ol {
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-xl);
+}
+
+li {
+  margin-bottom: var(--space-xs);
+  line-height: var(--line-height-body-relaxed);
+}
+
+/* ────────────────────────────────────────────
+   8. 容器和布局 (Containers & Layout)
+   ──────────────────────────────────────────── */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.container-wide {
+  max-width: 1400px;
+}
+
+.container-narrow {
+  max-width: 800px;
+}
+
+/* 响应式容器 */
+@media (max-width: 991px) {
+  .container {
+    padding: 0 var(--space-md);
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 0 var(--space-sm);
+  }
+}
+
+/* ────────────────────────────────────────────
+   9. 工具类 (Utility Classes)
+   ──────────────────────────────────────────── */
+
+/* 文本颜色工具类 */
+.text-primary { color: var(--color-text-primary) !important; }
+.text-secondary { color: var(--color-text-secondary) !important; }
+.text-tertiary { color: var(--color-text-tertiary) !important; }
+.text-brand { color: var(--color-terracotta-brand) !important; }
+.text-error { color: var(--color-error-crimson) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-warning { color: var(--color-warning) !important; }
+
+/* 背景颜色工具类 */
+.bg-parchment { background-color: var(--color-parchment) !important; }
+.bg-ivory { background-color: var(--color-ivory) !important; }
+.bg-warm-sand { background-color: var(--color-warm-sand) !important; }
+.bg-dark-surface { background-color: var(--color-dark-surface) !important; }
+.bg-deep-dark { background-color: var(--color-deep-dark) !important; }
+.bg-brand { background-color: var(--color-terracotta-brand) !important; }
+
+/* 间距工具类 */
+.m-0 { margin: 0 !important; }
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.ml-0 { margin-left: 0 !important; }
+.mr-0 { margin-right: 0 !important; }
+
+.m-1 { margin: var(--space-xs) !important; }
+.mt-1 { margin-top: var(--space-xs) !important; }
+.mb-1 { margin-bottom: var(--space-xs) !important; }
+
+.m-2 { margin: var(--space-sm) !important; }
+.mt-2 { margin-top: var(--space-sm) !important; }
+.mb-2 { margin-bottom: var(--space-sm) !important; }
+
+.m-3 { margin: var(--space-md) !important; }
+.mt-3 { margin-top: var(--space-md) !important; }
+.mb-3 { margin-bottom: var(--space-md) !important; }
+
+.m-4 { margin: var(--space-lg) !important; }
+.mt-4 { margin-top: var(--space-lg) !important; }
+.mb-4 { margin-bottom: var(--space-lg) !important; }
+
+.m-5 { margin: var(--space-xl) !important; }
+.mt-5 { margin-top: var(--space-xl) !important; }
+.mb-5 { margin-bottom: var(--space-xl) !important; }
+
+.p-0 { padding: 0 !important; }
+.pt-0 { padding-top: 0 !important; }
+.pb-0 { padding-bottom: 0 !important; }
+
+.p-1 { padding: var(--space-xs) !important; }
+.pt-1 { padding-top: var(--space-xs) !important; }
+.pb-1 { padding-bottom: var(--space-xs) !important; }
+
+.p-2 { padding: var(--space-sm) !important; }
+.pt-2 { padding-top: var(--space-sm) !important; }
+.pb-2 { padding-bottom: var(--space-sm) !important; }
+
+.p-3 { padding: var(--space-md) !important; }
+.pt-3 { padding-top: var(--space-md) !important; }
+.pb-3 { padding-bottom: var(--space-md) !important; }
+
+.p-4 { padding: var(--space-lg) !important; }
+.pt-4 { padding-top: var(--space-lg) !important; }
+.pb-4 { padding-bottom: var(--space-lg) !important; }
+
+.p-5 { padding: var(--space-xl) !important; }
+.pt-5 { padding-top: var(--space-xl) !important; }
+.pb-5 { padding-bottom: var(--space-xl) !important; }
+
+/* 显示工具类 */
+.d-block { display: block !important; }
+.d-inline { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+.d-none { display: none !important; }
+
+/* 对齐工具类 */
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-justify { text-align: justify !important; }
+
+/* 圆角工具类 */
+.rounded-sm { border-radius: var(--radius-subtle) !important; }
+.rounded-md { border-radius: var(--radius-comfortable) !important; }
+.rounded-lg { border-radius: var(--radius-generous) !important; }
+.rounded-xl { border-radius: var(--radius-very-rounded) !important; }
+.rounded-full { border-radius: 9999px !important; }
+
+/* 阴影工具类 */
+.shadow-ring { box-shadow: var(--shadow-ring-warm) !important; }
+.shadow-whisper { box-shadow: var(--shadow-whisper) !important; }
+.shadow-soft { box-shadow: var(--shadow-soft) !important; }
+.shadow-medium { box-shadow: var(--shadow-medium) !important; }
+
+/* ────────────────────────────────────────────
+   10. 响应式断点 (Responsive Breakpoints)
+   ──────────────────────────────────────────── */
+
+/* 小移动端 (<479px) */
+@media (max-width: 479px) {
+  :root {
+    --font-size-display: 36px;
+    --font-size-heading: 32px;
+    --font-size-subheading-lg: 28px;
+    --font-size-subheading: 24px;
+    --font-size-subheading-sm: 20px;
+  }
+}
+
+/* 移动端 (479-640px) */
+@media (min-width: 479px) and (max-width: 640px) {
+  :root {
+    --font-size-display: 40px;
+    --font-size-heading: 36px;
+    --font-size-subheading-lg: 30px;
+    --font-size-subheading: 26px;
+    --font-size-subheading-sm: 22px;
+  }
+}
+
+/* 大移动端 (640-767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+  :root {
+    --font-size-display: 44px;
+    --font-size-heading: 40px;
+    --font-size-subheading-lg: 32px;
+    --font-size-subheading: 28px;
+    --font-size-subheading-sm: 24px;
+  }
+}
+
+/* 平板 (768-991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  :root {
+    --font-size-display: 48px;
+    --font-size-heading: 44px;
+    --font-size-subheading-lg: 34px;
+    --font-size-subheading: 30px;
+    --font-size-subheading-sm: 25px;
+  }
+}
+
+/* 桌面 (992px+) */
+@media (min-width: 992px) {
+  :root {
+    --font-size-display: 64px;
+    --font-size-heading: 52px;
+    --font-size-subheading-lg: 36px;
+    --font-size-subheading: 32px;
+    --font-size-subheading-sm: 25.6px;
+  }
+}

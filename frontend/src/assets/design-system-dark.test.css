@@ -41,18 +41,45 @@
 }
 
 .test-spacing-system {
-  /* 验证间距系统（将在后续任务中添加） */
+  /* 验证间距系统 */
   padding: var(--space-md);
   margin: var(--space-lg);
   gap: var(--space-sm);
+
+  /* 内边距测试 */
+  .test-padding-xs {
+    padding: var(--space-xs);
+  }
+
+  .test-padding-xl {
+    padding: var(--space-xl);
+  }
 }
 
 .test-radius-system {
-  /* 验证圆角系统（将在后续任务中添加） */
+  /* 验证圆角系统 */
   border-radius: var(--radius-comfortable);
+
+  /* 不同圆角测试 */
+  .test-radius-subtle {
+    border-radius: var(--radius-subtle);
+  }
+
+  .test-radius-pill {
+    border-radius: var(--radius-pill);
+  }
 }
 
 .test-shadow-system {
-  /* 验证阴影系统（将在后续任务中添加） */
+  /* 验证阴影系统 */
   box-shadow: var(--shadow-level-1);
+
+  /* 不同阴影测试 */
+  .test-shadow-level-2 {
+    box-shadow: var(--shadow-level-2);
+  }
+
+  .test-shadow-ring-warm {
+    box-shadow: var(--shadow-ring-warm);
+  }
 }

@@ -92,4 +92,48 @@
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.01em;
+
+  /* ────────────────────────────────────────────
+     3. 间距系统 (Spacing System) - 8px基准
+     ──────────────────────────────────────────── */
+
+  /* 8px基准间距系统 */
+  --space-0: 0;
+  --space-xs: 0.5rem;    /* 8px */
+  --space-sm: 1rem;      /* 16px */
+  --space-md: 1.5rem;    /* 24px */
+  --space-lg: 2rem;      /* 32px */
+  --space-xl: 3rem;      /* 48px */
+  --space-2xl: 4rem;     /* 64px */
+  --space-3xl: 6rem;     /* 96px */
+  --space-4xl: 8rem;     /* 128px */
+  --space-5xl: 12rem;    /* 192px */
+
+  /* ────────────────────────────────────────────
+     4. 圆角系统 (Border Radius System)
+     ──────────────────────────────────────────── */
+
+  /* 圆角 */
+  --radius-none: 0;
+  --radius-subtle: 0.25rem;     /* 4px */
+  --radius-comfortable: 0.5rem; /* 8px */
+  --radius-generous: 0.75rem;   /* 12px */
+  --radius-very-rounded: 1rem;  /* 16px */
+  --radius-pill: 9999px;        /* 药丸形 */
+
+  /* ────────────────────────────────────────────
+     5. 阴影系统 (Shadow System)
+     ──────────────────────────────────────────── */
+
+  /* 阴影层级 */
+  --shadow-level-0: none;
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+
+  /* 特殊阴影 */
+  --shadow-ring-subtle: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-ring-warm: 0 0 0 2px var(--color-accent-orange);
+  --shadow-ring-blue: 0 0 0 2px var(--color-accent-blue);
 }

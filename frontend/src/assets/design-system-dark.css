@@ -57,6 +57,36 @@
   --text-light: var(--color-text-secondary);
   --border: var(--color-dark-border);
 
+  /* ===== 兼容性变量 - 为现有组件添加 ===== */
+  --color-terracotta-brand: var(--color-accent-orange);
+  --color-coral-accent: var(--color-accent-orange-light);
+  --color-ivory: var(--color-dark-surface);
+  --color-parchment: var(--color-near-black);
+  --color-warm-sand: rgba(255, 255, 255, 0.05);
+  --color-border-cream: var(--color-dark-border);
+  --color-border-warm: var(--color-accent-orange);
+  --color-deep-dark: var(--color-near-black);
+  --color-text-on-dark: var(--color-text-primary);
+  --color-error-crimson: var(--color-error);
+
+  /* ===== 阴影兼容性变量 ===== */
+  --shadow-ring-warm: var(--shadow-ring-warm);
+  --shadow-ring-deep: 0 0 0 2px var(--color-accent-blue);
+  --shadow-ring-brand: var(--shadow-ring-warm);
+  --shadow-ring-dark: 0 0 0 2px var(--color-dark-border);
+  --shadow-ring-subtle: var(--shadow-ring-subtle);
+
+  /* ===== 排版兼容性变量 ===== */
+  --font-size-subheading: var(--font-size-xl);
+  --font-size-subheading-sm: var(--font-size-lg);
+  --font-size-feature-title: var(--font-size-lg);
+  --font-size-body: var(--font-size-base);
+  --font-size-body-sm: var(--font-size-sm);
+  --font-size-body-lg: var(--font-size-lg);
+  --font-size-caption: var(--font-size-xs);
+  --line-height-body: var(--line-height-normal);
+  --line-height-body-relaxed: var(--line-height-relaxed);
+
   /* ────────────────────────────────────────────
      2. 排版系统 (Typography System)
      ──────────────────────────────────────────── */

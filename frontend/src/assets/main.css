@@ -4,7 +4,7 @@
    ════════════════════════════════════════════ */
 
 /* 引入设计系统变量 */
-@import './design-system-dark.css';
+@import 'design-system-dark.css';
 
 /* 兼容性变量映射（确保现有组件正常工作） */
 :root {

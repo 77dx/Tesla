@@ -1,14 +1,42 @@
-/* design-system-dark.test.css */
+/* design-system-dark.test.css - 深色主题设计系统测试 */
 .test-color-system {
   /* 验证核心色彩 */
   background-color: var(--color-near-black);
-  border-color: var(--color-dark-border);
+  border: 2px solid var(--color-dark-border);
   color: var(--color-text-primary);
 
   /* 验证强调色 */
-  accent-color: var(--color-accent-orange);
+  border-left-color: var(--color-accent-orange);
 
-  /* 验证状态色 */
-  success-color: var(--color-success);
-  error-color: var(--color-error);
+  /* 验证状态色 - 使用有效的CSS属性 */
+  background-image: linear-gradient(
+    to right,
+    var(--color-success) 0%,
+    var(--color-error) 100%
+  );
+}
+
+.test-typography-system {
+  /* 验证排版系统（将在后续任务中添加） */
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.test-spacing-system {
+  /* 验证间距系统（将在后续任务中添加） */
+  padding: var(--space-md);
+  margin: var(--space-lg);
+  gap: var(--space-sm);
+}
+
+.test-radius-system {
+  /* 验证圆角系统（将在后续任务中添加） */
+  border-radius: var(--radius-comfortable);
+}
+
+.test-shadow-system {
+  /* 验证阴影系统（将在后续任务中添加） */
+  box-shadow: var(--shadow-level-1);
 }

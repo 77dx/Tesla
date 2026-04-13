@@ -1,0 +1,66 @@
+{
+  "uuid": "c02f6203-502f-4ae4-8d90-77b1018727e0",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "退款列表正常",
+  "fullName": "有登录前置的套件(取执行中的token) / 退款列表正常",
+  "status": "failed",
+  "statusDetails": {
+    "message": "期望 'success'，实际 ''",
+    "trace": "期望 'success'，实际 ''"
+  },
+  "start": 1774342059322,
+  "stop": 1774342059496,
+  "steps": [
+    {
+      "name": "status==200 ✓",
+      "status": "passed",
+      "start": 1774342059322,
+      "stop": 1774342059496,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code是success：期望 'success'，实际 ''",
+      "status": "failed",
+      "start": 1774342059322,
+      "stop": 1774342059496,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "执行日志",
+      "source": "c02f6203-502f-4ae4-8d90-77b1018727e0-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.174s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "story",
+      "value": "退款列表正常"
+    }
+  ],
+  "links": []
+}

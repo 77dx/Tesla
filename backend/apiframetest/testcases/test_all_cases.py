@@ -8,9 +8,9 @@ import time
 import allure
 import pytest
 from pathlib import Path
-from apiframetest.commons.main_util import MainUtil
-from apiframetest.commons import yaml_util, ddt_util
-from apiframetest.commons.model_util import verify_yaml
+from backend.apiframetest.commons.main_util import MainUtil
+from backend.apiframetest.commons import yaml_util, ddt_util
+from backend.apiframetest.commons.model_util import verify_yaml
 
 logger = logging.getLogger(__name__)
 

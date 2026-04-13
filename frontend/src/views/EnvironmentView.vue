@@ -491,6 +491,7 @@ import {
   getServices, createService, updateService, deleteService,
 } from '@/api/suite'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()

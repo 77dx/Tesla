@@ -18,9 +18,24 @@ logger = logging.getLogger(__name__)
 # ===========================================================
 
 @shared_task(bind=True)
-def run_suite_task(self, result_id: int, case_api_ids: list, initial_context: dict = None,
+def run_by_cron_task(self, suite_id: int):
+    from suite.models import Suite
+
+    suite = Suite.objects.filter(id=suite_id).first()
+    if not suite:
+        return {'success': False, 'error': 'suite not found'}
+    if suite.run_type != Suite.RunType.CRON:
+        return {'success': False, 'error': 'suite is not cron mode'}
+
+    result = suite.run(trigger_source='cron')
+    return {'success': True, 'result_id': result.id}
+
+
+@shared_task(bind=True)
+def run_suite_task(self, result_id: int, suite_item_ids: list, initial_context: dict = None,
                    max_retries: int = 0, retry_delay: float = 1.0,
-                   timeout_seconds: int = 0, fail_strategy: str = 'continue'):
+                   timeout_seconds: int = 0, fail_strategy: str = 'continue',
+                   dataset_id: int = None):
     """
     [NEW] 套件执行 Celery 任务（v2.0）
 
@@ -29,7 +44,7 @@ def run_suite_task(self, result_id: int, case_api_ids: list, initial_context: di
 
     Args:
         result_id:        RunResult.id
-        case_api_ids:     按执行顺序的 CaseAPI id 列表
+        suite_item_ids:   按执行顺序的 SuiteCaseItem id 列表
         initial_context:  初始上下文变量
         max_retries:      单条用例失败后最多重跑次数（0=不重跑）
         retry_delay:      每次重跑前等待秒数
@@ -52,12 +67,13 @@ def run_suite_task(self, result_id: int, case_api_ids: list, initial_context: di
     runner = SuiteRunner(result_id=result_id, log_file=log_file)
     try:
         suite_result = runner.run(
-            case_api_ids=case_api_ids,
+            suite_item_ids=suite_item_ids,
             initial_context=initial_context or {},
             max_retries=max_retries,
             retry_delay=retry_delay,
             timeout_seconds=timeout_seconds,
             fail_strategy=fail_strategy,
+            dataset_id=dataset_id,
         )
     except Exception as e:
         import traceback
@@ -80,6 +96,116 @@ def run_suite_task(self, result_id: int, case_api_ids: list, initial_context: di
             pass
         return {'success': False, 'error': str(e)}
     return suite_result.to_dict()
+
+
+@shared_task(bind=True)
+def run_case_import_job(self, job_id: int):
+    """异步导入用例任务：支持 CSV / Excel。"""
+    import csv
+    import io
+    from django.utils import timezone
+    import openpyxl
+
+    from suite.models import ImportJob
+    from case_api.models import Endpoint, Case
+    from project.models import Project, ProjectCaseRef, SprintCaseRef, Sprint
+
+    job = ImportJob.objects.filter(id=job_id).first()
+    if not job:
+        return {'success': False, 'error': 'job not found'}
+
+    job.status = ImportJob.Status.RUNNING
+    job.save(update_fields=['status'])
+
+    success = 0
+    failed = 0
+    total = 0
+    errors = []
+
+    try:
+        with open(job.file_path, 'rb') as f:
+            filename = job.file_path.lower()
+            rows = []
+            if filename.endswith('.csv'):
+                text = f.read().decode('utf-8-sig')
+                reader = csv.DictReader(io.StringIO(text))
+                rows = list(reader)
+            elif filename.endswith('.xlsx') or filename.endswith('.xls'):
+                wb = openpyxl.load_workbook(f, read_only=True, data_only=True)
+                ws = wb.active
+                headers = []
+                for idx, row in enumerate(ws.iter_rows(values_only=True)):
+                    vals = [str(c).strip() if c is not None else '' for c in row]
+                    if idx == 0:
+                        headers = vals
+                        continue
+                    if any(vals):
+                        rows.append({headers[i]: vals[i] if i < len(vals) else '' for i in range(len(headers))})
+            else:
+                raise ValueError('仅支持 csv/xlsx/xls')
+
+        total = len(rows)
+        for r in rows:
+            try:
+                name = (r.get('name') or '').strip()
+                endpoint_id = int(r.get('endpoint_id') or 0)
+                if not name or not endpoint_id:
+                    raise ValueError('name/endpoint_id 必填')
+
+                endpoint = Endpoint.objects.get(id=endpoint_id)
+                pl_id = endpoint.product_line_id or job.product_line_id
+                project_id = int(r.get('project_id') or 0) or None
+
+                case_obj, created = Case.objects.get_or_create(
+                    name=name,
+                    endpoint=endpoint,
+                    defaults={
+                        'project_id': project_id,
+                        'product_line_id': pl_id,
+                        'api_args': {},
+                        'validate': [],
+                        'extract': {},
+                        'version': 1,
+                    }
+                )
+
+                if not created:
+                    case_obj.project_id = project_id or case_obj.project_id
+                    case_obj.product_line_id = pl_id or case_obj.product_line_id
+                    case_obj.api_args = r.get('api_args') or case_obj.api_args
+                    case_obj.version = (case_obj.version or 1) + 1
+                    case_obj.save()
+
+                # 根据 job scope 自动建立引用关系
+                if job.scope_type == 'project' and job.scope_id:
+                    project = Project.objects.filter(id=job.scope_id).first()
+                    if project:
+                        ProjectCaseRef.objects.get_or_create(project=project, case=case_obj)
+                elif job.scope_type == 'sprint' and job.scope_id:
+                    sprint = Sprint.objects.filter(id=job.scope_id).first()
+                    if sprint:
+                        SprintCaseRef.objects.get_or_create(sprint=sprint, case=case_obj)
+
+                success += 1
+            except Exception as e:
+                failed += 1
+                errors.append(str(e))
+
+        job.total = total
+        job.success = success
+        job.failed = failed
+        job.detail = {'errors': errors[:200]}
+        job.status = ImportJob.Status.SUCCESS if failed == 0 else (ImportJob.Status.PARTIAL if success > 0 else ImportJob.Status.FAILED)
+        job.finished_at = timezone.now()
+        job.save(update_fields=['total', 'success', 'failed', 'detail', 'status', 'finished_at'])
+    except Exception as e:
+        job.status = ImportJob.Status.FAILED
+        job.detail = {'error': str(e)}
+        job.finished_at = timezone.now()
+        job.save(update_fields=['status', 'detail', 'finished_at'])
+        return {'success': False, 'error': str(e)}
+
+    return {'success': True, 'job_id': job_id, 'total': total, 'success_count': success, 'failed_count': failed}
 
 
 # ===========================================================

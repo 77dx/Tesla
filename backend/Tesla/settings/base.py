@@ -51,8 +51,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'rest_framework',
-    'rest_framework.authtoken',
-    'django_q',
+    'rest_framework_simplejwt.token_blacklist',
     # 业务应用
     'beifan',
     'account',
@@ -64,6 +63,7 @@ INSTALLED_APPS = [
     'snippet',
     'apiframetest',
     'product_line',
+    'automation',
 ]
 
 MIDDLEWARE = [
@@ -129,12 +129,20 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'EXCEPTION_HANDLER': 'snippet.myexception.customer_exception_handler',
     'DEFAULT_RENDERER_CLASSES': [
         'Tesla.renderer.CodeResultMessageRenderer'
     ]
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 SPECTACULAR_SETTINGS = {
@@ -143,15 +151,6 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
-}
-
-# django-q 配置
-Q_CLUSTER = {
-    'orm': 'default',
-    'timeout': 60 * 10,
-    'retry': 60 * 10 * 2,
-    'workers': 2,
-    'bulk': 10,
 }
 
 # 日志配置

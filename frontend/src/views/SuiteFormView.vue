@@ -21,13 +21,6 @@
             <label>套件名称 <span class="required">*</span></label>
             <input v-model="formData.name" required placeholder="如：用户登录流程测试" />
           </div>
-          <div class="form-group">
-            <label>所属项目</label>
-            <select v-model="formData.project">
-              <option :value="null">不指定</option>
-              <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
-          </div>
         </div>
         <div class="form-group">
           <label>描述</label>
@@ -181,22 +174,21 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { createSuite, getEnvironments } from '@/api/suite'
-import { getProjects } from '@/api/project'
-
 const router = useRouter()
-const projects     = ref([])
+const route = useRoute()
 const environments = ref([])
 const saving       = ref(false)
 const suiteVars    = ref([])
 const suiteHeaders = ref([])
 
 const formData = ref({
-  name: '', run_type: 'O', project: null, environment: null,
+  name: '', run_type: 'O', environment: null,
   description: '', cron: '', hook_key: '',
   timeout_seconds: 0, fail_strategy: 'continue', retry_count: 0, retry_delay: 1.0,
 })
+import { alert } from '@/composables/useAlert'
 
 const runTypes = [
   { value: 'O', label: '手动执行', icon: '▶', desc: '点击按钮手动触发' },
@@ -220,8 +212,12 @@ const handleSubmit = async () => {
     for (const r of suiteVars.value) if (r.k?.trim()) svObj[r.k.trim()] = r.v
     const shObj = {}
     for (const r of suiteHeaders.value) if (r.k?.trim()) shObj[r.k.trim()] = r.v
+    const parentNodeId = route.query.parent_node_id ? Number(route.query.parent_node_id) : null
     const res = await createSuite({
       ...formData.value,
+      parent_node_id: parentNodeId,
+      project: null,
+      product_line: null,
       suite_variables: Object.keys(svObj).length ? svObj : null,
       suite_headers: Object.keys(shObj).length ? shObj : null,
     })
@@ -235,11 +231,7 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
-  const [pr, er] = await Promise.all([
-    getProjects({ page_size: 200 }),
-    getEnvironments({ page_size: 200 }),
-  ])
-  projects.value     = pr.result?.list || []
+  const er = await getEnvironments({ page_size: 200 })
   environments.value = er.result?.list || []
 })
 </script>

@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","455","web端登录密码正确","","2026-04-08","passed","2026-04-08","","使用套件变量token的套件","",""
+"","160","web端订单列表","","2026-04-08","passed","2026-04-08","","使用套件变量token的套件","",""
+"","136","售后列表功能正常","","2026-04-08","passed","2026-04-08","","使用套件变量token的套件","",""

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(ls:*)",
+      "Bash(csslint --format=compact design-system-dark.css main.css)",
+      "Bash(grep:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(kill 38659)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash(kill:*)"
+    ]
+  }
+}

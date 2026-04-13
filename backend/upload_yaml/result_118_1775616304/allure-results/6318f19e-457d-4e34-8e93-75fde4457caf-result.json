@@ -1,0 +1,73 @@
+{
+  "uuid": "b307b74e-ecaf-4a4f-b63f-12bd33085fc4",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "使用套件变量token的套件 / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1775616304883,
+  "stop": 1775616305546,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1775616304883,
+      "stop": 1775616305546,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1775616304883,
+      "stop": 1775616305546,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "b307b74e-ecaf-4a4f-b63f-12bd33085fc4-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "提取变量",
+      "source": "b307b74e-ecaf-4a4f-b63f-12bd33085fc4-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "b307b74e-ecaf-4a4f-b63f-12bd33085fc4-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.663s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

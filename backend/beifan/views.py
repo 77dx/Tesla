@@ -6,12 +6,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework import viewsets
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import FeedBackSerializer, UserSerializer
 import datetime
 from .models import FeedBack
@@ -48,9 +48,10 @@ def token_login(request):
 
     if user is not None:
         if user.is_active:
-            token, created = Token.objects.get_or_create(user=user)
+            refresh = RefreshToken.for_user(user)
             response_json["case_data"] = {
-                'token': token.key,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
                 'user_id': user.pk,
             }
             return Response(response_json)

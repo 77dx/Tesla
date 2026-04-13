@@ -113,6 +113,7 @@ import { useRouter } from 'vue-router'
 import { getProjects, createProject, updateProject, deleteProject } from '@/api/project'
 import { getAllUsers } from '@/api/account'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()

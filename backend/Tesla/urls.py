@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/case_ui/", include("case_ui.urls")),
     path("api/suite/", include("suite.urls")),
     path("api/product-line/", include("product_line.urls")),
+    path("api/automation/", include("automation.urls")),
     # path("", TemplateView.as_view(template_name="admin/index.html")),
     path('api/schema.openapi.json', SpectacularAPIView.as_view(), name="schema"),
     path('api/schema/swagger/', SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

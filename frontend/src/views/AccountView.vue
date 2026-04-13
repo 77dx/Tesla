@@ -160,6 +160,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getProfile, resetPassword, modify, imgUpload } from '@/api/account'
+import { alert } from '@/composables/useAlert'
 import { getRoles, assignRole } from '@/api/system'
 import { useUserStore } from '@/stores/user'
 

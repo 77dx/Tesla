@@ -1,0 +1,41 @@
+{
+  "uuid": "a38d6ca7-b12a-4f36-a705-450e83237eeb",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "用例 #9",
+  "fullName": "设置3个token / 9",
+  "status": "broken",
+  "statusDetails": {
+    "message": "No module named 'backend'",
+    "trace": "No module named 'backend'"
+  },
+  "start": 1774318283970,
+  "stop": 1774318283970,
+  "steps": [],
+  "attachments": [],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.000s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "设置3个token"
+    },
+    {
+      "name": "feature",
+      "value": "设置3个token"
+    },
+    {
+      "name": "story",
+      "value": ""
+    }
+  ],
+  "links": []
+}

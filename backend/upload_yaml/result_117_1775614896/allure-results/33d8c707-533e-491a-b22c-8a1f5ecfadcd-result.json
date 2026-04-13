@@ -1,0 +1,52 @@
+{
+  "uuid": "142d188b-54bc-48db-8323-f8ddbcb31a6f",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": " / 售后列表功能正常",
+  "status": "broken",
+  "statusDetails": {
+    "message": "Invalid URL '/afterSalesService/ticketList': No scheme supplied. Perhaps you meant https:///afterSalesService/ticketList?",
+    "trace": "Invalid URL '/afterSalesService/ticketList': No scheme supplied. Perhaps you meant https:///afterSalesService/ticketList?"
+  },
+  "start": 1775614896496,
+  "stop": 1775614896507,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "142d188b-54bc-48db-8323-f8ddbcb31a6f-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "142d188b-54bc-48db-8323-f8ddbcb31a6f-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.011s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

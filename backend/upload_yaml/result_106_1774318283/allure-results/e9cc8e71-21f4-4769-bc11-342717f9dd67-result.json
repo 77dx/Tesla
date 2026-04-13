@@ -1,0 +1,41 @@
+{
+  "uuid": "a11e81de-53fa-4fa9-a674-7de3ba4479ad",
+  "historyId": "14",
+  "testCaseId": "14",
+  "name": "用例 #14",
+  "fullName": "设置3个token / 14",
+  "status": "broken",
+  "statusDetails": {
+    "message": "No module named 'backend'",
+    "trace": "No module named 'backend'"
+  },
+  "start": 1774318283971,
+  "stop": 1774318283971,
+  "steps": [],
+  "attachments": [],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.000s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "设置3个token"
+    },
+    {
+      "name": "feature",
+      "value": "设置3个token"
+    },
+    {
+      "name": "story",
+      "value": ""
+    }
+  ],
+  "links": []
+}

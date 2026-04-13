@@ -3,6 +3,7 @@
     <div class="detail-header">
       <button @click="$router.push('/suites')" class="btn btn-back">← 返回</button>
       <div class="header-actions">
+        <button v-if="!editing" @click="goToResults" class="btn btn-refresh">执行结果</button>
         <button v-if="!editing" @click="startEdit" class="btn btn-primary">编辑套件</button>
         <button v-if="editing" @click="handleSubmit" class="btn btn-primary" :disabled="saving">{{ saving ? '保存中...' : '保存' }}</button>
         <button v-if="editing" @click="cancelEdit" class="btn btn-refresh">取消</button>
@@ -27,12 +28,13 @@
           <h2>{{ suite.name }}</h2>
           <div class="info-grid">
             <div class="info-item"><label>套件 ID</label><span>{{ suite.id }}</span></div>
-            <div class="info-item"><label>所属项目</label><span>{{ suite.project_name || `项目 #${suite.project}` }}</span></div>
+            <div class="info-item"><label>所属产品线</label><span>{{ suite.product_line_name || '-' }}</span></div>
             <div class="info-item">
               <label>运行类型</label>
               <span class="type-badge" :class="'type-' + suite.run_type">{{ { O:'手动执行', C:'定时执行', W:'WebHook' }[suite.run_type] }}</span>
             </div>
             <div v-if="suite.cron" class="info-item"><label>Cron</label><code>{{ suite.cron }}</code></div>
+            <div v-if="suite.run_type === 'C'" class="info-item"><label>下次执行</label><span>{{ formatDate(suite.cron_next_run_at) }}</span></div>
             <div v-if="suite.hook_key" class="info-item"><label>Webhook 密钥</label><code>{{ suite.hook_key }}</code></div>
             <div v-if="suite.environment_name" class="info-item full-width"><label>运行环境</label><span class="env-badge">🌐 {{ suite.environment_name }}</span></div>
             <div v-if="suite.description" class="info-item full-width"><label>描述</label><span>{{ suite.description }}</span></div>
@@ -54,13 +56,6 @@
             <div class="form-group">
               <label>套件名称 <span class="required">*</span></label>
               <input v-model="formData.name" required />
-            </div>
-            <div class="form-group">
-              <label>所属项目</label>
-              <select v-model="formData.project">
-                <option :value="null">不指定</option>
-                <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
-              </select>
             </div>
             <div class="form-group">
               <label>运行类型 <span class="required">*</span></label>
@@ -146,7 +141,10 @@
             <span class="phase-title">前置操作</span>
             <span class="phase-badge">{{ setupItems.length }}</span>
             <span class="phase-hint">套件开始前执行，可用于创建数据、登录获取 Token 等</span>
-            <button @click="openAddCaseDialog('API','setup')" class="btn btn-sm phase-add-btn">+ 添加</button>
+            <div class="phase-header-right">
+              <button @click="openAddCaseDialog('API','setup')" class="btn btn-sm phase-add-btn">+ API</button>
+              <button @click="openAddCaseDialog('UI','setup')" class="btn btn-sm">+ UI</button>
+            </div>
           </div>
           <div v-if="setupItems.length" class="phase-table-wrap">
             <table class="table">
@@ -214,7 +212,10 @@
             <span class="phase-title">后置操作</span>
             <span class="phase-badge">{{ teardownItems.length }}</span>
             <span class="phase-hint">无论正式用例是否失败，后置操作都会执行</span>
-            <button @click="openAddCaseDialog('API','teardown')" class="btn btn-sm phase-add-btn">+ 添加</button>
+            <div class="phase-header-right">
+              <button @click="openAddCaseDialog('API','teardown')" class="btn btn-sm phase-add-btn">+ API</button>
+              <button @click="openAddCaseDialog('UI','teardown')" class="btn btn-sm">+ UI</button>
+            </div>
           </div>
           <div v-if="teardownItems.length" class="phase-table-wrap">
             <table class="table">
@@ -238,6 +239,104 @@
         </div>
       </div><!-- /cases-card -->
       </div><!-- /Tab:执行用例 -->
+
+      <!-- Tab: 执行日志 -->
+      <div v-show="activeTab === 'logs'" class="card execution-log-card">
+        <div class="execution-log-header">
+          <div>
+            <div class="execution-log-title">执行日志</div>
+            <div class="execution-log-hint">定时执行按同一策略聚合统计，手动立即执行单独记录。</div>
+          </div>
+          <div class="execution-log-toolbar">
+            <label class="mini-check">
+              <input type="checkbox" v-model="showFailedLogsOnly" />
+              <span>仅看失败策略</span>
+            </label>
+            <select v-model="logSortMode" class="log-sort-select">
+              <option value="risk">失败优先</option>
+              <option value="recent">最近执行优先</option>
+            </select>
+            <button class="btn btn-sm" @click="loadExecutionLogs">刷新</button>
+          </div>
+        </div>
+        <div v-if="visibleExecutionLogs.length" class="execution-log-list">
+          <div v-for="log in visibleExecutionLogs" :key="log.id" class="execution-log-item" :class="{ collapsed: isLogCollapsed(log.id) }">
+            <div class="execution-log-main">
+              <div class="execution-log-topline">
+                <span class="execution-log-type" :class="'type-' + log.strategy_type">{{ getStrategyTypeText(log.strategy_type) }}</span>
+                <strong class="execution-log-label">{{ log.strategy_label || '-' }}</strong>
+                <button class="collapse-toggle-btn" @click="toggleLogCollapsed(log.id)">{{ isLogCollapsed(log.id) ? '展开摘要' : '折叠摘要' }}</button>
+              </div>
+              <template v-if="!isLogCollapsed(log.id)">
+              <div class="execution-log-metrics">
+                <span class="metric-chip metric-total">总计 {{ log.execution_count || 0 }}</span>
+                <span class="metric-chip metric-pass">通过 {{ log.pass_count || 0 }}</span>
+                <span class="metric-chip metric-fail">失败 {{ log.fail_count || 0 }}</span>
+                <span class="metric-chip metric-rate">成功率 {{ getPassRateText(log) }}</span>
+              </div>
+              <div class="execution-log-meta">
+                <span>策略：{{ getStrategyHint(log) }}</span>
+                <span>首次执行：{{ formatDate(log.first_triggered_at) }}</span>
+                <span>最近执行：{{ formatDate(log.last_triggered_at) }}</span>
+              </div>
+              <div v-if="log.latest_failed_result?.id" class="execution-log-failure">
+                最近失败：
+                <button class="inline-result-link" @click="viewResult(log.latest_failed_result.id)">#{{ log.latest_failed_result.id }}</button>
+                <span>{{ formatDate(log.latest_failed_result.created_at) }}</span>
+                <span class="failure-time-tag">{{ formatRelativeTime(log.latest_failed_result.created_at) }}</span>
+              </div>
+              <div v-if="getLogRiskHint(log)" class="risk-banner" :class="'risk-' + getLogRiskHint(log).level">
+                {{ getLogRiskHint(log).text }}
+              </div>
+              <div v-if="log.failure_summary" class="execution-log-summary" v-html="highlightFailureSummary(log.failure_summary)"></div>
+              <div v-if="log.recent_results?.length" class="execution-log-results">
+                <button v-for="item in log.recent_results" :key="item.id" class="result-link-chip" @click="viewResult(item.id)">
+                  #{{ item.id }} · {{ item.trigger_source === 'cron' ? '定时' : item.trigger_source === 'manual' ? '手动' : item.trigger_source || '-' }} · {{ formatDate(item.created_at) }}
+                </button>
+              </div>
+              <div class="execution-log-actions-row">
+                <button class="btn btn-sm" @click="toggleLogHistory(log)">{{ isLogExpanded(log.id) ? '收起历史结果' : '展开完整历史' }}</button>
+                <button v-if="log.latest_failed_result?.id" class="btn btn-sm btn-danger-soft" @click="viewResult(log.latest_failed_result.id)">跳到最近失败</button>
+                <span v-if="getFailureStreak(log) >= 2" class="streak-chip">连续失败 {{ getFailureStreak(log) }} 次</span>
+              </div>
+              <div v-if="isLogExpanded(log.id)" class="execution-log-history">
+                <div class="history-filter-bar">
+                  <span>历史筛选</span>
+                  <button class="mini-filter-btn" :class="{ active: historyStatusFilter === 'all' }" @click="historyStatusFilter = 'all'">全部</button>
+                  <button class="mini-filter-btn" :class="{ active: historyStatusFilter === 'fail' }" @click="historyStatusFilter = 'fail'">仅失败</button>
+                  <button class="mini-filter-btn" :class="{ active: historyStatusFilter === 'pass' }" @click="historyStatusFilter = 'pass'">仅通过</button>
+                </div>
+                <div v-if="getFilteredLogHistoryItems(log.id).length" class="execution-log-history-list">
+                  <button v-for="item in getFilteredLogHistoryItems(log.id)" :key="item.id" class="history-result-row" @click="viewResult(item.id)">
+                    <span class="history-result-id">#{{ item.id }}</span>
+                    <span>{{ item.trigger_source === 'cron' ? '定时' : item.trigger_source === 'manual' ? '手动' : item.trigger_source || '-' }}</span>
+                    <span>{{ item.status === 4 ? (item.is_pass ? '通过' : '失败') : getStatusText(item.status) }}</span>
+                    <span class="history-time-block">
+                      <strong>{{ formatDate(item.created_at) }}</strong>
+                      <em>{{ formatRelativeTime(item.created_at) }}</em>
+                    </span>
+                  </button>
+                  <div class="history-pagination-bar">
+                    <span>已加载 {{ getLogHistoryState(log.id).items.length }} / {{ getLogHistoryState(log.id).itemCount }} 条</span>
+                    <button v-if="getLogHistoryState(log.id).page < getLogHistoryState(log.id).pageCount" class="btn btn-sm" :disabled="isLogHistoryLoading(log.id)" @click="loadMoreLogHistory(log)">{{ isLogHistoryLoading(log.id) ? '加载中...' : '加载更多' }}</button>
+                  </div>
+                </div>
+                <div v-else class="empty-state">{{ isLogHistoryLoading(log.id) ? '加载中...' : '当前筛选下暂无历史结果' }}</div>
+              </div>
+              </template>
+              <div v-else class="collapsed-log-summary">
+                <span>最近执行：{{ formatDate(log.last_triggered_at) }}</span>
+                <span>成功率：{{ getPassRateText(log) }}</span>
+                <span v-if="log.fail_count > 0">失败 {{ log.fail_count }} 次</span>
+              </div>
+            </div>
+            <div class="execution-log-side">
+              <button v-if="log.latest_result?.id" class="btn btn-primary btn-sm" @click="viewResult(log.latest_result.id)">查看最新结果</button>
+            </div>
+          </div>
+        </div>
+        <div v-else class="empty-state">暂无执行日志</div>
+      </div>
 
       <!-- Tab: 套件变量 -->
       <div v-if="suite" v-show="activeTab === 'vars'" class="card vars-card-full">
@@ -315,24 +414,54 @@
   <div v-if="showAddCaseDialog" class="modal" @click.self="showAddCaseDialog=false">
     <div class="modal-content modal-large">
       <h3>添加 {{ addingCaseType }} 用例</h3>
-      <div class="add-case-filters">
-        <select v-model="addingProductLine" class="filter-select-sm">
-          <option :value="null">全部产品线</option>
-          <option v-for="pl in addingProductLines" :key="pl.id" :value="pl.id">{{ pl.name }}</option>
-        </select>
-        <input v-model="caseSearch" placeholder="搜索用例名称..." class="search-input-sm" />
-      </div>
-      <div class="available-cases">
-        <div v-for="c in filteredAvailableCases" :key="c.id"
-          class="available-item" :class="{ selected: selectedCaseIds.includes(c.id) }"
-          @click="toggleSelectCase(c.id)">
-          <div class="avail-check">{{ selectedCaseIds.includes(c.id) ? '✓' : '' }}</div>
-          <div class="avail-info">
-            <span class="avail-name">{{ c.name }}</span>
-            <span class="avail-endpoint">{{ c.endpoint?.name || '' }}</span>
+      <div class="selected-count source-hint">{{ addingCaseType === 'UI' ? '来源：平台内 UI 用例库' : '来源：接口用例库' }}</div>
+      <div class="add-case-layout">
+        <div class="case-tree-panel" v-if="addingCaseType !== 'UI'">
+          <div class="case-tree-header">用例层级</div>
+          <div class="case-tree-body" v-if="caseTree">
+            <div
+              v-for="n in visibleCaseTreeNodes"
+              :key="n.id"
+              class="case-tree-row"
+              :class="{ active: n.id === selectedFolderId }"
+              :style="{ paddingLeft: (n.level * 16 + 8) + 'px' }"
+              @click="selectCaseTreeNode(n)"
+            >
+              <span class="case-tree-toggle" @click.stop="toggleCaseTreeFolder(n)">
+                {{ n.node_type === 'folder' ? (isCaseTreeExpanded(n.id) ? '▾' : '▸') : '' }}
+              </span>
+              <span>{{ n.node_type === 'folder' ? '📁' : '📄' }} {{ displayTreeNodeName(n) }}</span>
+            </div>
           </div>
         </div>
-        <div v-if="!filteredAvailableCases.length" class="empty-state">暂无可用用例</div>
+
+        <div class="case-select-panel">
+          <div class="add-case-filters">
+            <select v-model="addingProductLine" class="filter-select-sm">
+              <option :value="null">全部产品线</option>
+              <option v-for="pl in addingProductLines" :key="pl.id" :value="pl.id">{{ pl.name }}</option>
+            </select>
+            <input v-model="caseSearch" placeholder="搜索用例名称..." class="search-input-sm" />
+          </div>
+          <div class="available-cases">
+            <div v-for="c in filteredAvailableCases" :key="c.id"
+              class="available-item" :class="{ selected: selectedCaseIds.includes(c.id) }"
+              @click="toggleSelectCase(c.id)">
+              <div class="avail-check">{{ selectedCaseIds.includes(c.id) ? '✓' : '' }}</div>
+              <div class="avail-info">
+                <div class="avail-topline">
+                  <span class="avail-name">{{ c.name }}</span>
+                  <span class="avail-type">{{ addingCaseType }}</span>
+                </div>
+                <span class="avail-endpoint">{{ c.endpoint?.name || c.platform || '' }}</span>
+                <span v-if="c.entry_url" class="avail-meta">入口：{{ c.entry_url }}</span>
+                <span class="avail-meta">产品线：{{ c.product_line_name || '未设置' }}　项目：{{ c.project_name || '未设置' }}</span>
+                <span class="avail-meta">ID：#{{ c.id }}</span>
+              </div>
+            </div>
+            <div v-if="!filteredAvailableCases.length" class="empty-state">当前层级暂无可用用例</div>
+          </div>
+        </div>
       </div>
       <div class="selected-count">已选 {{ selectedCaseIds.length }} 条</div>
       <div class="modal-actions">
@@ -346,6 +475,21 @@
   <div v-if="showRunDialog" class="modal" @click.self="showRunDialog=false">
     <div class="modal-content">
       <h3>执行测试套件</h3>
+      <!-- 参数集选择（提交前） -->
+      <div v-if="!runResult.loading && !runResult.success && !runResult.error" class="run-pre-form">
+        <div class="form-group">
+          <label>参数化数据集（可选）</label>
+          <select v-model="selectedDatasetId" class="form-select">
+            <option :value="null">不使用参数集（普通执行）</option>
+            <option v-for="ds in suiteDatasets" :key="ds.id" :value="ds.id">📋 {{ ds.name }}（{{ ds.row_count }} 行）</option>
+          </select>
+          <div v-if="selectedDatasetId" class="ds-hint">将循环执行 {{ suiteDatasets.find(d=>d.id===selectedDatasetId)?.row_count }} 行数据，每行执行一遍所有用例</div>
+        </div>
+        <div class="modal-actions">
+          <button @click="showRunDialog=false" class="btn">取消</button>
+          <button @click="doRunSuite" class="btn btn-success">▶ 开始执行</button>
+        </div>
+      </div>
       <div v-if="runResult.loading" class="loading-state"><div class="spinner"></div><p>正在提交执行...</p></div>
       <div v-else-if="runResult.success" class="success-state">
         <div class="success-icon">✓</div>
@@ -368,13 +512,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  getSuiteDetail, updateSuite, deleteSuite, runSuite as runSuiteApi, getRunResults,
+  getSuiteDetail, updateSuite, deleteSuite, runSuite as runSuiteApi, getRunResults, getSuiteExecutionLogs,
   getSuiteCaseItems, batchAddCaseItems, deleteCaseItem, updateCaseItem, reorderCaseItems,
   getEnvironments
 } from '@/api/suite'
-import { getCases } from '@/api/case'
-import { getProjects } from '@/api/project'
+import { getCases, getCaseTree } from '@/api/case'
+import { getUICases } from '@/api/uiCase'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
 import { useUserStore } from '@/stores/user'
 import { getMyProductLines } from '@/api/productLine'
 
@@ -387,7 +532,14 @@ const suiteId = route.params.id
 const suite        = ref(null)
 const caseItems    = ref([])
 const results      = ref([])
-const projects     = ref([])
+const executionLogs = ref([])
+const showFailedLogsOnly = ref(false)
+const logSortMode = ref('risk')
+const historyStatusFilter = ref('all')
+const collapsedLogIds = ref(new Set())
+const expandedLogIds = ref(new Set())
+const logHistoryMap = ref({})
+const logHistoryLoadingIds = ref(new Set())
 const environments = ref([])
 const orderChanged = ref(false)
 const editing      = ref(false)
@@ -397,6 +549,7 @@ const activeTab    = ref('info')
 const mainTabs = [
   { id: 'info',    label: '基本信息', icon: '📋' },
   { id: 'cases',   label: '执行用例', icon: '▶' },
+  { id: 'logs',    label: '执行日志', icon: '🗂' },
   { id: 'vars',    label: '套件变量', icon: '🔑' },
   { id: 'headers', label: '套件请求头', icon: '🌐' },
 ]
@@ -410,6 +563,11 @@ const editTabs = [
 
 const showAddCaseDialog = ref(false)
 const showRunDialog     = ref(false)
+const suiteDatasets     = ref([])
+const caseTree = ref(null)
+const selectedFolderId = ref(null)
+const caseTreeExpandedFolders = ref(new Set())
+const selectedDatasetId = ref(null)
 const addingCaseType    = ref('API')
 const addingRole        = ref('main')
 const addingProductLine = ref(null)   // null = 全部产品线
@@ -434,8 +592,85 @@ const cronPresets = [
   { label: '每天0点', value: '0 0 * * *' },
 ]
 
+const displayTreeNodeName = (node) => node?.name?.trim() || '无名称'
+const formatDate = (d) => d ? new Date(d).toLocaleString('zh-CN') : '-'
+const formatRelativeTime = (d) => {
+  if (!d) return '-'
+  const diff = Date.now() - new Date(d).getTime()
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  const day = 24 * hour
+  if (diff < minute) return '刚刚'
+  if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`
+  if (diff < day) return `${Math.floor(diff / hour)} 小时前`
+  return `${Math.floor(diff / day)} 天前`
+}
+
+const visibleCaseTreeNodes = computed(() => {
+  const list = []
+  const walk = (node, level = 0) => {
+    if (!node) return
+    list.push({ ...node, level })
+    if (node.node_type === 'folder' && caseTreeExpandedFolders.value.has(node.id)) {
+      ;(node.children || []).forEach(c => walk(c, level + 1))
+    }
+  }
+  walk(caseTree.value, 0)
+  return list
+})
+
+const isCaseTreeExpanded = (id) => caseTreeExpandedFolders.value.has(id)
+
+const toggleCaseTreeFolder = (node) => {
+  if (node.node_type !== 'folder') return
+  const s = new Set(caseTreeExpandedFolders.value)
+  if (s.has(node.id)) s.delete(node.id)
+  else s.add(node.id)
+  caseTreeExpandedFolders.value = s
+}
+
+const selectCaseTreeNode = (node) => {
+  if (node.node_type === 'folder') selectedFolderId.value = node.id
+}
+
+const loadCaseTree = async () => {
+  const res = await getCaseTree()
+  const root = res.result || res
+  caseTree.value = root
+  if (root) {
+    const prev = new Set(caseTreeExpandedFolders.value)
+    prev.add(root.id)
+    caseTreeExpandedFolders.value = prev
+    if (!selectedFolderId.value) selectedFolderId.value = root.id
+  }
+}
+
 const filteredAvailableCases = computed(() => {
   let list = availableCases.value
+
+  if (selectedFolderId.value && caseTree.value) {
+    const caseIds = new Set()
+    const collectCaseIds = (node) => {
+      if (!node) return
+      if (node.node_type === 'case' && node.item?.id) {
+        caseIds.add(node.item.id)
+      }
+      ;(node.children || []).forEach(collectCaseIds)
+    }
+    const findNode = (node, id) => {
+      if (!node) return null
+      if (node.id === id) return node
+      for (const child of (node.children || [])) {
+        const found = findNode(child, id)
+        if (found) return found
+      }
+      return null
+    }
+    const selectedNode = findNode(caseTree.value, selectedFolderId.value)
+    if (selectedNode) collectCaseIds(selectedNode)
+    list = list.filter(c => caseIds.has(c.id))
+  }
+
   if (addingProductLine.value) {
     list = list.filter(c => c.product_line === addingProductLine.value ||
       (c.project_product_line && c.project_product_line === addingProductLine.value))
@@ -449,6 +684,16 @@ const filteredAvailableCases = computed(() => {
 const setupItems    = computed(() => caseItems.value.filter(i => i.role === 'setup'))
 const mainItems     = computed(() => caseItems.value.filter(i => !i.role || i.role === 'main'))
 const teardownItems = computed(() => caseItems.value.filter(i => i.role === 'teardown'))
+const getLogSortScore = (log) => {
+  const latestFailedAt = log.latest_failed_result?.created_at ? new Date(log.latest_failed_result.created_at).getTime() : 0
+  const lastTriggeredAt = log.last_triggered_at ? new Date(log.last_triggered_at).getTime() : 0
+  if (logSortMode.value === 'recent') return lastTriggeredAt
+  return ((log.fail_count || 0) > 0 ? 10 ** 15 : 0) + latestFailedAt + (getFailureStreak(log) * 10 ** 12)
+}
+const visibleExecutionLogs = computed(() => {
+  const base = showFailedLogsOnly.value ? executionLogs.value.filter(log => (log.fail_count || 0) > 0) : executionLogs.value
+  return [...base].sort((a, b) => getLogSortScore(b) - getLogSortScore(a))
+})
 
 const loadSuite = async () => {
   const res = await getSuiteDetail(suiteId)
@@ -468,6 +713,93 @@ const loadResults = async () => {
   results.value = res.result?.list || []
 }
 
+const loadExecutionLogs = async () => {
+  const res = await getSuiteExecutionLogs({ suite: suiteId, page_size: 50 })
+  executionLogs.value = res.result?.list || res.list || []
+}
+
+const isLogExpanded = (id) => expandedLogIds.value.has(id)
+const isLogCollapsed = (id) => collapsedLogIds.value.has(id)
+const toggleLogCollapsed = (id) => {
+  const next = new Set(collapsedLogIds.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  collapsedLogIds.value = next
+}
+const isRunResultPass = (item) => item?.status === 4 && !!item?.is_pass
+const isRunResultFail = (item) => !isRunResultPass(item)
+const getLogHistoryState = (id) => logHistoryMap.value[id] || { items: [], page: 0, pageCount: 1, itemCount: 0 }
+const getFilteredLogHistoryItems = (id) => {
+  const items = getLogHistoryState(id).items || []
+  if (historyStatusFilter.value === 'fail') return items.filter(isRunResultFail)
+  if (historyStatusFilter.value === 'pass') return items.filter(isRunResultPass)
+  return items
+}
+const getFailureStreak = (log) => {
+  const items = log.recent_results || []
+  let streak = 0
+  for (const item of items) {
+    if (isRunResultFail(item)) streak += 1
+    else break
+  }
+  return streak
+}
+const getLogRiskHint = (log) => {
+  const items = log.recent_results || []
+  if (!items.length) return null
+  const sample = items.slice(0, 5)
+  const failCount = sample.filter(isRunResultFail).length
+  if (sample.length >= 3 && failCount === sample.length) {
+    return { level: 'danger', text: `高风险：最近 ${sample.length} 次全部失败` }
+  }
+  if (isRunResultPass(items[0]) && items.slice(1).some(isRunResultFail)) {
+    return { level: 'success', text: '已恢复：最近一次执行已通过' }
+  }
+  if (failCount >= 2) {
+    return { level: 'warn', text: `注意：最近 ${sample.length} 次中有 ${failCount} 次失败` }
+  }
+  return null
+}
+const isLogHistoryLoading = (id) => logHistoryLoadingIds.value.has(id)
+const loadLogHistoryPage = async (log, page = 1, append = false) => {
+  const loading = new Set(logHistoryLoadingIds.value)
+  loading.add(log.id)
+  logHistoryLoadingIds.value = loading
+  try {
+    const res = await getRunResults({ execution_log: log.id, page, page_size: 10 })
+    const list = res.result?.list || res.list || []
+    const nextState = {
+      items: append ? [...(logHistoryMap.value[log.id]?.items || []), ...list] : list,
+      page: res.result?.page || page,
+      pageCount: res.result?.pageCount || 1,
+      itemCount: res.result?.itemCount || list.length,
+    }
+    logHistoryMap.value = { ...logHistoryMap.value, [log.id]: nextState }
+  } finally {
+    const next = new Set(logHistoryLoadingIds.value)
+    next.delete(log.id)
+    logHistoryLoadingIds.value = next
+  }
+}
+const toggleLogHistory = async (log) => {
+  const next = new Set(expandedLogIds.value)
+  if (next.has(log.id)) {
+    next.delete(log.id)
+    expandedLogIds.value = next
+    return
+  }
+  if (!logHistoryMap.value[log.id]) {
+    await loadLogHistoryPage(log, 1, false)
+  }
+  next.add(log.id)
+  expandedLogIds.value = next
+}
+const loadMoreLogHistory = async (log) => {
+  const state = getLogHistoryState(log.id)
+  if (state.page >= state.pageCount) return
+  await loadLogHistoryPage(log, state.page + 1, true)
+}
+
 const startEdit = () => {
   const s = suite.value
   formData.value = {
@@ -476,7 +808,6 @@ const startEdit = () => {
     run_type:        s.run_type || 'O',
     cron:            s.cron || '',
     hook_key:        s.hook_key || '',
-    project:         s.project,
     environment:     s.environment || null,
     timeout_seconds: s.timeout_seconds ?? 0,
     fail_strategy:   s.fail_strategy || 'continue',
@@ -529,7 +860,7 @@ const saveSuiteHeader = async (idx) => {
       const key = r === row ? row.k.trim() : r.k?.trim()
       if (key) shObj[key] = r === row ? row.v : r.v
     }
-    await updateSuite(suiteId, { ...suite.value, suite_headers: shObj })
+    await updateSuite(suiteId, { ...suite.value, project: null, product_line: suite.value?.product_line || userStore.currentProductLine?.id || null, suite_headers: shObj })
     await loadSuite()
     syncSuiteHeaderRows()
   } catch (e) { alert('保存失败: ' + (e.response?.data?.message || e.message)) }
@@ -550,7 +881,7 @@ const deleteSuiteHeader = async (idx) => {
   try {
     const shObj = {}
     suiteHeaderRows.value.forEach((r, i) => { if (i !== idx && r.k?.trim()) shObj[r.k.trim()] = r.v })
-    await updateSuite(suiteId, { ...suite.value, suite_headers: Object.keys(shObj).length ? shObj : null })
+    await updateSuite(suiteId, { ...suite.value, project: null, product_line: suite.value?.product_line || userStore.currentProductLine?.id || null, suite_headers: Object.keys(shObj).length ? shObj : null })
     await loadSuite()
     syncSuiteHeaderRows()
   } catch (e) { alert('删除失败: ' + (e.response?.data?.message || e.message)) }
@@ -573,7 +904,7 @@ const saveSuiteVar = async (idx) => {
       const key = r === row ? row.k.trim() : r.k?.trim()
       if (key) svObj[key] = r === row ? row.v : r.v
     }
-    await updateSuite(suiteId, { ...suite.value, suite_variables: svObj })
+    await updateSuite(suiteId, { ...suite.value, project: null, product_line: suite.value?.product_line || userStore.currentProductLine?.id || null, suite_variables: svObj })
     await loadSuite()
     syncSuiteVarRows()
   } catch (e) { alert('保存失败: ' + (e.response?.data?.message || e.message)) }
@@ -594,7 +925,7 @@ const deleteSuiteVar = async (idx) => {
   try {
     const svObj = {}
     suiteVarRows.value.forEach((r, i) => { if (i !== idx && r.k?.trim()) svObj[r.k.trim()] = r.v })
-    await updateSuite(suiteId, { ...suite.value, suite_variables: Object.keys(svObj).length ? svObj : null })
+    await updateSuite(suiteId, { ...suite.value, project: null, product_line: suite.value?.product_line || userStore.currentProductLine?.id || null, suite_variables: Object.keys(svObj).length ? svObj : null })
     await loadSuite()
     syncSuiteVarRows()
   } catch (e) { alert('删除失败: ' + (e.response?.data?.message || e.message)) }
@@ -608,6 +939,8 @@ const handleSubmit = async () => {
     for (const r of editVars.value) if (r.k?.trim()) svObj[r.k.trim()] = r.v
     await updateSuite(suiteId, {
       ...formData.value,
+      project: null,
+      product_line: suite.value?.product_line || userStore.currentProductLine?.id || null,
       suite_variables: Object.keys(svObj).length ? svObj : null,
     })
     editing.value = false
@@ -624,13 +957,31 @@ const deleteSuiteItem = async () => {
 }
 
 const runSuite = async () => {
+  // 先加载参数集列表，再显示弹框
+  try {
+    const { getDataSets } = await import('@/api/dataset')
+    const suiteDetail = await getSuiteDetail(suiteId)
+    const projectId = suiteDetail.result?.project || suiteDetail.project
+    const dsRes = await getDataSets({ page_size: 200, project: projectId })
+    suiteDatasets.value = dsRes.result?.list || dsRes.result || dsRes || []
+  } catch (e) { suiteDatasets.value = [] }
+  selectedDatasetId.value = null
+  runResult.value = { loading: false, success: false, error: null, result_id: null }
   showRunDialog.value = true
+}
+
+const doRunSuite = async () => {
   runResult.value = { loading: true, success: false, error: null, result_id: null }
   try {
-    const res = await runSuiteApi(suiteId, {})
+    const payload = {}
+    if (selectedDatasetId.value) payload.dataset_id = selectedDatasetId.value
+    const res = await runSuiteApi(suiteId, payload)
     const resultId = res.result?.result_id || res.result_id
     runResult.value = { loading: false, success: true, error: null, result_id: resultId }
-    setTimeout(loadResults, 1500)
+    setTimeout(() => {
+      loadResults()
+      loadExecutionLogs()
+    }, 1500)
   } catch (e) {
     runResult.value = { loading: false, success: false,
       error: e.response?.data?.message || e.message || '执行失败', result_id: null }
@@ -642,8 +993,16 @@ const openAddCaseDialog = async (caseType, role = 'main') => {
   addingRole.value = role
   selectedCaseIds.value = []
   caseSearch.value = ''
-  addingProductLine.value = userStore.currentProductLine?.id || null
+  addingProductLine.value = caseType === 'UI' ? null : (userStore.currentProductLine?.id || null)
   showAddCaseDialog.value = true
+
+  if (caseType === 'UI') {
+    caseTree.value = null
+    selectedFolderId.value = null
+  } else {
+    await loadCaseTree()
+  }
+
   // 加载所有产品线供切换筛选
   if (!addingProductLines.value.length) {
     try {
@@ -652,8 +1011,15 @@ const openAddCaseDialog = async (caseType, role = 'main') => {
     } catch (e) { console.error(e) }
   }
   // 加载全部用例（不按产品线过滤，允许跨产品线选择）
-  const res = await getCases({ page_size: 500 })
-  availableCases.value = res.result?.list || []
+  if (caseType === 'UI') {
+    availableCases.value = []
+    caseTree.value = null
+    const res = await getUICases({ page_size: 500 })
+    availableCases.value = res.result?.list || res.result || []
+  } else {
+    const res = await getCases({ page_size: 500 })
+    availableCases.value = res.result?.list || []
+  }
 }
 
 const toggleSelectCase = (id) => {
@@ -715,17 +1081,34 @@ const saveOrder = async () => {
   loadCaseItems()
 }
 
-const viewResult = (id) => { showRunDialog.value = false; router.push(`/results?id=${id}`) }
+const goToResults = () => router.push(`/results?suite=${suiteId}`)
+const viewResult = (id) => { showRunDialog.value = false; router.push(`/results/${id}`) }
+const getStrategyTypeText = (type) => ({ manual: '手动立即执行', cron: '定时策略', webhook: 'Webhook' }[type] || type || '-')
+const getStrategyHint = (log) => {
+  if (log.strategy_type === 'cron') return log.strategy_payload?.cron || log.strategy_key || '-'
+  if (log.strategy_type === 'webhook') return log.strategy_payload?.hook_key || log.strategy_key || '-'
+  return '每次手动执行独立记录'
+}
+const getPassRateText = (log) => `${Number(log.pass_rate || 0).toFixed(log.pass_rate % 1 === 0 ? 0 : 2)}%`
+const escapeHtml = (text) => String(text ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;')
+const highlightFailureSummary = (text) => {
+  const safe = escapeHtml(text || '')
+  if (!safe) return ''
+  return safe.replace(/(ASSERT|ERROR|FAILED|EXCEPTION)/gi, '<mark>$1</mark>')
+}
 const getStatusClass = (s) => ({ 0:'status-init', 1:'status-ready', 2:'status-running', 3:'status-reporting', 4:'status-done', '-1':'status-error' })[s] || 'status-init'
 const getStatusText  = (s) => ({ 0:'初始化', 1:'准备开始', 2:'正在执行', 3:'生成报告', 4:'执行完毕', '-1':'执行出错' })[s] || '未知'
 
 onMounted(async () => {
-  const [, , , pr, er] = await Promise.all([
-    loadSuite(), loadCaseItems(), loadResults(),
-    getProjects({ page_size: 200 }),
+  const [, , , , er] = await Promise.all([
+    loadSuite(), loadCaseItems(), loadResults(), loadExecutionLogs(),
     getEnvironments({ page_size: 200 }),
   ])
-  projects.value     = pr.result?.list || []
   environments.value = er.result?.list || []
 })
 </script>
@@ -870,24 +1253,100 @@ onMounted(async () => {
 .status-init,.status-ready { background:#e3f2fd; color:#1976d2; }
 .status-running,.status-reporting { background:#fff3e0; color:#f57c00; }
 .status-done { background:#e8f5e9; color:#388e3c; } .status-error { background:#ffebee; color:#d32f2f; }
+.execution-log-card { padding: 20px; }
+.execution-log-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.execution-log-toolbar { display:flex; align-items:center; gap:12px; }
+.log-sort-select { border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:12px; color:var(--text); background:#fff; }
+.mini-check { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text-light); user-select:none; }
+.mini-check input { accent-color: var(--accent); }
+.execution-log-title { font-size:18px; font-weight:700; color:var(--primary); }
+.execution-log-hint { font-size:12px; color:var(--text-light); margin-top:4px; }
+.execution-log-list { display:flex; flex-direction:column; gap:12px; }
+.execution-log-item { display:flex; justify-content:space-between; gap:16px; padding:16px; border:1px solid var(--border); border-radius:12px; background:linear-gradient(180deg,#fff,#fbfcff); }
+.execution-log-item.collapsed { background:linear-gradient(180deg,#fff,#f7f9fc); }
+.execution-log-main { min-width:0; flex:1; display:flex; flex-direction:column; gap:10px; }
+.execution-log-topline { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.collapse-toggle-btn { margin-left:auto; border:none; background:#eef4ff; color:#2458b8; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer; }
+.collapse-toggle-btn:hover { background:#dfeaff; }
+.execution-log-type { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+.execution-log-type.type-manual { background:#e8f4ff; color:#1565c0; }
+.execution-log-type.type-cron { background:#fff3e0; color:#ef6c00; }
+.execution-log-type.type-webhook { background:#f3e5f5; color:#7b1fa2; }
+.execution-log-label { font-size:14px; color:var(--text); }
+.execution-log-meta { display:flex; flex-wrap:wrap; gap:10px 16px; color:var(--text-light); font-size:12px; }
+.execution-log-metrics { display:flex; flex-wrap:wrap; gap:8px; }
+.metric-chip { display:inline-flex; align-items:center; border-radius:999px; padding:4px 10px; font-size:12px; font-weight:700; }
+.metric-total { background:#eef2ff; color:#3949ab; }
+.metric-pass { background:#e8f7ee; color:#1f8f52; }
+.metric-fail { background:#fdecec; color:#c0392b; }
+.metric-rate { background:#fff5e8; color:#ef6c00; }
+.execution-log-failure { display:flex; align-items:center; gap:8px; font-size:12px; color:#c0392b; }
+.failure-time-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background:#fff1f0; color:#c0392b; font-size:11px; font-weight:700; }
+.risk-banner { padding:10px 12px; border-radius:10px; font-size:12px; font-weight:700; }
+.risk-banner.risk-danger { background:#fff1f1; color:#b42318; border:1px solid #f4c7c3; }
+.risk-banner.risk-warn { background:#fff8e8; color:#b26a00; border:1px solid #f3deab; }
+.risk-banner.risk-success { background:#eefbf2; color:#1f7a46; border:1px solid #bfe5cc; }
+.execution-log-summary { padding:10px 12px; border-radius:10px; background:#fff4f4; color:#a93226; font-size:12px; line-height:1.6; border:1px solid #f5c6c6; }
+.execution-log-summary :deep(mark), .execution-log-summary mark { background:#ffd4d4; color:#8e1b1b; padding:0 4px; border-radius:4px; font-weight:700; }
+.inline-result-link { border:none; background:none; color:#1565c0; cursor:pointer; padding:0; font-weight:700; }
+.inline-result-link:hover { text-decoration:underline; }
+.execution-log-results { display:flex; flex-wrap:wrap; gap:8px; }
+.execution-log-actions-row { display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:8px; }
+.btn-danger-soft { background:#fff2f2; color:#c0392b; border:1px solid #f3c3c0; }
+.btn-danger-soft:hover { background:#ffe4e1; }
+.streak-chip { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; background:#fff0f0; color:#b42318; font-size:12px; font-weight:700; }
+.execution-log-history { border-top:1px dashed var(--border); padding-top:12px; }
+.history-filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; font-size:12px; color:var(--text-light); }
+.mini-filter-btn { border:1px solid var(--border); background:#fff; color:var(--text-light); border-radius:999px; padding:4px 10px; font-size:12px; cursor:pointer; }
+.mini-filter-btn.active { background:#edf4ff; color:#2458b8; border-color:#bfd2ff; font-weight:700; }
+.execution-log-history-list { display:flex; flex-direction:column; gap:8px; }
+.history-result-row { display:grid; grid-template-columns:90px 90px 90px 1fr; gap:12px; align-items:center; border:1px solid var(--border); background:#fff; border-radius:10px; padding:10px 12px; text-align:left; cursor:pointer; }
+.history-result-row:hover { background:#f8fbff; border-color:#cdddf8; }
+.history-result-id { font-weight:700; color:#2458b8; }
+.history-time-block { display:flex; flex-direction:column; gap:2px; }
+.history-time-block strong { font-size:12px; color:var(--text); font-weight:600; }
+.history-time-block em { font-size:11px; color:var(--text-light); font-style:normal; }
+.history-pagination-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:4px; color:var(--text-light); font-size:12px; }
+.collapsed-log-summary { display:flex; flex-wrap:wrap; gap:10px 16px; color:var(--text-light); font-size:12px; }
+.result-link-chip { border:1px solid #cfe0ff; background:#f5f9ff; color:#2458b8; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer; }
+.result-link-chip:hover { background:#e8f1ff; }
+.execution-log-side { display:flex; align-items:center; }
 
 .modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; overflow-y:auto; }
 .modal-content { background:white; border-radius:12px; padding:32px; width:90%; max-width:520px; animation:slideUp .3s ease; }
 .modal-large { max-width:680px; }
 .modal-content h3 { margin-bottom:20px; font-size:18px; font-weight:600; }
 .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:20px; }
+.run-pre-form { padding: 4px 0 8px; }
+.run-pre-form .form-group { margin-bottom: 12px; }
+.run-pre-form label { display:block; font-size:13px; color:#555; margin-bottom:6px; font-weight:500; }
+.run-pre-form .form-select { width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border,#ddd); font-size:13px; }
+.ds-hint { margin-top:6px; font-size:12px; color:#1677ff; background:#e8f4ff; padding:4px 10px; border-radius:6px; }
 .search-bar { margin-bottom:12px; }
+.add-case-layout { display:flex; gap:12px; margin-bottom:10px; min-height:320px; }
+.case-tree-panel { width:240px; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:#fff; }
+.case-tree-header { padding:8px 10px; font-size:12px; font-weight:600; color:var(--text-light); background:#f7f9fc; border-bottom:1px solid var(--border); }
+.case-tree-body { max-height:280px; overflow:auto; }
+.case-tree-row { line-height:30px; cursor:pointer; border-bottom:1px dashed #eef1f5; user-select:none; font-size:13px; }
+.case-tree-row:last-child { border-bottom:none; }
+.case-tree-row.active { background:#edf6ff; color:#0b5eb8; font-weight:600; }
+.case-tree-toggle { display:inline-block; width:16px; }
+.case-select-panel { flex:1; min-width:0; display:flex; flex-direction:column; }
 .add-case-filters { display:flex; gap:10px; margin-bottom:12px; }
 .filter-select-sm { border:1px solid var(--border); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; min-width:140px; }
 .search-input-sm { flex:1; border:1px solid var(--border); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
 .search-input-sm:focus, .filter-select-sm:focus { border-color:var(--accent); }
 .available-cases { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
 .available-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--border,#eee); border-radius:8px; cursor:pointer; transition:all .2s; }
+.avail-info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.avail-topline { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.avail-name { font-weight:700; color:var(--text); }
+.avail-type { display:inline-flex; padding:2px 8px; border-radius:999px; background:#eef3ff; color:#3556a8; font-size:11px; font-weight:700; }
+.avail-endpoint { font-size:12px; color:var(--accent); }
+.avail-meta { font-size:12px; color:var(--text-light); word-break:break-all; }
 .available-item:hover { border-color:var(--accent); background:#f0f8ff; }
 .available-item.selected { border-color:var(--accent); background:#e3f2fd; }
 .avail-check { width:20px; height:20px; border-radius:50%; background:var(--accent); color:white; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.avail-info { display:flex; flex-direction:column; gap:2px; }
-.avail-name { font-weight:500; } .avail-endpoint { font-size:12px; color:var(--text-light); }
 .selected-count { margin-top:10px; font-size:13px; color:var(--text-light); }
 .loading-state,.success-state,.error-state { text-align:center; padding:24px; }
 .spinner { width:40px; height:40px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px; }

@@ -1,20 +1,17 @@
-from django.core.serializers import serialize
-from django.shortcuts import render
+from django.contrib.auth.models import User
 from rest_framework import viewsets, status
-from rest_framework.authtoken.admin import User
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import LoginSerializer, ProfileSerializer, ResetPasswordSerializer, ModifySerializer, \
     AvatarSerializer, UserNameSerializer, UserProfileAdminSerializer
-from .models import Profile, Avatar
+from .models import Profile
 from drf_spectacular.utils import extend_schema
 from system.models import Permission
 
-@extend_schema(
-    tags=['Account']
-)
+@extend_schema(tags=['Account'])
 class ProfileViewSet(viewsets.GenericViewSet):
     # ----- 全局默认只支持 application/json -----
     parser_classes = [JSONParser]
@@ -31,6 +28,19 @@ class ProfileViewSet(viewsets.GenericViewSet):
         profile, _ = Profile.objects.get_or_create(user=serializer.validated_data['user'])
         serializer = ProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(summary="退出登录（拉黑 refresh token）")
+    @action(methods=['POST'], detail=False, url_path='logout')
+    def logout(self, request):
+        refresh = request.data.get('refresh')
+        if not refresh:
+            return Response({'detail': 'refresh 不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = RefreshToken(refresh)
+            token.blacklist()
+        except Exception:
+            return Response({'detail': 'refresh token 无效或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': '退出成功'}, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=ResetPasswordSerializer,
@@ -67,7 +77,7 @@ class ProfileViewSet(viewsets.GenericViewSet):
         request=ModifySerializer,
         responses=ModifySerializer,
     )
-    @action(methods=['POST'], detail=False) # ← 仅 modify 使用 form-data)
+    @action(methods=['POST'], detail=False)
     def modify(self, request):
         """修改用户信息"""
         profile = Profile.objects.get(user=request.user)
@@ -84,8 +94,8 @@ class ProfileViewSet(viewsets.GenericViewSet):
     def img_upload(self, request):
         serializer = AvatarSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        avatar_instance = serializer.save()
-        
+        serializer.save()
+
         # 返回完整的响应，包括avatar_url
         return Response(serializer.data)
 

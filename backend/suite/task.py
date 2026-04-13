@@ -19,9 +19,8 @@
 
 使用场景:
 1. ThreadPoolExecutor 中提交任务
-2. Django-Q 异步任务队列
-3. Celery 分布式任务
-4. 定时任务调度
+2. Celery 分布式任务
+3. 定时任务调度
 
 改造历史:
 - v1.0 (2025-05-13): 初始版本,使用 subprocess 调用独立脚本
@@ -30,11 +29,6 @@
 import logging
 import time
 from pathlib import Path
-import warnings
-
-# 忽略特定的警告信息,避免日志污染
-# django_q.conf 模块会产生一些无关紧要的 UserWarning
-warnings.filterwarnings("ignore", category=UserWarning, module="django_q.conf")
 
 # 获取日志记录器
 logger = logging.getLogger(__name__)
@@ -94,14 +88,10 @@ def run_pytest(path, result_id=0, case_api_count=0):
             case_api_count=0  # 不再使用,可以传0
         )
         
-        # 在 Django-Q 中使用
-        from django_q.tasks import async_task
-        
-        async_task(
-            'suite.task.run_pytest',
-            path='/path/to/test',
-            result_id=123
-        )
+        # 在 Celery 中使用
+        from suite.tasks import run_suite_task
+
+        run_suite_task.delay(123, [])
     
     注意:
     - 此函数设计为在后台线程/进程中调用
@@ -190,7 +180,7 @@ def run_by_cron(suite_id):
     """
     定时任务执行函数
     
-    这个函数专门用于定时任务调度系统(如 Django-Q, Celery)调用。
+    这个函数专门用于定时任务调度系统(如 Celery 或项目内置调度器)调用。
     当测试套件配置为 CRON 模式时,调度系统会定期调用此函数。
     
     工作流程:
@@ -211,18 +201,6 @@ def run_by_cron(suite_id):
         其他异常会向上传播,由调度系统处理
     
     使用示例:
-        # 在 Django-Q 中配置定时任务
-        from django_q.models import Schedule
-        from django_q.tasks import schedule
-        
-        # 创建定时任务,每天凌晨2点执行
-        schedule(
-            'suite.task.run_by_cron',
-            1,  # suite_id
-            cron='0 2 * * *',
-            schedule_type='C'
-        )
-        
         # 在 Celery 中配置定时任务
         from celery import shared_task
         from celery.schedules import crontab
@@ -275,16 +253,6 @@ def _test_task():
         from suite.task import _test_task
         count = _test_task()
         print(f"找到 {count} 个测试套件")
-        
-        # 在 Django-Q 中测试任务队列
-        from django_q.tasks import async_task
-        result_id = async_task('suite.task._test_task')
-        
-        # 查看任务结果
-        from django_q.models import Task
-        task = Task.objects.get(id=result_id)
-        print(f"任务状态: {task.success}")
-        print(f"任务结果: {task.result}")
     
     注意:
     - 函数名以下划线开头,表示这是内部/私有函数

@@ -3,10 +3,14 @@
     <div class="detail-header">
       <button @click="$router.back()" class="btn btn-back">← 返回</button>
       <div class="header-actions">
+        <button @click="runProjectSuites" class="btn btn-success">执行项目套件</button>
+        <button @click="openImportDialog" class="btn btn-secondary">异步导入用例</button>
         <button @click="editProject" class="btn btn-primary">编辑项目</button>
         <button @click="deleteProjectItem" class="btn btn-danger">删除项目</button>
       </div>
     </div>
+
+    <input ref="importFileRef" type="file" accept=".csv,.xlsx,.xls" style="display: none" @change="onImportFileChange" />
 
     <div v-if="project" class="detail-content">
       <div class="info-card card">
@@ -52,24 +56,65 @@
         </div>
 
         <div class="section-card card">
-          <h3>关联用例 ({{ cases.length }})</h3>
+          <h3>项目引用用例 ({{ caseRefs.length }})</h3>
+          <div class="section-actions">
+            <button class="btn btn-sm btn-primary" @click="openCaseRefDialog">+ 引用用例</button>
+          </div>
           <div class="list-items">
-            <div v-for="item in cases" :key="item.id" class="list-item" @click="viewCase(item.id)">
-              <span class="item-name">{{ item.name }}</span>
+            <div v-for="item in caseRefs" :key="item.id" class="list-item" @click="viewCase(item.case)">
+              <span class="item-name">{{ item.case_name || `用例 #${item.case}` }}</span>
+              <button class="btn btn-xs btn-danger" @click.stop="removeCaseRef(item)">移除</button>
             </div>
-            <div v-if="!cases.length" class="empty-state">暂无关联用例</div>
+            <div v-if="!caseRefs.length" class="empty-state">暂无引用用例</div>
           </div>
         </div>
 
         <div class="section-card card">
-          <h3>测试套件 ({{ suites.length }})</h3>
-          <div class="list-items">
-            <div v-for="item in suites" :key="item.id" class="list-item" @click="viewSuite(item.id)">
-              <span class="item-name">{{ item.name }}</span>
-              <span class="item-desc">{{ item.description || '-' }}</span>
-            </div>
-            <div v-if="!suites.length" class="empty-state">暂无测试套件</div>
+          <h3>项目引用套件 ({{ suiteRefs.length }})</h3>
+          <div class="section-actions">
+            <button class="btn btn-sm btn-primary" @click="openSuiteRefDialog">+ 引用套件</button>
           </div>
+          <div class="list-items">
+            <div v-for="item in suiteRefs" :key="item.id" class="list-item" @click="viewSuite(item.suite)">
+              <span class="item-name">{{ item.suite_name || `套件 #${item.suite}` }}</span>
+              <button class="btn btn-xs btn-danger" @click.stop="removeSuiteRef(item)">移除</button>
+            </div>
+            <div v-if="!suiteRefs.length" class="empty-state">暂无引用套件</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showCaseRefDialog" class="modal" @click.self="showCaseRefDialog=false">
+      <div class="modal-content">
+        <h3>引用产品线用例到项目</h3>
+        <div class="form-group">
+          <label>用例</label>
+          <select v-model="selectedCaseId">
+            <option :value="null">请选择用例</option>
+            <option v-for="c in cases" :key="c.id" :value="c.id">#{{ c.id }} {{ c.name }}</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="showCaseRefDialog=false">取消</button>
+          <button class="btn btn-primary" @click="submitCaseRef">确认</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showSuiteRefDialog" class="modal" @click.self="showSuiteRefDialog=false">
+      <div class="modal-content">
+        <h3>引用产品线套件到项目</h3>
+        <div class="form-group">
+          <label>套件</label>
+          <select v-model="selectedSuiteId">
+            <option :value="null">请选择套件</option>
+            <option v-for="s in suites" :key="s.id" :value="s.id">#{{ s.id }} {{ s.name }}</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="showSuiteRefDialog=false">取消</button>
+          <button class="btn btn-primary" @click="submitSuiteRef">确认</button>
         </div>
       </div>
     </div>
@@ -112,11 +157,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getProjectDetail, updateProject, deleteProject } from '@/api/project'
+import { getProjectDetail, updateProject, deleteProject, runProject, getProjectCaseRefs, getProjectSuiteRefs, createProjectCaseRef, createProjectSuiteRef, deleteProjectCaseRef, deleteProjectSuiteRef } from '@/api/project'
 import { getEndpoints, getCases } from '@/api/case'
-import { getSuites } from '@/api/suite'
+import { getSuites, uploadImportCaseFile, startImportJob } from '@/api/suite'
 import { getAllUsers } from '@/api/account'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,8 +171,15 @@ const project = ref(null)
 const endpoints = ref([])
 const cases = ref([])
 const suites = ref([])
+const caseRefs = ref([])
+const suiteRefs = ref([])
+const importFileRef = ref(null)
 const userList = ref([])
 const showEditDialog = ref(false)
+const showCaseRefDialog = ref(false)
+const showSuiteRefDialog = ref(false)
+const selectedCaseId = ref(null)
+const selectedSuiteId = ref(null)
 const errors = ref({ name: '' })
 const formData = ref({ name: '', intro: '', url: '', pm: null })
 
@@ -147,22 +200,29 @@ const loadProject = async () => {
       url: project.value.url || '',
       pm: project.value.pm || null,
     }
+    return project.value
   } catch (error) {
     console.error('加载项目详情失败:', error)
+    return null
   }
 }
 
-const loadRelatedData = async () => {
+const loadRelatedData = async (projectObj) => {
   try {
     const projectId = route.params.id
-    const [endpointsRes, casesRes, suitesRes] = await Promise.all([
+    const plId = projectObj?.product_line
+    const [endpointsRes, casesRes, suitesRes, caseRefsRes, suiteRefsRes] = await Promise.all([
       getEndpoints({ project: projectId }),
-      getCases({ project: projectId }),
-      getSuites({ project: projectId })
+      getCases(plId ? { product_line: plId, page_size: 500 } : { project: projectId }),
+      getSuites(plId ? { product_line: plId, page_size: 500 } : { project: projectId }),
+      getProjectCaseRefs({ project: projectId, page_size: 300 }),
+      getProjectSuiteRefs({ project: projectId, page_size: 300 })
     ])
     endpoints.value = endpointsRes.result?.list || []
     cases.value = casesRes.result?.list || []
     suites.value = suitesRes.result?.list || []
+    caseRefs.value = caseRefsRes.result?.list || []
+    suiteRefs.value = suiteRefsRes.result?.list || []
   } catch (error) {
     console.error('加载关联数据失败:', error)
   }
@@ -170,6 +230,88 @@ const loadRelatedData = async () => {
 
 const editProject = () => {
   showEditDialog.value = true
+}
+
+const runProjectSuites = async () => {
+  try {
+    const res = await runProject(route.params.id, {})
+    const ids = res.result?.result_ids || res.result_ids || []
+    alert(ids.length ? `已触发执行，共 ${ids.length} 条任务` : '当前项目暂无可执行套件')
+    if (ids.length) router.push('/results')
+  } catch (error) {
+    alert('执行失败：' + (error.response?.data?.detail || error.message))
+  }
+}
+
+const openImportDialog = () => {
+  importFileRef.value?.click()
+}
+
+const openCaseRefDialog = () => {
+  selectedCaseId.value = null
+  showCaseRefDialog.value = true
+}
+
+const openSuiteRefDialog = () => {
+  selectedSuiteId.value = null
+  showSuiteRefDialog.value = true
+}
+
+const submitCaseRef = async () => {
+  if (!selectedCaseId.value) return alert('请选择用例')
+  try {
+    await createProjectCaseRef({ project: project.value.id, case: selectedCaseId.value })
+    showCaseRefDialog.value = false
+    await loadRelatedData(project.value)
+  } catch (error) {
+    alert('引用失败：' + (error.response?.data?.detail || error.message))
+  }
+}
+
+const submitSuiteRef = async () => {
+  if (!selectedSuiteId.value) return alert('请选择套件')
+  try {
+    await createProjectSuiteRef({ project: project.value.id, suite: selectedSuiteId.value })
+    showSuiteRefDialog.value = false
+    await loadRelatedData(project.value)
+  } catch (error) {
+    alert('引用失败：' + (error.response?.data?.detail || error.message))
+  }
+}
+
+const removeCaseRef = async (item) => {
+  const ok = await confirm(`确定移除用例引用「${item.case_name || item.case}」吗？`, { type: 'danger' })
+  if (!ok) return
+  await deleteProjectCaseRef(item.id)
+  await loadRelatedData(project.value)
+}
+
+const removeSuiteRef = async (item) => {
+  const ok = await confirm(`确定移除套件引用「${item.suite_name || item.suite}」吗？`, { type: 'danger' })
+  if (!ok) return
+  await deleteProjectSuiteRef(item.id)
+  await loadRelatedData(project.value)
+}
+
+const onImportFileChange = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file || !project.value?.product_line) return
+  const fd = new FormData()
+  fd.append('file', file)
+  fd.append('product_line', project.value.product_line)
+  fd.append('scope_type', 'project')
+  fd.append('scope_id', project.value.id)
+
+  try {
+    const job = await uploadImportCaseFile(fd)
+    const jobId = job.result?.id || job.id
+    await startImportJob(jobId)
+    alert('导入任务已提交，请稍后在结果中查看')
+  } catch (error) {
+    alert('提交导入任务失败：' + (error.response?.data?.detail || error.message))
+  } finally {
+    e.target.value = ''
+  }
 }
 
 const handleSubmit = async () => {
@@ -226,8 +368,8 @@ const formatDate = (date) => {
 }
 
 onMounted(async () => {
-  loadProject()
-  loadRelatedData()
+  const p = await loadProject()
+  if (p) await loadRelatedData(p)
   try {
     const res = await getAllUsers()
     userList.value = res.result || res || []
@@ -299,6 +441,12 @@ onMounted(async () => {
   font-weight: 600;
   margin-bottom: 16px;
   color: var(--text);
+}
+
+.section-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
 .list-items {

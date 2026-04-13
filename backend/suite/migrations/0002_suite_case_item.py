@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("case_api", "0003_endpoint_requires_provides"),
         ("case_ui", "0001_initial"),
-        ("django_q", "0014_schedule_cluster"),
         ("suite", "0001_initial"),
     ]
 
@@ -25,12 +24,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="suite",
             name="schedule",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                to="django_q.schedule",
-            ),
+            field=models.PositiveBigIntegerField(blank=True, null=True, verbose_name="调度任务ID"),
         ),
         migrations.CreateModel(
             name="SuiteCaseItem",

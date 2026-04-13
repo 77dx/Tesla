@@ -1,0 +1,68 @@
+{
+  "uuid": "533e8127-04a7-4ee5-bc34-77bf948c3ec1",
+  "historyId": "13",
+  "testCaseId": "13",
+  "name": "售后列表功能正常",
+  "fullName": "使用套件变量token的套件 / 售后列表功能正常",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1775616305091,
+  "stop": 1775616305295,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1775616305091,
+      "stop": 1775616305295,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code是success ✓",
+      "status": "passed",
+      "start": 1775616305091,
+      "stop": 1775616305295,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "533e8127-04a7-4ee5-bc34-77bf948c3ec1-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "533e8127-04a7-4ee5-bc34-77bf948c3ec1-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.204s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "story",
+      "value": "售后列表功能正常"
+    }
+  ],
+  "links": []
+}

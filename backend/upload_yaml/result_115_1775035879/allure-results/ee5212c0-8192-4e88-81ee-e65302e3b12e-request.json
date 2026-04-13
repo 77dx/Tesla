@@ -1,0 +1,12 @@
+{
+  "url": "https://user-site-api.wanshifu.com/orders/refund/list",
+  "method": "GET",
+  "headers": {
+    "cookie": "wsf_user_token=de161bd5-0aa3-4217-bcf8-cae93f4bf931"
+  },
+  "params": {
+    "page": "1",
+    "refundStartTime": "2025-09-26",
+    "refundEndTime": "2026-03-12 23:59:59"
+  }
+}

@@ -10,12 +10,12 @@ const uploadApi = axios.create({
   }
 })
 
-// 添加请求拦截器（复制原有的token逻辑）
+// 添加请求拦截器（使用 JWT 认证）
 uploadApi.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Token ${token}`
+    const access = localStorage.getItem('access')
+    if (access) {
+      config.headers.Authorization = `Bearer ${access}`
     }
     return config
   },
@@ -31,7 +31,8 @@ uploadApi.interceptors.response.use(
   },
   error => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
       window.location.href = '/login'
     }
     return Promise.reject(error)
@@ -40,6 +41,9 @@ uploadApi.interceptors.response.use(
 
 // 用户登录
 export const login = (data) => api.post('/account/profile/login/', data)
+
+// 用户退出（服务端拉黑 refresh token）
+export const logout = (data) => api.post('/account/profile/logout/', data)
 
 // 获取用户信息
 export const getProfile = () => api.get('/account/profile/profile/')

@@ -240,6 +240,7 @@ const kvToObj = (rows) => {
   for (const r of rows) if (r.enabled && r.k?.trim()) obj[r.k.trim()] = r.v
   return Object.keys(obj).length ? obj : null
 }
+import { alert } from '@/composables/useAlert'
 
 const buildPayload = () => {
   const payload = {

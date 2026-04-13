@@ -10,7 +10,7 @@ from pytest_xlsx.file import XlsxItem
 
 # from Tesla import settings
 # from commons import yaml_util
-from configs import setting
+
 
 # 在执行用例前清除extract.yaml中的中间变量的值
 # 目前文件地址是写死的，先手动处理

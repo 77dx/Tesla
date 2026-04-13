@@ -10,6 +10,9 @@ PERMISSIONS = [
     ('project:create',      '新建项目',       'project'),
     ('project:update',      '修改项目',       'project'),
     ('project:delete',      '删除项目',       'project'),
+    ('project:ref_case',    '项目引用用例',   'project'),
+    ('project:ref_suite',   '项目引用套件',   'project'),
+    ('project:run',         '执行项目测试',   'project'),
     # 接口管理
     ('endpoint:list',       '查看接口列表',   'endpoint'),
     ('endpoint:detail',     '查看接口详情',   'endpoint'),
@@ -43,12 +46,26 @@ PERMISSIONS = [
     ('user:update',         '修改用户信息',   'user'),
     # 系统管理
     ('system:manage',       '系统配置管理',   'system'),
+    # 迭代管理
+    ('sprint:list',         '查看迭代列表',   'sprint'),
+    ('sprint:detail',       '查看迭代详情',   'sprint'),
+    ('sprint:create',       '新建迭代',       'sprint'),
+    ('sprint:update',       '修改迭代',       'sprint'),
+    ('sprint:delete',       '删除迭代',       'sprint'),
+    ('sprint:ref_case',     '迭代引用用例',   'sprint'),
+    ('sprint:ref_suite',    '迭代引用套件',   'sprint'),
+    ('sprint:run',          '执行迭代测试',   'sprint'),
     # 产品线管理
     ('product_line:list',   '查看产品线列表', 'product_line'),
     ('product_line:create', '新建产品线',     'product_line'),
     ('product_line:update', '修改产品线',     'product_line'),
     ('product_line:delete', '删除产品线',     'product_line'),
     ('product_line:manage_members', '管理产品线成员', 'product_line'),
+    # 跨产品线权限（系统测试）
+    ('cross_pl:ref_case',   '跨产品线引用用例', 'system_test'),
+    ('cross_pl:ref_suite',  '跨产品线引用套件', 'system_test'),
+    ('cross_pl:view_case',  '跨产品线查看用例', 'system_test'),
+    ('cross_pl:view_suite', '跨产品线查看套件', 'system_test'),
 ]
 
 

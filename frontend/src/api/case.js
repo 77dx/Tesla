@@ -30,8 +30,26 @@ export const updateCase = (id, data) => api.put(`/case_api/case/${id}/`, data)
 // 删除用例
 export const deleteCase = (id) => api.delete(`/case_api/case/${id}/`)
 
+// 获取用例树（加时间戳避免缓存导致树不刷新）
+export const getCaseTree = (params = {}) => api.get('/case_api/case-node/', { params: { _t: Date.now(), ...params } })
+
+// 新建用例文件夹
+export const createCaseFolder = (data) => api.post('/case_api/case-node/create_folder/', data)
+
+// 挂载/移动用例到目录
+export const attachCaseToFolder = (data) => api.post('/case_api/case-node/attach_case/', data)
+
+// 移动目录/节点
+export const moveCaseNode = (data) => api.post('/case_api/case-node/move/', data)
+
+// 重命名节点
+export const renameCaseNode = (data) => api.post('/case_api/case-node/rename/', data)
+
+// 删除目录/节点
+export const deleteCaseNode = (id) => api.delete(`/case_api/case-node/${id}/`)
+
 // 运行单条用例（新引擎）
-export const runCaseById = (caseId) => api.post('/case_api/run_case/', { case_id: caseId })
+export const runCaseById = (caseId, data = {}) => api.post('/case_api/run_case/', { case_id: caseId, ...data })
 
 // 运行用例（旧接口，保留兼容）
 export const runCase = (endpointId) => api.post('/case_api/run/', { endpoint_id: endpointId })

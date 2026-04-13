@@ -147,7 +147,10 @@ const batchDelete = async () => {
 }
 
 onMounted(async () => {
-  const [, pr] = await Promise.all([loadEndpoints(), getProjects({ page_size: 200 })])
+  const [, pr] = await Promise.all([
+    loadEndpoints(),
+    getProjects({ page_size: 200, ...(userStore.currentProductLine ? { product_line: userStore.currentProductLine.id } : {}) })
+  ])
   projects.value = pr.result?.list || []
 })
 </script>

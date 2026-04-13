@@ -1,0 +1,52 @@
+{
+  "uuid": "192e4ca4-6552-4bda-a4e6-b6646588db4c",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": " / web端订单列表",
+  "status": "broken",
+  "statusDetails": {
+    "message": "Invalid URL '/inbox/lists': No scheme supplied. Perhaps you meant https:///inbox/lists?",
+    "trace": "Invalid URL '/inbox/lists': No scheme supplied. Perhaps you meant https:///inbox/lists?"
+  },
+  "start": 1775614896506,
+  "stop": 1775614896512,
+  "steps": [],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "192e4ca4-6552-4bda-a4e6-b6646588db4c-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "192e4ca4-6552-4bda-a4e6-b6646588db4c-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.006s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "测试套件"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

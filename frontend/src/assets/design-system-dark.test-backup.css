@@ -1,0 +1,14 @@
+/* design-system-dark.test.css */
+.test-color-system {
+  /* 验证核心色彩 */
+  background-color: var(--color-near-black);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+
+  /* 验证强调色 */
+  accent-color: var(--color-accent-orange);
+
+  /* 验证状态色 */
+  success-color: var(--color-success);
+  error-color: var(--color-error);
+}

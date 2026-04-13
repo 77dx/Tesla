@@ -5,7 +5,7 @@
 """
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile, Avatar
 from system.models import Role, Department, Position
 from rest_framework import serializers
@@ -23,19 +23,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'is_active')
 
 class ProfileSerializer(serializers.ModelSerializer):
-    token = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
+    refresh = serializers.SerializerMethodField()
     role_list = RoleSerializer(read_only=True, many=True, source='get_role_list')
-    userInfo = serializers.SerializerMethodField(read_only=True)  # SerializerMethodField,DRF会自动调用get_user方法。
+    userInfo = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Profile
         fields = '__all__'
 
-    # get_字段名，DRF会自动调用(使用SerializerMethodField的话)
-    def get_token(self, instance):
-        user = instance.user
-        token, _ = Token.objects.get_or_create(user=user)
-        return token.key
+    def get_access(self, instance):
+        refresh = RefreshToken.for_user(instance.user)
+        return str(refresh.access_token)
+
+    def get_refresh(self, instance):
+        refresh = RefreshToken.for_user(instance.user)
+        return str(refresh)
 
     def get_userInfo(self, instance):
         return UserSerializer(instance.user).data
@@ -47,7 +50,6 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
-    # 校验登录数据
     def validate(self, attrs):
         username = attrs['username']
         password = attrs['password']

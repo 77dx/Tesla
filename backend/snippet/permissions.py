@@ -1,5 +1,48 @@
 from rest_framework.permissions import BasePermission
 from system.models import Permission
+from django.contrib.auth.models import User
+
+
+def has_cross_pl_permission(user: User, permission_code: str) -> bool:
+    """
+    检查用户是否有指定的跨产品线权限
+    
+    Args:
+        user: 用户对象
+        permission_code: 权限码，如 'cross_pl:ref_case'
+    
+    Returns:
+        bool: 是否有权限
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    return Permission.objects.filter(
+        roles__users=user,
+        code=permission_code
+    ).exists()
+
+
+def has_permission(user: User, permission_code: str) -> bool:
+    """
+    检查用户是否有指定的权限码
+    
+    Args:
+        user: 用户对象
+        permission_code: 权限码，如 'project:ref_case'
+    
+    Returns:
+        bool: 是否有权限
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    return Permission.objects.filter(
+        roles__users=user,
+        code=permission_code
+    ).exists()
 
 
 class RolePermission(BasePermission):

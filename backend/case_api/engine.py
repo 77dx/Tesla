@@ -13,10 +13,16 @@
   CaseRunner    - 单条用例执行器
 """
 
+import base64
+import hashlib
+import json
 import logging
 import os
+import random
 import re
+import string
 import time
+import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests as _requests
@@ -44,6 +50,7 @@ class ContextStore:
         self._backend = (backend or os.getenv('APIFRAME_CONTEXT_BACKEND', 'memory')).lower()
         self._mem: Dict[str, str] = {}
 
+    # 连接redis
     def _r(self):
         import redis
         url = (
@@ -419,6 +426,8 @@ class CaseResult:
             'case_name':  self.case_name,
             'success':    self.success,
             'status_code': self.status_code,
+            'request_info': self.request_info,
+            'response_body': self.response_body,
             'extracted':  self.extracted,
             'assertions': self.assertions,
             'error':      self.error,
@@ -461,21 +470,36 @@ class CaseRunner:
 
     def _resolve_url(self, ep) -> str:
         """
-        优先级：
-        1. endpoint.service_key 非空 → 从环境 urls 中按 var 匹配 base_url，拼接 ep.url（路径部分）
-        2. 无匹配或无环境 → 直接使用 ep.url（兼容旧数据）
+        URL 解析优先级：
+        1. ep.url 已是绝对 URL（http/https）→ 直接返回
+        2. endpoint.service_key 非空 → 从环境 urls 中按 var 匹配 base_url + 路径
+        3. 环境 base_url / ctx['__base_url__'] + 路径
+        4. 回退原始 ep.url
         """
+        raw_url = (ep.url or '').strip()
+        if raw_url.startswith('http://') or raw_url.startswith('https://'):
+            return raw_url
+
         if ep.service_key and self.environment:
             env_urls = self.environment.urls or []
             for svc in env_urls:
                 if svc.get('var') == ep.service_key:
-                    base = svc.get('url', '').rstrip('/')
-                    path = ep.url.lstrip('/') if ep.url else ''
+                    base = (svc.get('url') or '').rstrip('/')
+                    path = raw_url.lstrip('/')
                     full = f'{base}/{path}' if path else base
                     logger.info(f'[CaseRunner] 环境 URL 解析: service_key={ep.service_key!r} → {full}')
                     return full
-            logger.warning(f'[CaseRunner] 环境中未找到 service_key={ep.service_key!r}，回退使用 ep.url')
-        return ep.url
+            logger.warning(f'[CaseRunner] 环境中未找到 service_key={ep.service_key!r}，尝试 base_url 兜底')
+
+        base_url = ''
+        if self.environment and getattr(self.environment, 'base_url', None):
+            base_url = (self.environment.base_url or '').strip()
+        if not base_url:
+            base_url = (self.ctx.get('__base_url__') or '').strip()
+
+        if base_url and raw_url.startswith('/'):
+            return f"{base_url.rstrip('/')}/{raw_url.lstrip('/')}"
+        return raw_url
 
     def _log(self, msg: str) -> None:
         """同时写 logger 和 log_file"""
@@ -488,6 +512,82 @@ class CaseRunner:
                     f.write(f'[{ts}] {msg}\n')
             except Exception as e:
                 logger.warning(f'写日志失败: {e}')
+
+    def _script_helpers(self) -> Dict[str, Any]:
+        """脚本内置 helper：时间、随机、编码、签名等常用函数"""
+        def now_ts(ms: bool = False):
+            t = time.time()
+            return int(t * 1000) if ms else int(t)
+
+        def now_str(fmt: str = '%Y-%m-%d %H:%M:%S'):
+            return time.strftime(fmt, time.localtime())
+
+        def rand_int(min_value: int = 0, max_value: int = 999999):
+            return random.randint(int(min_value), int(max_value))
+
+        def rand_str(length: int = 8, alphabet: str = ''):
+            chars = alphabet or (string.ascii_letters + string.digits)
+            return ''.join(random.choice(chars) for _ in range(max(1, int(length))))
+
+        def uuid4():
+            return str(uuid.uuid4())
+
+        def md5(text: Any):
+            return hashlib.md5(str(text).encode('utf-8')).hexdigest()
+
+        def sha1(text: Any):
+            return hashlib.sha1(str(text).encode('utf-8')).hexdigest()
+
+        def sha256(text: Any):
+            return hashlib.sha256(str(text).encode('utf-8')).hexdigest()
+
+        def b64_encode(text: Any):
+            return base64.b64encode(str(text).encode('utf-8')).decode('utf-8')
+
+        def b64_decode(text: Any):
+            return base64.b64decode(str(text).encode('utf-8')).decode('utf-8')
+
+        def json_dumps(obj: Any, ensure_ascii: bool = False):
+            return json.dumps(obj, ensure_ascii=ensure_ascii)
+
+        def json_loads(text: Any):
+            return json.loads(str(text))
+
+        return {
+            'now_ts': now_ts,
+            'now_str': now_str,
+            'rand_int': rand_int,
+            'rand_str': rand_str,
+            'uuid4': uuid4,
+            'md5': md5,
+            'sha1': sha1,
+            'sha256': sha256,
+            'b64_encode': b64_encode,
+            'b64_decode': b64_decode,
+            'json_dumps': json_dumps,
+            'json_loads': json_loads,
+        }
+
+    def _exec_case_script(self, script: str, case_id: int, phase: str, extra_vars: Optional[Dict[str, Any]] = None) -> None:
+        """执行用例前置/后置脚本，脚本通过 ctx 读写上下文变量"""
+        if not script or not script.strip():
+            return
+        try:
+            ctx_dict = self.ctx.get_all()
+            scope = {
+                '__builtins__': __builtins__,
+                'ctx': ctx_dict,
+                'logger': logger,
+            }
+            scope.update(self._script_helpers())
+            if extra_vars:
+                scope.update(extra_vars)
+            exec(compile(script, f'<{phase}_script case#{case_id}>', 'exec'), scope)
+            for k, v in ctx_dict.items():
+                self.ctx.set(k, v)
+            self._log(f'[{phase}_script] 用例 #{case_id} 执行成功')
+        except Exception as e:
+            self._log(f'WARNING: [{phase}_script] 用例 #{case_id} 执行失败: {e}')
 
     def run_case(self, case_id: int, max_retries: int = 0, retry_delay: float = 1.0,
                   timeout_seconds: int = 0) -> CaseResult:
@@ -512,25 +612,10 @@ class CaseRunner:
         return result
 
     def _run_case_once(self, case_id: int, timeout_seconds: int = 0) -> CaseResult:
-        """
-        执行一次用例。timeout_seconds>0 时通过线程超时机制控制。
-        """
-        if timeout_seconds > 0:
-            import concurrent.futures
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(self._run_case_impl, case_id)
-                try:
-                    return future.result(timeout=timeout_seconds)
-                except concurrent.futures.TimeoutError:
-                    result = CaseResult()
-                    result.case_id = case_id
-                    result.error = f'用例执行超时（超过 {timeout_seconds}s）'
-                    result.success = False
-                    self._log(f'TIMEOUT: 用例 #{case_id} 超过 {timeout_seconds}s，强制终止')
-                    return result
-        return self._run_case_impl(case_id)
+        """执行一次用例。timeout_seconds>0 时作为 HTTP 请求超时时间（秒）。"""
+        return self._run_case_impl(case_id, timeout_seconds=timeout_seconds)
 
-    def _run_case_impl(self, case_id: int) -> CaseResult:
+    def _run_case_impl(self, case_id: int, timeout_seconds: int = 0) -> CaseResult:
         from case_api.models import Case as CaseModel
 
         result = CaseResult()
@@ -545,6 +630,11 @@ class CaseRunner:
             self._log(f"{'─'*50}")
             self._log(f'执行用例 #{case_id} [{case.name}]')
             self._log(f'接口: {ep.name} [{ep.method}] {ep.url}')
+
+            # --- 用例前置脚本 ---
+            if case.pre_script:
+                self._log(f'[pre_script] 执行用例 #{case_id} 前置脚本')
+                self._exec_case_script(case.pre_script, case_id, 'pre')
 
             # --- 构建原始请求 ---
             headers = dict(ep.headers or {})
@@ -598,7 +688,8 @@ class CaseRunner:
 
             # --- 替换占位符 ---
             resolved = self.resolver.resolve(raw_request)
-            result.request_info = resolved
+            # 保存请求信息快照（在 pop 之前，避免 pop 后丢失 method/url）
+            result.request_info = dict(resolved)
             self._log(f'请求: {resolved["method"]} {resolved["url"]}')
             self._log(f'Headers: {resolved.get("headers")}')
             for f in ('params', 'data', 'json'):
@@ -608,7 +699,8 @@ class CaseRunner:
             # --- 发送请求 ---
             method = resolved.pop('method').upper()
             url    = resolved.pop('url')
-            response = self._session.request(method, url, **resolved)
+            request_timeout = timeout_seconds if timeout_seconds and timeout_seconds > 0 else 30
+            response = self._session.request(method, url, timeout=request_timeout, **resolved)
             result.status_code = response.status_code
             self._log(f'响应状态码: {response.status_code}')
             try:
@@ -618,6 +710,21 @@ class CaseRunner:
             except Exception:
                 result.response_body = response.text
                 self._log(f'响应体(text): {response.text[:500]}')
+
+            # --- 用例后置脚本 ---
+            if case.post_script:
+                self._log(f'[post_script] 执行用例 #{case_id} 后置脚本')
+                self._exec_case_script(
+                    case.post_script,
+                    case_id,
+                    'post',
+                    {
+                        'response': response,
+                        'response_json': result.response_body if isinstance(result.response_body, dict) else None,
+                        'response_text': response.text,
+                        'status_code': response.status_code,
+                    }
+                )
 
             # --- 提取变量 ---
             if case.extract:

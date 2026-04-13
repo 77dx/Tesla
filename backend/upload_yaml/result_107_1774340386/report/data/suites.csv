@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","0","用例 #12","","2026-03-24","broken","2026-03-24","","有登录前置的套件(取执行中的token)","",""
+"","0","用例 #14","","2026-03-24","broken","2026-03-24","","有登录前置的套件(取执行中的token)","",""
+"","0","用例 #9","","2026-03-24","broken","2026-03-24","","有登录前置的套件(取执行中的token)","",""

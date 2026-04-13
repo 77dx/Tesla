@@ -1,0 +1,41 @@
+{
+  "uuid": "b0129159-a7b3-47a4-87a2-dce84382d8a8",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "用例 #12",
+  "fullName": "有登录前置的套件(取执行中的token) / 12",
+  "status": "broken",
+  "statusDetails": {
+    "message": "No module named 'backend'",
+    "trace": "No module named 'backend'"
+  },
+  "start": 1774341087795,
+  "stop": 1774341087795,
+  "steps": [],
+  "attachments": [],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "-"
+    },
+    {
+      "name": "耗时",
+      "value": "0.000s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "story",
+      "value": ""
+    }
+  ],
+  "links": []
+}

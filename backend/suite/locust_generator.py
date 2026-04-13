@@ -1,0 +1,173 @@
+"""
+Locust 脚本生成器
+
+从 Suite 的用例列表生成可执行的 locustfile.py，支持：
+- 单用例压测（TaskSet 只有一个任务）
+- 场景压测（多用例按顺序执行，模拟真实用户行为）
+- 用例间变量传递（通过 self.client 共享 session 或传参）
+"""
+import json
+import logging
+import os
+from pathlib import Path
+from typing import List, Optional
+
+logger = logging.getLogger(__name__)
+
+
+class LocustScriptGenerator:
+    """
+    将 Suite 中的 API 用例转换为 Locust 脚本。
+
+    生成的脚本结构：
+        class TeslaUser(HttpUser):
+            wait_time = between(min_wait, max_wait)
+
+            @task
+            def scenario(self):
+                # 按顺序执行所有用例
+                # setup 用例先执行，main 用例循环，teardown 最后
+    """
+
+    def __init__(self, suite_id: int, case_ids: Optional[List[int]] = None,
+                 min_wait: float = 1.0, max_wait: float = 3.0,
+                 host: str = ''):
+        self.suite_id = suite_id
+        self.case_ids = case_ids
+        self.min_wait = min_wait
+        self.max_wait = max_wait
+        self.host = host
+
+    def _get_cases(self):
+        """从数据库获取用例列表"""
+        from suite.models import Suite
+        from case_api.models import Case
+
+        suite = Suite.objects.select_related('environment').get(id=self.suite_id)
+        items = suite.get_case_api_items()
+        if self.case_ids:
+            items = items.filter(case_api_id__in=self.case_ids)
+
+        cases = []
+        for item in items:
+            if item.case_api:
+                cases.append(item.case_api)
+        return suite, cases
+
+    def _resolve_host(self, suite) -> str:
+        """解析压测 host：优先使用传入的 host，其次从环境配置取第一个 URL"""
+        if self.host:
+            return self.host
+        env = suite.environment
+        if env:
+            if env.urls:
+                for u in env.urls:
+                    if isinstance(u, dict) and u.get('url'):
+                        return u['url'].rstrip('/')
+            if env.base_url:
+                return env.base_url.rstrip('/')
+        return 'http://localhost:8000'
+
+    def _build_request_code(self, case, indent: int = 2) -> str:
+        """为单条用例生成 Locust 请求代码，indent=2 对应方法体内两层缩进（8空格）"""
+        pad = '    ' * indent
+        ep = case.endpoint
+        method = (ep.method or 'GET').lower()
+        url = ep.url or '/'
+        if not url.startswith('/'):
+            url = '/' + url
+
+        lines = []
+        lines.append(f'{pad}# 用例: {case.name}')
+
+        # 合并参数：endpoint 默认 + case api_args 覆盖
+        api_args = case.api_args or {}
+        params  = {**(ep.params  or {}), **(api_args.get('params',  {}) or {})}
+        headers = {**(ep.headers or {}), **(api_args.get('headers', {}) or {})}
+        data    = {**(ep.data    or {}), **(api_args.get('data',    {}) or {})}
+        json_b  = {**(ep.json    or {}), **(api_args.get('json',    {}) or {})}
+
+        kwargs_parts = [f'name={json.dumps(case.name)}']
+        if params:
+            kwargs_parts.append(f'params={json.dumps(params, ensure_ascii=False)}')
+        if headers:
+            kwargs_parts.append(f'headers={json.dumps(headers, ensure_ascii=False)}')
+        if json_b:
+            kwargs_parts.append(f'json={json.dumps(json_b, ensure_ascii=False)}')
+        elif data:
+            kwargs_parts.append(f'data={json.dumps(data, ensure_ascii=False)}')
+
+        kwargs_str = ', '.join(kwargs_parts)
+        lines.append(f'{pad}with self.client.{method}({json.dumps(url)}, {kwargs_str}, catch_response=True) as _resp:')
+        lines.append(f'{pad}    if _resp.status_code >= 400:')
+        lines.append(f'{pad}        _resp.failure(f"HTTP {{_resp.status_code}}")')
+
+        # 变量提取（存入 self.ctx）
+        extract = case.extract or {}
+        if extract:
+            lines.append(f'{pad}    try:')
+            lines.append(f'{pad}        _j = _resp.json()')
+            for var_name, rule in extract.items():
+                if isinstance(rule, (list, tuple)) and len(rule) >= 2:
+                    attr, expr = rule[0], rule[1]
+                    if attr == 'json':
+                        # 简单 jsonpath 支持（只处理 $.a.b.c 格式）
+                        parts = expr.lstrip('$').lstrip('.').split('.')
+                        access = '_j'
+                        for p in parts:
+                            if p:
+                                access += f'.get({json.dumps(p)}, "")'
+                        lines.append(f'{pad}        self._ctx[{json.dumps(var_name)}] = str({access})')
+            lines.append(f'{pad}    except Exception:')
+            lines.append(f'{pad}        pass')
+
+        return '\n'.join(lines)
+
+    def generate(self) -> str:
+        """生成完整 locustfile.py 内容"""
+        suite, cases = self._get_cases()
+        host = self._resolve_host(suite)
+
+        if not cases:
+            raise ValueError(f'套件 {self.suite_id} 中没有可执行的 API 用例')
+
+        setup_cases    = [c for c in cases]
+        case_blocks    = [self._build_request_code(c) for c in setup_cases]
+        case_code      = '\n\n'.join(case_blocks)
+
+        script = f'''# Auto-generated by Tesla Performance Test
+# Suite: {suite.name} (id={suite.id})
+# Cases: {[c.name for c in cases]}
+
+import json
+from locust import HttpUser, task, between, events
+
+
+class TeslaUser(HttpUser):
+    """Tesla 性能测试用户"""
+    host = {json.dumps(host)}
+    wait_time = between({self.min_wait}, {self.max_wait})
+
+    def on_start(self):
+        """每个虚拟用户启动时初始化上下文"""
+        self._ctx = {{}}
+
+    @task
+    def run_scenario(self):
+        """执行测试场景（按用例顺序执行）"""
+{case_code}
+
+
+@events.quitting.add_listener
+def on_quitting(environment, **kwargs):
+    if environment.stats.total.fail_ratio > 0.5:
+        environment.process_exit_code = 1
+'''
+        return script
+
+    def write_to_file(self, work_dir: str) -> str:
+        """将脚本写入工作目录，返回文件路径"""
+        path = Path(work_dir) / 'locustfile.py'
+        path.write_text(self.generate(), encoding='utf-8')
+        logger.info(f'[LocustGen] 脚本已写入: {path}')
+        return str(path)

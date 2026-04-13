@@ -9,11 +9,11 @@
 import logging
 
 from Tesla import settings
-from apiframetest.commons.extract_util import ExtractUtil
+from backend.apiframetest.commons.extract_util import ExtractUtil
 # from apiframetest.commons.log_util import logger
-from apiframetest.commons.requests_util import RequestsUtil
-from apiframetest.commons.assert_util import AssertUtil
-from apiframetest.configs import setting
+from backend.apiframetest.commons.requests_util import RequestsUtil
+from backend.apiframetest.commons.assert_util import AssertUtil
+from backend.apiframetest.configs import setting
 
 logger = logging.getLogger(__name__)
 class MainUtil:

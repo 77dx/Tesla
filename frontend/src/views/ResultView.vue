@@ -1,7 +1,7 @@
 <template>
   <div class="result-view">
     <div class="toolbar">
-      <button @click="loadResults(1)" class="btn btn-refresh-all" :disabled="loading">
+      <button @click="loadResults(1)" class="btn btn-refresh" :disabled="loading">
         {{ loading ? '刷新中...' : '↻ 刷新' }}
       </button>
       <button @click="batchDelete" :disabled="!selectedIds.length" class="btn btn-batch-delete">
@@ -10,10 +10,20 @@
     </div>
 
     <div class="filter-bar card">
+      <div v-if="suiteFilter" class="suite-filter-chip">
+        <span>当前套件：#{{ suiteFilter }}</span>
+        <button class="chip-close" @click="clearSuiteFilter">✕</button>
+      </div>
       <div class="filter-input-wrap">
         <span class="filter-icon">🔍</span>
         <input v-model="searchText" class="filter-input" placeholder="搜索套件名称或ID..." @keyup.enter="handleSearch" />
       </div>
+      <select v-model="scopeType" class="filter-select">
+        <option value="">全部范围</option>
+        <option value="project">项目</option>
+        <option value="sprint">迭代</option>
+      </select>
+      <input v-model="scopeId" class="filter-input scope-id-input" placeholder="范围ID" @keyup.enter="handleSearch" />
       <select v-model="filterIsPass" class="filter-select">
         <option value="">全部结果</option>
         <option value="true">✓ 通过</option>
@@ -30,7 +40,7 @@
             <th style="width:40px"><input type="checkbox" :checked="allSelected" @change="toggleAll" /></th>
             <th>执行ID</th>
             <th>套件名称</th>
-            <th>所属项目</th>
+            <th>执行范围</th>
             <th>执行状态</th>
             <th>是否通过</th>
             <th>创建时间</th>
@@ -42,7 +52,7 @@
             <td><input type="checkbox" :value="item.id" v-model="selectedIds" /></td>
             <td>{{ item.id }}</td>
             <td>{{ item.suite_name || `套件 #${item.suite}` }}</td>
-            <td>{{ item.project_name || `项目 #${item.project}` }}</td>
+            <td>{{ item.scope_name || '无' }}</td>
             <td>
               <span class="status-badge" :class="getStatusClass(item.status)">
                 {{ getStatusText(item.status) }}
@@ -80,6 +90,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRunResults, getRunResult, deleteRunResult } from '@/api/suite'
+import { alert } from '@/composables/useAlert'
 import { confirm } from '@/composables/useConfirm'
 import { useUserStore } from '@/stores/user'
 
@@ -95,6 +106,9 @@ const pagination = ref({ page: 1, pageCount: 1, itemCount: 0 })
 
 const searchText = ref('')
 const filterIsPass = ref('')
+const scopeType = ref('')
+const scopeId = ref('')
+const suiteFilter = computed(() => route.query.suite || '')
 
 const allSelected = computed(() =>
   results.value.length > 0 && results.value.every(i => selectedIds.value.includes(i.id))
@@ -109,7 +123,10 @@ const loadResults = async (page = 1) => {
     const params = { page, page_size: 10 }
     if (searchText.value)   params.search  = searchText.value
     if (filterIsPass.value) params.is_pass = filterIsPass.value
-    if (userStore.currentProductLine) params.product_line = userStore.currentProductLine.id
+    if (scopeType.value) params.scope_type = scopeType.value
+    if (scopeId.value) params.scope_id = scopeId.value
+    if (suiteFilter.value) params.suite = suiteFilter.value
+    if (userStore.currentProductLine && !suiteFilter.value) params.product_line = userStore.currentProductLine.id
     const res = await getRunResults(params)
     results.value = res.result?.list || res.list || []
     pagination.value = {
@@ -125,9 +142,16 @@ const loadResults = async (page = 1) => {
 }
 
 const handleSearch = () => loadResults(1)
-const resetFilter = () => { searchText.value = ''; filterIsPass.value = ''; loadResults(1) }
+const resetFilter = () => {
+  searchText.value = ''
+  filterIsPass.value = ''
+  scopeType.value = ''
+  scopeId.value = ''
+  loadResults(1)
+}
 
 const changePage = (page) => { selectedIds.value = []; loadResults(page) }
+const clearSuiteFilter = () => router.push('/results')
 
 const refreshResult = async (item) => {
   if (refreshingIds.value.has(item.id)) return
@@ -176,7 +200,7 @@ const getStatusText = (status) => ({
 
 const formatDate = (date) => date ? new Date(date).toLocaleString('zh-CN') : '-'
 
-watch(() => route.query.id, () => loadResults(1))
+watch(() => [route.query.id, route.query.suite], () => loadResults(1))
 onMounted(() => loadResults(1))
 </script>
 
@@ -193,9 +217,12 @@ onMounted(() => loadResults(1))
   margin-bottom: 16px;
 }
 .filter-bar { display:flex; align-items:center; gap:8px; padding:10px 14px; margin-bottom:16px; flex-wrap:nowrap; }
+.suite-filter-chip { display:flex; align-items:center; gap:8px; background:#eef6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:999px; padding:6px 10px; font-size:12px; flex-shrink:0; }
+.chip-close { border:none; background:transparent; color:inherit; cursor:pointer; padding:0; font-size:12px; }
 .filter-input-wrap { display:flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:6px; padding:0 8px; background:white; width:200px; flex-shrink:0; }
 .filter-icon { color:var(--text-light); font-size:13px; }
 .filter-input { border:none; outline:none; padding:7px 0; font-size:13px; width:100%; background:transparent; }
+.scope-id-input { border:1px solid var(--border); border-radius:6px; padding:7px 8px; width:90px; }
 .filter-select { border:1px solid var(--border); border-radius:6px; padding:7px 8px; font-size:13px; background:white; color:var(--text); outline:none; cursor:pointer; width:120px; flex-shrink:0; }
 .filter-select:focus { border-color:var(--accent); }
 .btn-sm { padding:7px 14px; font-size:13px; white-space:nowrap; }
@@ -236,8 +263,6 @@ onMounted(() => loadResults(1))
 
 .btn-batch-delete { background: #e74c3c; color: white; }
 .btn-batch-delete:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-refresh-all { background: #8e44ad; color: white; }
-.btn-refresh-all:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .empty-state {
   text-align: center;

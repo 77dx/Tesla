@@ -6,7 +6,7 @@
 
 import os
 
-from Tesla.settings import EXTRACT_PATH
+
 
 # 当前的环境配置   release，test, dev
 current_env = "release"
@@ -25,5 +25,5 @@ db_config = {
 # 存储中间变量的文件
 # - 默认走 Tesla.settings.EXTRACT_PATH
 # - suite 并行执行时可通过环境变量覆盖,实现结果隔离
-extract_path = os.getenv("APIFRAME_EXTRACT_PATH", str(EXTRACT_PATH))
+# extract_path = os.getenv("APIFRAME_EXTRACT_PATH", str(EXTRACT_PATH))
 

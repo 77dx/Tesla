@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","492","web端登录密码正确","","2026-04-01","passed","2026-04-01","","有登录前置的套件(取执行中的token)","",""
+"","283","退款列表正常","","2026-04-01","passed","2026-04-01","","有登录前置的套件(取执行中的token)","",""
+"","196","web端订单列表","","2026-04-01","passed","2026-04-01","","有登录前置的套件(取执行中的token)","",""

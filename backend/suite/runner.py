@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from case_api.engine import CaseRunner, CaseResult, ContextStore
+from case_ui.runner import UICaseRunner
 from suite.allure_reporter import AllureReporter
 
 logger = logging.getLogger(__name__)
@@ -85,20 +86,54 @@ class SuiteRunner:
             except Exception as e:
                 logger.warning(f'写日志失败: {e}')
 
+    def _write_case_snapshot_result(self, case_result: Dict) -> None:
+        """将执行结果回填到 ExecutionCaseSnapshot.payload_json.execution。"""
+        try:
+            from suite.models import RunResult, ExecutionCaseSnapshot
+            db_result = RunResult.objects.only('snapshot_id').get(id=self.result_id)
+            if not db_result.snapshot_id:
+                return
+            case_id = int(case_result.get('case_id') or 0)
+            if not case_id:
+                return
+            item = ExecutionCaseSnapshot.objects.filter(
+                snapshot_id=db_result.snapshot_id,
+                case_id=case_id,
+            ).first()
+            if not item:
+                return
+            payload = dict(item.payload_json or {})
+            payload['execution'] = {
+                'is_pass': bool(case_result.get('success')),
+                'status': 'passed' if case_result.get('success') else 'failed',
+                'case_type': case_result.get('case_type') or 'API',
+                'duration': case_result.get('duration'),
+                'status_code': case_result.get('status_code'),
+                'error': case_result.get('error') or '',
+                'assertions': case_result.get('assertions') or [],
+                'screenshots': case_result.get('screenshots') or [],
+                'extracted': case_result.get('extracted') or {},
+            }
+            item.payload_json = payload
+            item.save(update_fields=['payload_json'])
+        except Exception as e:
+            self._log(f'WARNING: 回填快照执行结果失败(case_id={case_result.get("case_id")}): {e}')
+
     def run(
         self,
-        case_api_ids: List[int],
+        suite_item_ids: List[int],
         initial_context: Optional[Dict] = None,
         max_retries: int = 0,
         retry_delay: float = 1.0,
         timeout_seconds: int = 0,
         fail_strategy: str = 'continue',
+        dataset_id: Optional[int] = None,
     ) -> SuiteRunResult:
         """
         执行套件。
 
         Args:
-            case_api_ids:    按执行顺序排列的 CaseAPI id 列表
+            suite_item_ids:   按执行顺序排列的 SuiteCaseItem id 列表
             initial_context: 初始上下文变量（可选）
             max_retries:     单条用例失败后最多重跑次数（0=不重跑）
             retry_delay:     每次重跑前等待秒数
@@ -176,8 +211,8 @@ class SuiteRunner:
 
         self._log('=' * 60)
         self._log(f'套件开始执行 (result_id={self.result_id})')
-        self._log(f'用例数量: {len(case_api_ids)} 条')
-        self._log(f'用例顺序: {case_api_ids}')
+        self._log(f'用例数量: {len(suite_item_ids)} 条')
+        self._log(f'用例顺序: {suite_item_ids}')
         self._log('=' * 60)
 
         # --- 启动 Mock 服务 ---
@@ -199,56 +234,126 @@ class SuiteRunner:
         except Exception as e:
             self._log(f'WARNING: 更新 RunResult 状态失败: {e}')
 
-        # --- 逐条执行用例 ---
-        # 获取套件关联的环境对象，传给 CaseRunner 用于 URL 解析（_environment 已在上方赋值）
-        runner = CaseRunner(ctx=self.ctx, log_file=self.log_file, environment=_environment)
-        suite_result.total = len(case_api_ids)
+        # --- 构建用例执行列表（真正按 SuiteCaseItem 顺序混编 API/UI）---
+        from suite.models import SuiteCaseItem as _SCI
+        item_list = []
+        try:
+            from suite.models import RunResult as _RR2
+            _db2 = _RR2.objects.select_related('suite').get(id=self.result_id)
+            if _db2.suite:
+                item_list = list(
+                    _db2.suite.suite_case_items.filter(id__in=suite_item_ids, enabled=True)
+                    .select_related('case_api__endpoint', 'case_ui')
+                    .order_by('order', 'id')
+                )
+        except Exception as e:
+            self._log(f'WARNING: 加载 SuiteCaseItem 元信息失败: {e}')
 
+        self._log(f'[阶段] item_ids={[item.id for item in item_list]}')
+
+        api_runner = CaseRunner(ctx=self.ctx, log_file=self.log_file, environment=_environment)
+        ui_runner = UICaseRunner(ctx=self.ctx, log_file=self.log_file, environment=_environment, result_dir=base_dir)
+        suite_result.total = len(item_list)
         stop_on_failure = fail_strategy == 'stop'
 
-        for case_id in case_api_ids:
-            try:
-                case_result: CaseResult = runner.run_case(
-                    case_id,
-                    max_retries=max_retries,
-                    retry_delay=retry_delay,
-                    timeout_seconds=timeout_seconds,
-                )
-                if case_result.retry_count > 0:
-                    self._log(f'用例 #{case_id} 经过 {case_result.retry_count} 次重跑后{"通过" if case_result.success else "仍失败"}')
-                suite_result.case_results.append(case_result.to_dict())
-                if case_result.success:
-                    suite_result.passed += 1
-                else:
-                    suite_result.failed += 1
-                    if stop_on_failure:
-                        self._log(f'失败策略=stop：用例 #{case_id} 失败，终止后续 {len(case_api_ids) - suite_result.passed - suite_result.failed} 条用例执行')
-                        # 写入 Allure 结果后立即终止
-                        if allure_reporter:
-                            allure_reporter.add_case_result(case_result.to_dict(), suite_name=suite_name)
-                        break
-                # 写入 Allure 结果
-                if allure_reporter:
-                    allure_reporter.add_case_result(case_result.to_dict(), suite_name=suite_name)
-            except Exception as e:
+        def _append_case_result(case_result_dict: Dict):
+            suite_result.case_results.append(case_result_dict)
+            self._write_case_snapshot_result(case_result_dict)
+            if case_result_dict.get('success'):
+                suite_result.passed += 1
+            else:
                 suite_result.failed += 1
-                cr_dict = {
-                    'case_id':  case_id,
-                    'case_name': '',
-                    'success':  False,
-                    'error':    str(e),
+            if allure_reporter:
+                allure_reporter.add_case_result(case_result_dict, suite_name=suite_name)
+
+        def _run_item(item, always_run: bool = False) -> bool:
+            try:
+                if item.case_type == _SCI.CaseType.API and item.case_api_id:
+                    case_result: CaseResult = api_runner.run_case(
+                        item.case_api_id,
+                        max_retries=max_retries,
+                        retry_delay=retry_delay,
+                        timeout_seconds=timeout_seconds,
+                    )
+                    case_dict = case_result.to_dict()
+                elif item.case_type == _SCI.CaseType.UI and item.case_ui:
+                    case_result = ui_runner.run_case(
+                        item.case_ui,
+                        max_retries=max_retries,
+                        retry_delay=retry_delay,
+                        timeout_seconds=timeout_seconds,
+                    )
+                    case_dict = case_result.to_dict()
+                else:
+                    case_dict = {
+                        'case_id': item.case_api_id or item.case_ui_id or 0,
+                        'case_name': item.case_api.name if item.case_api_id else (item.case_ui.name if item.case_ui_id else ''),
+                        'success': False,
+                        'error': '套件项未绑定有效用例',
+                        'duration': 0,
+                        'status_code': None,
+                        'assertions': [],
+                        'extracted': {},
+                        'case_type': item.case_type,
+                    }
+                _append_case_result(case_dict)
+                if not case_dict.get('success') and stop_on_failure and not always_run:
+                    self._log(f'失败策略=stop：用例项 #{item.id} 失败，终止后续执行')
+                    return True
+                return False
+            except Exception as e:
+                case_dict = {
+                    'case_id': item.case_api_id or item.case_ui_id or 0,
+                    'case_name': item.case_api.name if item.case_api_id else (item.case_ui.name if item.case_ui_id else ''),
+                    'success': False,
+                    'error': str(e),
                     'duration': 0,
                     'status_code': None,
                     'assertions': [],
                     'extracted': {},
+                    'case_type': item.case_type,
                 }
-                suite_result.case_results.append(cr_dict)
-                if allure_reporter:
-                    allure_reporter.add_case_result(cr_dict, suite_name=suite_name)
-                self._log(f'ERROR: 用例 #{case_id} 执行异常: {e}')
-                if stop_on_failure:
-                    self._log(f'失败策略=stop：异常终止套件执行')
-                    break
+                _append_case_result(case_dict)
+                self._log(f'ERROR: 用例项 #{item.id} 执行异常: {e}')
+                return bool(stop_on_failure and not always_run)
+
+        def _run_phases(extra_ctx: Optional[Dict] = None, row_label: str = ''):
+            if extra_ctx:
+                self.ctx.set_initial(extra_ctx)
+                self._log(f'[DDT{row_label}] 注入参数: {extra_ctx}')
+            setup_items = [item for item in item_list if item.role == 'setup']
+            main_items = [item for item in item_list if item.role == 'main']
+            teardown_items = [item for item in item_list if item.role == 'teardown']
+            if setup_items:
+                self._log(f'===== [setup 阶段{row_label}] 共 {len(setup_items)} 条 =====')
+                for item in setup_items:
+                    if _run_item(item):
+                        return
+            if main_items:
+                self._log(f'===== [main 阶段{row_label}] 共 {len(main_items)} 条 =====')
+                for item in main_items:
+                    if _run_item(item):
+                        break
+            if teardown_items:
+                self._log(f'===== [teardown 阶段{row_label}] 共 {len(teardown_items)} 条（无论 main 成败都执行）=====')
+                for item in teardown_items:
+                    _run_item(item, always_run=True)
+
+        if dataset_id:
+            from suite.models import DataSet
+            try:
+                ds = DataSet.objects.get(id=dataset_id)
+                self._log(f'[DDT] 参数集: {ds.name}，共 {ds.row_count} 行')
+                suite_result.total = len(item_list) * ds.row_count
+                for row_idx, row_data in enumerate(ds.iter_rows()):
+                    label = f' [行{row_idx + 1}/{ds.row_count}]'
+                    self._log(f'[DDT] 开始执行{label}: {row_data}')
+                    _run_phases(extra_ctx=row_data, row_label=label)
+            except DataSet.DoesNotExist:
+                self._log(f'WARNING: 参数集 id={dataset_id} 不存在，降级为普通执行')
+                _run_phases()
+        else:
+            _run_phases()
 
         suite_result.duration = time.time() - t0
         suite_result.is_pass  = suite_result.failed == 0

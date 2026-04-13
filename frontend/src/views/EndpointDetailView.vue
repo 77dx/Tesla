@@ -11,7 +11,6 @@
     </div>
 
     <div v-if="endpoint" class="detail-content">
-      <!-- 查看模式 -->
       <div v-if="!editing" class="info-card card">
         <div class="endpoint-header">
           <h2>{{ endpoint.name }}</h2>
@@ -21,11 +20,20 @@
           <div class="info-item full-width">
             <label>接口地址</label>
             <code class="url-display">
-              <span v-if="endpoint.service_key" class="url-service-tag">{{{ endpoint.service_key }}}</span>
+              <span v-if="endpoint.service_key" class="url-service-tag">{{ endpoint.service_key }}</span>
               <span v-if="endpoint.service_key" class="url-sep-text"> + </span>
               <span>{{ endpoint.url }}</span>
             </code>
-            <span v-if="endpoint.service_key" class="url-hint">执行时 {{{ endpoint.service_key }}} 将被替换为所选环境的实际 URL</span>
+            <span v-if="endpoint.service_key" class="url-hint">执行时 {{ endpoint.service_key }} 将被替换为所选环境的实际 URL</span>
+          </div>
+          <div v-if="fullUrlPreview.length" class="info-item full-width">
+            <label>完整URL预览（按环境）</label>
+            <div class="url-preview-list">
+              <div v-for="item in fullUrlPreview" :key="item.envName" class="url-preview-item">
+                <span class="env-name">{{ item.envName }}</span>
+                <code class="full-url">{{ item.url }}</code>
+              </div>
+            </div>
           </div>
           <div class="info-item">
             <label>所属项目</label>
@@ -51,7 +59,6 @@
         </div>
       </div>
 
-      <!-- 编辑模式 -->
       <div v-else class="info-card card">
         <h3 class="edit-title">编辑接口</h3>
         <form @submit.prevent="handleSubmit">
@@ -116,7 +123,6 @@
             </div>
           </div>
 
-          <!-- 入参 -->
           <div class="section-title">入参</div>
           <div class="params-panel">
             <div class="params-tabs">
@@ -187,7 +193,6 @@
         </form>
       </div>
 
-      <!-- 关联用例 -->
       <div v-if="!editing" class="related-section">
         <div class="section-card card">
           <h3>关联用例 ({{ cases.length }})</h3>
@@ -208,6 +213,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getEndpointDetail, updateEndpoint, deleteEndpoint } from '@/api/endpoint'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
 import { getCases } from '@/api/case'
 import { getProjects } from '@/api/project'
 import { getEnvironments, getServices } from '@/api/suite'
@@ -220,13 +226,13 @@ const userStore = useUserStore()
 const endpoint     = ref(null)
 const cases        = ref([])
 const projects     = ref([])
-const services     = ref([])  // 服务注册表
+const services     = ref([])
+const environments = ref([])
 const editing      = ref(false)
 const saving       = ref(false)
 const urlPrefix    = ref('')
 const urlPath      = ref('')
 
-// 编辑模式 KV 状态
 const editHeaders        = ref([{ enabled: true, k: '', v: '', desc: '' }])
 const editQueryParams    = ref([{ enabled: true, k: '', v: '', desc: '' }])
 const editFormDataRows   = ref([{ enabled: true, k: '', v: '', desc: '' }])
@@ -275,15 +281,33 @@ const fullUrl = computed(() => {
   return path || '（请输入路径）'
 })
 
+const fullUrlPreview = computed(() => {
+  if (!endpoint.value || !environments.value.length) return []
+  const results = []
+  for (const env of environments.value) {
+    let fullUrl = ''
+    if (endpoint.value.service_key && env.urls) {
+      const svcUrl = env.urls.find(u => u.var === endpoint.value.service_key)
+      if (svcUrl && svcUrl.url) {
+        fullUrl = svcUrl.url.replace(/\/$/, '') + (endpoint.value.url || '')
+      }
+    } else if (env.base_url) {
+      fullUrl = env.base_url.replace(/\/$/, '') + (endpoint.value.url || '')
+    }
+    if (fullUrl) {
+      results.push({ envName: env.name, url: fullUrl })
+    }
+  }
+  return results
+})
+
 const parseJson = (val) => {
   if (!val?.trim()) return null
   try { return JSON.parse(val) } catch { return val }
 }
 
 const splitUrl = (ep, svcs) => {
-  // 新格式：ep 有 service_key，直接用
   if (ep.service_key) return { prefix: ep.service_key, path: ep.url?.replace(/^\//, '') || '' }
-  // 旧格式：url 是完整路径，service_key 为空，直接作为路径
   return { prefix: '', path: ep.url || '' }
 }
 
@@ -297,6 +321,12 @@ const loadCases = async () => {
   cases.value = res.result?.list || []
 }
 
+const loadEnvironments = async () => {
+  if (!endpoint.value?.project) return
+  const res = await getEnvironments({ project: endpoint.value.project, page_size: 100 })
+  environments.value = res.result?.list || []
+}
+
 const startEdit = () => {
   const ep = endpoint.value
   const { prefix, path } = splitUrl(ep, services.value)
@@ -308,11 +338,8 @@ const startEdit = () => {
     project:     ep.project,
     description: ep.description || '',
   }
-  // 反解析 headers
   editHeaders.value = ep.headers ? objToKvRows(ep.headers) : [{ enabled: true, k: '', v: '', desc: '' }]
-  // 反解析 params (query)
   editQueryParams.value = ep.params ? objToKvRows(ep.params) : [{ enabled: true, k: '', v: '', desc: '' }]
-  // 反解析 body
   if (ep.json) {
     editBodyType.value  = 'json'
     editJsonBody.value  = JSON.stringify(ep.json, null, 2)
@@ -355,6 +382,7 @@ const handleSubmit = async () => {
     })
     editing.value = false
     await loadEndpoint()
+    await loadEnvironments()
   } catch (e) {
     alert('保存失败，请检查内容是否正确')
   } finally {
@@ -372,7 +400,6 @@ const deleteEndpointItem = async () => {
 const viewCase = (id) => router.push(`/cases/${id}`)
 const formatDate = (d) => d ? new Date(d).toLocaleString('zh-CN') : '-'
 
-// 判断对象/字符串是否有实际内容（过滤空对象、null、undefined）
 const hasKeys = (val) => {
   if (!val) return false
   if (typeof val === 'string') return val.trim().length > 0
@@ -390,6 +417,7 @@ onMounted(async () => {
   ])
   projects.value  = pr.result?.list || []
   services.value  = sr.result?.list || []
+  await loadEnvironments()
 })
 </script>
 
@@ -415,6 +443,10 @@ onMounted(async () => {
 .url-service-tag { background: #e3f2fd; color: #1565c0; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
 .url-sep-text { color: #aaa; font-size: 12px; }
 .url-hint { font-size: 11px; color: #aaa; margin-top: 4px; display: block; font-family: inherit; }
+.url-preview-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.url-preview-item { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 8px 12px; border-radius: 6px; }
+.env-name { font-size: 12px; font-weight: 600; color: var(--accent); min-width: 80px; }
+.full-url { font-family: 'Monaco','Courier New',monospace; font-size: 12px; color: var(--primary); word-break: break-all; }
 .project-link { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .params-section { display: grid; gap: 16px; }
 .param-block h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }

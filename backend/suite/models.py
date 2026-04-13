@@ -1,12 +1,15 @@
 import logging
 import time
+from datetime import datetime
 from pathlib import Path
+from secrets import token_hex
+
+from croniter import croniter
 from django.db import models
-from django_q.humanhash import uuid
-from django_q.models import Schedule
-from django_q.tasks import schedule
+from django.utils import timezone
 from project.models import Project
-from case_api.models import Case as CaseAPI
+from product_line.models import ProductLine
+from case_api.models import Case as CaseAPI, CaseNode
 from case_ui.models import Case as CaseUI
 
 logger = logging.getLogger(__name__)
@@ -119,7 +122,11 @@ class Suite(models.Model):
         WebHook = 'W', 'webhook'
 
     name = models.CharField("套件名称", max_length=32)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True)
+    product_line = models.ForeignKey(
+        ProductLine, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='suites', verbose_name='所属产品线'
+    )
     description = models.CharField('套件描述', max_length=250, blank=True)
 
     # 运行环境（可选）
@@ -162,8 +169,8 @@ class Suite(models.Model):
 
     run_type = models.CharField("运行类型", choices=RunType.choices, default=RunType.ONCE, max_length=30)
     cron = models.CharField("cron表达式", max_length=30, blank=True)
+    cron_next_run_at = models.DateTimeField("下次执行时间", null=True, blank=True)
     hook_key = models.CharField("webhook密钥", max_length=255, blank=True)
-    schedule = models.ForeignKey(Schedule, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField("创建时间", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("修改时间", auto_now=True, null=True)
     created_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL, related_name="suite_created", verbose_name="创建人")
@@ -207,29 +214,42 @@ class Suite(models.Model):
     def case_ui_count(self):
         return self.suite_case_items.filter(case_type=SuiteCaseItem.CaseType.UI).count()
 
+    def _compute_next_cron_run_at(self, base_time=None):
+        if self.run_type != self.RunType.CRON or not self.cron:
+            return None
+        base_time = base_time or timezone.now()
+        return croniter(self.cron, base_time).get_next(datetime)
+
+    @classmethod
+    def dispatch_due_cron_suites(cls, now=None):
+        now = now or timezone.now()
+        triggered = 0
+        due_suites = cls.objects.filter(
+            run_type=cls.RunType.CRON,
+            cron__gt='',
+            cron_next_run_at__isnull=False,
+            cron_next_run_at__lte=now,
+        ).order_by('cron_next_run_at', 'id')
+        for suite in due_suites:
+            suite.run(trigger_source='cron')
+            next_run_at = suite._compute_next_cron_run_at(base_time=now)
+            cls.objects.filter(pk=suite.pk).update(cron_next_run_at=next_run_at)
+            triggered += 1
+        return triggered
+
     def save(self, *args, **kwargs):
         if self.run_type == self.RunType.CRON and self.cron:
-            try:
-                self.schedule = schedule(
-                    'suite.tasks.run_by_cron_task', self.id,
-                    cron=self.cron, schedule_type="C"
-                )
-            except ImportError:
-                logger.warning("croniter not installed, skipping schedule creation")
-                if self.schedule:
-                    self.schedule.delete()
-                    self.schedule = None
+            self.cron_next_run_at = self._compute_next_cron_run_at()
         else:
-            if self.schedule:
-                self.schedule.delete()
-                self.schedule = None
+            self.cron_next_run_at = None
 
-        if self.run_type == self.RunType.WebHook:
-            if not self.hook_key:
-                self.hook_key = uuid()[0]
+        if self.run_type == self.RunType.WebHook and not self.hook_key:
+            self.hook_key = token_hex(16)
         return super().save(*args, **kwargs)
 
-    def run(self, case_ids=None, ui_case_ids=None, initial_context=None):
+
+    def run(self, case_ids=None, ui_case_ids=None, initial_context=None, dataset_id=None,
+            scope_type='project', scope_id=None, trigger_source='manual', product_line=None):
         """
         执行测试套件。
 
@@ -239,16 +259,27 @@ class Suite(models.Model):
             case_ids: 指定要执行的 CaseAPI id 列表（None 表示取套件内全部已启用 API 用例）
             ui_case_ids: 指定要执行的 CaseUI id 列表（None 表示取套件内全部已启用 UI 用例）
             initial_context: 初始上下文字典
+            product_line: 指定执行结果归属的产品线（可选，默认使用套件或项目的产品线）
 
         Returns:
             RunResult 对象
         """
         from Tesla import settings
 
+        if scope_id is None:
+            scope_id = self.project_id if self.project_id else 0
+
+        # 确定执行结果归属的产品线
+        result_product_line = product_line or self.product_line or (self.project.product_line if self.project else None)
+
         # 1. 创建执行记录
         result: RunResult = RunResult.objects.create(
             suite=self,
             project=self.project,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            product_line=result_product_line,
+            trigger_source=trigger_source,
             path="todo"
         )
 
@@ -262,45 +293,111 @@ class Suite(models.Model):
         result.status = RunResult.RunStatus.Ready
         result.save()
 
-        # 3. 确定本次要执行的 API 用例 id 列表
+        # 3. 构建本次要执行的 SuiteCaseItem 顺序列表（真正支持 API/UI 混编）
+        ordered_items = list(
+            self.suite_case_items.filter(enabled=True)
+            .select_related('case_api__endpoint', 'case_ui')
+            .order_by('order', 'id')
+        )
         if case_ids is not None:
             if isinstance(case_ids, str):
                 case_ids = [int(x.strip()) for x in case_ids.split(',') if x.strip()]
             elif isinstance(case_ids, int):
                 case_ids = [case_ids]
-            api_case_ids = [int(x) for x in case_ids]
-        else:
-            api_case_ids = list(
-                self.get_case_api_items()
-                .values_list('case_api_id', flat=True)
-            )
-
-        # 4. 确定本次要执行的 UI 用例 id 列表
+            case_id_set = {int(x) for x in case_ids}
+            ordered_items = [item for item in ordered_items if not item.case_api_id or item.case_api_id in case_id_set]
         if ui_case_ids is not None:
             if isinstance(ui_case_ids, str):
                 ui_case_ids = [int(x.strip()) for x in ui_case_ids.split(',') if x.strip()]
             elif isinstance(ui_case_ids, int):
                 ui_case_ids = [ui_case_ids]
-            ui_ids = [int(x) for x in ui_case_ids]
-        else:
-            ui_ids = list(
-                self.get_case_ui_items()
-                .values_list('case_ui_id', flat=True)
-            )
+            ui_id_set = {int(x) for x in ui_case_ids}
+            ordered_items = [item for item in ordered_items if not item.case_ui_id or item.case_ui_id in ui_id_set]
 
-        # 5. 生成 UI 测试用例文件
+        suite_item_ids = [item.id for item in ordered_items]
+        api_case_ids = [item.case_api_id for item in ordered_items if item.case_type == SuiteCaseItem.CaseType.API and item.case_api_id]
+        ui_ids = [item.case_ui_id for item in ordered_items if item.case_type == SuiteCaseItem.CaseType.UI and item.case_ui_id]
+
+        # 4. 生成 UI 测试用例文件（兼容旧导出能力）
         for case_ui in CaseUI.objects.filter(id__in=ui_ids):
             case_ui.to_xlsx(path)
 
-        # 6. 提交 Celery 任务（新版 v2.0：直接调用 SuiteRunner，不再生成 YAML/调用 pytest）
-        if api_case_ids:
+        # 5. 生成执行快照（用于结果可追溯）
+        from case_api.models import Case as CaseModel
+        snapshot = ExecutionSnapshot.objects.create(
+            scope_type=scope_type,
+            scope_id=scope_id,
+            product_line=result_product_line,
+            suite=self,
+            suite_name=self.name,
+        )
+        result.snapshot_id = snapshot.id
+        result.save(update_fields=['snapshot_id'])
+
+        for c in CaseModel.objects.filter(id__in=api_case_ids).select_related('endpoint'):
+            ExecutionCaseSnapshot.objects.create(
+                snapshot=snapshot,
+                case_id=c.id,
+                case_name=c.name,
+                case_version=c.version,
+                payload_json={
+                    'id': c.id,
+                    'name': c.name,
+                    'case_type': 'API',
+                    'version': c.version,
+                    'project_id': c.project_id,
+                    'product_line_id': c.product_line_id,
+                    'endpoint': {
+                        'id': c.endpoint_id,
+                        'name': c.endpoint.name if c.endpoint else '',
+                        'method': c.endpoint.method if c.endpoint else '',
+                        'url': c.endpoint.url if c.endpoint else '',
+                        'service_key': c.endpoint.service_key if c.endpoint else '',
+                    },
+                    'api_args': c.api_args,
+                    'extract': c.extract,
+                    'validate': c.validate,
+                    'pre_script': c.pre_script,
+                    'post_script': c.post_script,
+                }
+            )
+
+        for c in CaseUI.objects.filter(id__in=ui_ids):
+            ExecutionCaseSnapshot.objects.create(
+                snapshot=snapshot,
+                case_id=c.id,
+                case_name=c.name,
+                case_version=c.version,
+                payload_json={
+                    'id': c.id,
+                    'name': c.name,
+                    'case_type': 'UI',
+                    'version': c.version,
+                    'project_id': c.project_id,
+                    'product_line_id': c.product_line_id,
+                    'platform': c.platform,
+                    'entry_url': c.entry_url,
+                    'steps': c.steps,
+                    'extract': c.extract,
+                    'validate': c.validate,
+                    'pre_script': c.pre_script,
+                    'post_script': c.post_script,
+                }
+            )
+
+        # 6. 记录套件执行日志（手动独立、定时按策略聚合）
+        SuiteExecutionLog.record_run(self, result, trigger_source=trigger_source)
+
+        # 7. 提交 Celery 任务（新版 v2.0：直接调用 SuiteRunner，不再生成 YAML/调用 pytest）
+        if suite_item_ids:
             from suite.tasks import run_suite_task
             run_suite_task.delay(
-                result.id, api_case_ids, initial_context or {},
+                result.id, suite_item_ids, initial_context or {},
                 max_retries=self.retry_count,
                 retry_delay=self.retry_delay,
                 timeout_seconds=self.timeout_seconds,
                 fail_strategy=self.fail_strategy,
+                dataset_id=dataset_id,
             )
         else:
             result.status = RunResult.RunStatus.Error
@@ -325,6 +422,35 @@ class Suite(models.Model):
 
     def __str__(self):
         return f"Suite({self.id}): {self.name}"
+
+
+class SuiteNode(models.Model):
+    class NodeType(models.TextChoices):
+        FOLDER = 'folder', '文件夹'
+        SUITE = 'suite', '套件'
+
+    name = models.CharField('名称', max_length=64)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='children')
+    path = models.CharField('物化路径', max_length=255, default='/', db_index=True)
+    node_type = models.CharField('节点类型', max_length=16, choices=NodeType.choices, default=NodeType.FOLDER)
+    suite = models.OneToOneField('Suite', null=True, blank=True, on_delete=models.CASCADE, related_name='tree_node')
+    order_no = models.PositiveIntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        ordering = ['order_no', 'id']
+
+    @classmethod
+    def ensure_root(cls):
+        root = cls.objects.filter(parent__isnull=True, node_type=cls.NodeType.FOLDER).order_by('id').first()
+        if root:
+            if root.path != '/':
+                root.path = '/'
+                root.save(update_fields=['path'])
+            return root
+        root = cls.objects.create(name='根目录', parent=None, path='/', node_type=cls.NodeType.FOLDER)
+        return root
 
 
 class SuiteCaseItem(models.Model):
@@ -411,10 +537,189 @@ class RunResult(models.Model):
         Done = 4, "执行完毕"
         Error = -1, "执行出错"
 
+    class ScopeType(models.TextChoices):
+        PROJECT = 'project', '项目'
+        SPRINT = 'sprint', '迭代'
+
     suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.SET_NULL)
+    scope_type = models.CharField('执行域类型', max_length=16, choices=ScopeType.choices, default=ScopeType.PROJECT)
+    scope_id = models.PositiveIntegerField('执行域ID', null=True, blank=True)
+    product_line = models.ForeignKey(ProductLine, null=True, blank=True, on_delete=models.SET_NULL, related_name='run_results')
+    trigger_source = models.CharField('触发来源', max_length=16, default='manual')
+    execution_log = models.ForeignKey('SuiteExecutionLog', null=True, blank=True, on_delete=models.SET_NULL, related_name='run_results')
+    snapshot_id = models.PositiveIntegerField('快照ID', null=True, blank=True)
 
     path = models.CharField("用例路径", max_length=255)
     is_pass = models.BooleanField("测试通过", default=False)
     status = models.IntegerField("执行状态", choices=RunStatus.choices, default=RunStatus.Init)
     created_at = models.DateTimeField("创建时间", auto_now_add=True, null=True)
+
+# 性能测试模型（单独文件，通过此处导入保证被 Django 发现）
+from .performance_models import PerformanceTest  # noqa
+
+
+class DataSet(models.Model):
+    """
+    参数化数据集（DDT）。
+    上传 CSV/Excel 后解析存储，执行用例/套件时传入 dataset_id 实现数据驱动。
+    用例中用 ${参数名} 引用列名，引擎的 VarResolver 会自动替换。
+    """
+    objects: models.QuerySet
+
+    name        = models.CharField('数据集名称', max_length=200)
+    project     = models.ForeignKey(Project, on_delete=models.CASCADE,
+                                    related_name='datasets', verbose_name='所属项目')
+    columns     = models.JSONField('列名列表', default=list,
+                                   help_text='CSV/Excel 第一行列名，如 ["username", "password"]')
+    rows        = models.JSONField('数据行', default=list,
+                                   help_text='二维数组，每行对应一组参数值')
+    created_by  = models.ForeignKey(
+        'auth.User', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='datasets', verbose_name='创建人'
+    )
+    created_at  = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at  = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '参数化数据集'
+        verbose_name_plural = '参数化数据集'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} ({len(self.rows)} 行)'
+
+    @property
+    def row_count(self):
+        return len(self.rows)
+
+    def iter_rows(self):
+        """生成 {列名: 值} 字典序列，供执行引擎逐行注入上下文"""
+        for row in self.rows:
+            yield dict(zip(self.columns, row))
+
+
+class ExecutionSnapshot(models.Model):
+    scope_type = models.CharField(max_length=16)
+    scope_id = models.PositiveIntegerField()
+    product_line = models.ForeignKey(ProductLine, null=True, blank=True, on_delete=models.SET_NULL, related_name='execution_snapshots')
+    suite = models.ForeignKey(Suite, null=True, blank=True, on_delete=models.SET_NULL, related_name='execution_snapshots')
+    suite_name = models.CharField(max_length=64, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+
+
+class ExecutionCaseSnapshot(models.Model):
+    snapshot = models.ForeignKey(ExecutionSnapshot, on_delete=models.CASCADE, related_name='case_snapshots')
+    case_id = models.PositiveIntegerField()
+    case_name = models.CharField(max_length=64)
+    case_version = models.PositiveIntegerField(default=1)
+    payload_json = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['id']
+
+
+class SuiteExecutionLog(models.Model):
+    class StrategyType(models.TextChoices):
+        MANUAL = 'manual', '手动执行'
+        CRON = 'cron', '定时执行'
+        WEBHOOK = 'webhook', 'Webhook'
+
+    suite = models.ForeignKey(Suite, on_delete=models.CASCADE, related_name='execution_logs')
+    strategy_type = models.CharField(max_length=16, choices=StrategyType.choices)
+    strategy_key = models.CharField(max_length=255)
+    strategy_label = models.CharField(max_length=255, blank=True, default='')
+    strategy_payload = models.JSONField(default=dict, blank=True)
+    execution_count = models.PositiveIntegerField(default=0)
+    pass_count = models.PositiveIntegerField(default=0)
+    fail_count = models.PositiveIntegerField(default=0)
+    latest_result = models.ForeignKey(RunResult, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    latest_failed_result = models.ForeignKey(RunResult, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    recent_result_ids = models.JSONField(default=list, blank=True)
+    first_triggered_at = models.DateTimeField(null=True, blank=True)
+    last_triggered_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-last_triggered_at', '-id']
+        unique_together = [('suite', 'strategy_type', 'strategy_key')]
+
+    @classmethod
+    def record_run(cls, suite, result, trigger_source='manual'):
+        now = timezone.now()
+        if trigger_source == 'cron':
+            strategy_type = cls.StrategyType.CRON
+            strategy_key = suite.cron or 'cron'
+            strategy_label = f'定时策略：{suite.cron or "未设置 Cron"}'
+            strategy_payload = {'cron': suite.cron or ''}
+        elif trigger_source == 'webhook':
+            strategy_type = cls.StrategyType.WEBHOOK
+            strategy_key = suite.hook_key or f'webhook:{suite.id}'
+            strategy_label = 'Webhook 触发'
+            strategy_payload = {'hook_key': suite.hook_key or ''}
+        else:
+            strategy_type = cls.StrategyType.MANUAL
+            strategy_key = f'manual:{result.id}'
+            strategy_label = '手动立即执行'
+            strategy_payload = {}
+
+        log, created = cls.objects.get_or_create(
+            suite=suite,
+            strategy_type=strategy_type,
+            strategy_key=strategy_key,
+            defaults={
+                'strategy_label': strategy_label,
+                'strategy_payload': strategy_payload,
+                'execution_count': 0,
+                'first_triggered_at': now,
+            }
+        )
+        recent_ids = [result.id, *[rid for rid in (log.recent_result_ids or []) if rid != result.id]]
+        is_pass = bool(result.status == RunResult.RunStatus.Done and result.is_pass)
+        log.strategy_label = strategy_label
+        log.strategy_payload = strategy_payload
+        log.execution_count = (log.execution_count or 0) + 1
+        log.pass_count = (log.pass_count or 0) + (1 if is_pass else 0)
+        log.fail_count = (log.fail_count or 0) + (0 if is_pass else 1)
+        log.latest_result = result
+        if not is_pass:
+            log.latest_failed_result = result
+        if created or not log.first_triggered_at:
+            log.first_triggered_at = now
+        log.last_triggered_at = now
+        log.recent_result_ids = recent_ids[:20]
+        log.save(update_fields=['strategy_label', 'strategy_payload', 'execution_count', 'pass_count', 'fail_count', 'latest_result', 'latest_failed_result', 'first_triggered_at', 'last_triggered_at', 'recent_result_ids', 'updated_at'])
+        if result.execution_log_id != log.id:
+            result.execution_log = log
+            result.save(update_fields=['execution_log'])
+        return log
+
+
+class ImportJob(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', '待处理'
+        RUNNING = 'running', '处理中'
+        SUCCESS = 'success', '成功'
+        FAILED = 'failed', '失败'
+        PARTIAL = 'partial', '部分成功'
+
+    product_line = models.ForeignKey(ProductLine, null=True, blank=True, on_delete=models.SET_NULL, related_name='import_jobs')
+    scope_type = models.CharField(max_length=16, blank=True, default='')
+    scope_id = models.PositiveIntegerField(null=True, blank=True)
+    file_path = models.CharField(max_length=512, blank=True, default='')
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    total = models.PositiveIntegerField(default=0)
+    success = models.PositiveIntegerField(default=0)
+    failed = models.PositiveIntegerField(default=0)
+    error_file = models.CharField(max_length=512, blank=True, default='')
+    detail = models.JSONField(default=dict, blank=True)
+    created_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL, related_name='import_jobs')
+    created_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-id']

@@ -1,0 +1,71 @@
+{
+  "uuid": "508a3699-f18f-4665-b8fd-35804b519a02",
+  "historyId": "12",
+  "testCaseId": "12",
+  "name": "web端订单列表",
+  "fullName": "使用套件变量token的套件 / web端订单列表",
+  "status": "failed",
+  "statusDetails": {
+    "message": "期望 'success'，实际 ''",
+    "trace": "期望 'success'，实际 ''"
+  },
+  "start": 1775036363038,
+  "stop": 1775036363073,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1775036363038,
+      "stop": 1775036363073,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success：期望 'success'，实际 ''",
+      "status": "failed",
+      "start": 1775036363038,
+      "stop": 1775036363073,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "508a3699-f18f-4665-b8fd-35804b519a02-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "508a3699-f18f-4665-b8fd-35804b519a02-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.035s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "feature",
+      "value": "使用套件变量token的套件"
+    },
+    {
+      "name": "story",
+      "value": "web端订单列表"
+    }
+  ],
+  "links": []
+}

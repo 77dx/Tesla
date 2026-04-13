@@ -15,6 +15,24 @@ export const updateSuite = (id, data) => api.put(`/suite/suite/${id}/`, data)
 // 删除测试套件
 export const deleteSuite = (id) => api.delete(`/suite/suite/${id}/`)
 
+// 获取套件树
+export const getSuiteTree = (params = {}) => api.get('/suite/suite-node/', { params: { _t: Date.now(), ...params } })
+
+// 新建套件文件夹
+export const createSuiteFolder = (data) => api.post('/suite/suite-node/create_folder/', data)
+
+// 挂载/移动套件到目录
+export const attachSuiteToFolder = (data) => api.post('/suite/suite-node/attach_suite/', data)
+
+// 移动目录/节点
+export const moveSuiteNode = (data) => api.post('/suite/suite-node/move/', data)
+
+// 重命名节点
+export const renameSuiteNode = (data) => api.post('/suite/suite-node/rename/', data)
+
+// 删除目录/节点
+export const deleteSuiteNode = (id) => api.delete(`/suite/suite-node/${id}/`)
+
 // 执行测试套件
 export const runSuite = (id, data) => api.post(`/suite/suite/${id}/run/`, data)
 
@@ -22,16 +40,25 @@ export const runSuite = (id, data) => api.post(`/suite/suite/${id}/run/`, data)
 export const stopCron = (id) => api.post(`/suite/suite/${id}/stop_cron/`)
 
 // 获取执行结果
-
 export const getRunResult = (id) => api.get(`/suite/runresult/${id}/`)
 
 // 获取执行结果列表
-
 export const getRunResults = (params) => api.get('/suite/runresult/', { params })
 
 // 删除执行结果
-
 export const deleteRunResult = (id) => api.delete(`/suite/runresult/${id}/`)
+
+// 执行快照
+export const getExecutionSnapshots = (params) => api.get('/suite/execution-snapshot/', { params })
+
+// 获取套件执行日志
+export const getSuiteExecutionLogs = (params) => api.get('/suite/suite-execution-log/', { params })
+
+// 导入任务
+export const getImportJobs = (params) => api.get('/suite/import-job/', { params })
+export const createImportJob = (data) => api.post('/suite/import-job/', data)
+export const uploadImportCaseFile = (formData) => api.post('/suite/import-job/upload_case_file/', formData)
+export const startImportJob = (id) => api.post(`/suite/import-job/${id}/start/`)
 
 // ---- 套件用例项 ----
 // 获取套件内用例项列表

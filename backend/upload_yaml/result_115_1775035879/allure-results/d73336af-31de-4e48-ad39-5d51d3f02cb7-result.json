@@ -1,0 +1,73 @@
+{
+  "uuid": "cdf9986d-d550-47df-ad16-cc298433cfb0",
+  "historyId": "9",
+  "testCaseId": "9",
+  "name": "web端登录密码正确",
+  "fullName": "有登录前置的套件(取执行中的token) / web端登录密码正确",
+  "status": "passed",
+  "statusDetails": {},
+  "start": 1775035879962,
+  "stop": 1775035880417,
+  "steps": [
+    {
+      "name": "响应码200 ✓",
+      "status": "passed",
+      "start": 1775035879962,
+      "stop": 1775035880417,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    },
+    {
+      "name": "code为success ✓",
+      "status": "passed",
+      "start": 1775035879962,
+      "stop": 1775035880417,
+      "steps": [],
+      "attachments": [],
+      "parameters": []
+    }
+  ],
+  "attachments": [
+    {
+      "name": "请求信息",
+      "source": "cdf9986d-d550-47df-ad16-cc298433cfb0-request.json",
+      "type": "application/json"
+    },
+    {
+      "name": "提取变量",
+      "source": "cdf9986d-d550-47df-ad16-cc298433cfb0-extracted.json",
+      "type": "application/json"
+    },
+    {
+      "name": "执行日志",
+      "source": "cdf9986d-d550-47df-ad16-cc298433cfb0-case.log",
+      "type": "text/plain"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "状态码",
+      "value": "200"
+    },
+    {
+      "name": "耗时",
+      "value": "0.455s"
+    }
+  ],
+  "labels": [
+    {
+      "name": "suite",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "feature",
+      "value": "有登录前置的套件(取执行中的token)"
+    },
+    {
+      "name": "story",
+      "value": "web端登录密码正确"
+    }
+  ],
+  "links": []
+}

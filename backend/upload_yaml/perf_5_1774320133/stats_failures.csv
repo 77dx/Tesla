@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences
+POST,web端订单列表,"gaierror(8, 'nodename nor servname provided, or not known')",288
+POST,售后列表功能正常,"gaierror(8, 'nodename nor servname provided, or not known')",288
+POST,web端登录密码正确,"gaierror(8, 'nodename nor servname provided, or not known')",288

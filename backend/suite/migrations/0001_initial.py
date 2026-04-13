@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("case_api", "0002_alter_case_project"),
         ("case_ui", "0001_initial"),
-        ("django_q", "0014_schedule_cluster"),
         ("project", "0001_initial"),
     ]
 
@@ -66,11 +65,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "schedule",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        to="django_q.schedule",
-                    ),
+                    models.PositiveBigIntegerField(blank=True, null=True, verbose_name="调度任务ID"),
                 ),
             ],
         ),

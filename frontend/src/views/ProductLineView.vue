@@ -182,6 +182,7 @@ const loadAll = async () => {
   const res = await getProductLines()
   productLines.value = res.result?.list || res.result || res || []
 }
+import { alert } from '@/composables/useAlert'
 
 const openCreate = () => {
   editingPl.value = null

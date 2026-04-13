@@ -5,6 +5,14 @@
       <div class="detail-header">
         <button @click="$router.back()" class="btn btn-back">← 返回</button>
         <div class="header-actions">
+          <select v-model="selectedRunEnvId" class="run-env-select" title="选择调试环境（可选）">
+            <option :value="null">不指定环境（需接口URL是完整地址）</option>
+            <option v-for="env in runEnvironments" :key="env.id" :value="env.id">{{ env.name }}</option>
+          </select>
+          <select v-model="selectedDatasetId" class="run-env-select" title="参数化数据集（可选，选择后将循环执行每行数据）">
+            <option :value="null">不使用参数集（普通执行）</option>
+            <option v-for="ds in runDatasets" :key="ds.id" :value="ds.id">📋 {{ ds.name }}（{{ ds.row_count }} 行）</option>
+          </select>
           <button @click="enterEdit" class="btn btn-primary">编辑用例</button>
           <button @click="runCase" class="btn btn-success">运行用例</button>
           <button @click="deleteCaseItem" class="btn btn-danger">删除用例</button>
@@ -38,7 +46,7 @@
               <div class="endpoint-info-row">
                 <span class="ep-label">URL</span>
                 <span class="ep-url-wrap">
-                  <span v-if="caseData.endpoint.service_key" class="ep-service-tag">{{{ caseData.endpoint.service_key }}}</span>
+                  <span v-if="caseData.endpoint.service_key" class="ep-service-tag">{{ caseData.endpoint.service_key }}</span>
                   <code class="ep-url">{{ caseData.endpoint.url }}</code>
                   <span v-if="caseData.endpoint.service_key" class="ep-url-hint">(执行时替换为实际域名)</span>
                 </span>
@@ -75,6 +83,21 @@
             <pre v-if="apiArgsBody">{{ JSON.stringify(apiArgsBody, null, 2) }}</pre>
             <div v-else class="empty-hint">未配置接口参数</div>
           </div>
+          <div v-if="caseData.api_args?.headers" class="param-block">
+            <h4>用例请求头</h4>
+            <pre>{{ JSON.stringify(caseData.api_args.headers, null, 2) }}</pre>
+          </div>
+          <div v-if="caseData.pre_script || caseData.post_script" class="param-block script-block">
+            <h4><span class="block-icon">🧩</span> 用例脚本</h4>
+            <div v-if="caseData.pre_script" class="script-view-item">
+              <div class="script-view-label"><span class="script-badge pre">PRE</span> 前置脚本</div>
+              <pre class="script-pre">{{ caseData.pre_script }}</pre>
+            </div>
+            <div v-if="caseData.post_script" class="script-view-item">
+              <div class="script-view-label"><span class="script-badge post">POST</span> 后置脚本</div>
+              <pre class="script-pre">{{ caseData.post_script }}</pre>
+            </div>
+          </div>
           <div class="param-block extract-block">
             <h4><span class="block-icon">⬇</span> 数据提取 <span class="block-hint">执行后从响应中提取变量</span></h4>
             <div v-if="extractRules.length" class="extract-table">
@@ -106,42 +129,6 @@
               </div>
             </div>
             <pre v-else class="assert-legacy-pre">{{ JSON.stringify(caseData.validate, null, 2) }}</pre>
-          </div>
-        </div>
-
-        <!-- 执行日志区块 -->
-        <div v-if="runLogs.length" ref="logPanelRef" class="param-block run-log-block">
-          <h4>
-            <span class="log-panel-dot" :class="isRunning ? 'dot-running' : 'dot-idle'"></span>
-            执行日志
-            <span class="block-hint">共 {{ runLogs.length }} 条记录</span>
-            <button class="log-clear-btn" @click="runLogs = []">✕ 清空</button>
-          </h4>
-          <div class="log-list">
-            <div v-for="(record, idx) in runLogs" :key="record.id" class="log-record">
-              <div class="log-record-head" @click="record.expanded = !record.expanded">
-                <span class="log-expand-icon">{{ record.expanded ? '▾' : '▸' }}</span>
-                <span class="log-record-index">#{{ runLogs.length - idx }}</span>
-                <span v-if="record.running" class="log-running-badge">
-                  <span class="mini-spinner"></span> 运行中
-                </span>
-                <span v-else :class="record.returncode === 0 ? 'pass-badge' : 'fail-badge'">
-                  {{ record.returncode === 0 ? '✓ 通过' : '✗ 失败' }}
-                </span>
-                <span class="log-record-time">{{ record.time }}</span>
-                <span v-if="record.report_url" class="log-report-link" @click.stop>
-                  <a :href="record.report_url" target="_blank">📊 报告</a>
-                </span>
-                <button class="log-del-btn" @click.stop="runLogs.splice(idx, 1)" title="删除">🗑</button>
-              </div>
-              <div v-if="record.expanded" class="log-record-body">
-                <div v-if="record.running" class="log-running-hint">
-                  <span class="spinner-sm"></span> 正在执行，请稍候...
-                </div>
-                <pre v-else class="log-pre">{{ record.stdout || '（无输出）' }}</pre>
-                <div v-if="record.error" class="log-error-msg">{{ record.error }}</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -177,7 +164,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>所属项目 *</label>
-                <select v-model="formData.project" required>
+                <select v-model="formData.project" required @change="onProjectChange">
                   <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
               </div>
@@ -185,6 +172,22 @@
                 <label>关联接口 *</label>
                 <select v-model="formData.endpoint" required>
                   <option v-for="e in endpoints" :key="e.id" :value="e.id">{{ e.name }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>所属迭代 <span class="field-hint">(可选)</span></label>
+                <select v-model="formData.sprint" @change="onSprintChange">
+                  <option :value="null">不关联迭代</option>
+                  <option v-for="s in caseSprintList" :key="s.id" :value="s.id">{{ s.name }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>关联需求 <span class="field-hint">(可选)</span></label>
+                <select v-model="formData.requirement">
+                  <option :value="null">不关联需求</option>
+                  <option v-for="r in caseReqList" :key="r.id" :value="r.id">{{ r.title }}</option>
                 </select>
               </div>
             </div>
@@ -250,6 +253,17 @@
                 <div class="param-hint">完整 api_args JSON，手动填写（高级用法）</div>
                 <textarea v-model="formData.api_args" rows="8" placeholder='{"json":{"key":"value"}}'></textarea>
               </div>
+
+              <div class="param-hint" style="margin-top:12px">请求头（headers），值可用 <code>${变量名}</code></div>
+              <div class="kv-editor">
+                <div class="kv-header"><span>Header 名</span><span>Header 值</span><span></span></div>
+                <div v-for="(row,idx) in formData.headerRows" :key="`h-${idx}`" class="kv-row">
+                  <input v-model="row.k" placeholder="Authorization" class="kv-input" />
+                  <input v-model="row.v" placeholder="Bearer ${token}" class="kv-input" />
+                  <button type="button" class="btn-remove-rule" @click="formData.headerRows.splice(idx,1)">✕</button>
+                </div>
+              </div>
+              <button type="button" class="btn-add-rule" @click="formData.headerRows.push({k:'',v:''})">+ 添加请求头</button>
             </div>
           </div>
 
@@ -350,19 +364,32 @@
               <pre class="assert-preview-code">{{ JSON.stringify(buildAssertList(), null, 2) }}</pre>
             </div>
           </div>
+
+          <!-- Tab 5: 用例脚本 -->
+          <div v-show="activeTab === 'script'">
+            <div class="script-tip">可在执行前后运行 Python 脚本，支持 <code>ctx</code> 上下文变量。内置 helper：<code>now_ts()</code> <code>now_str()</code> <code>rand_int()</code> <code>rand_str()</code> <code>uuid4()</code> <code>md5()</code> <code>sha256()</code> <code>b64_encode()</code>。</div>
+            <div class="form-group">
+              <label><span class="script-badge pre">PRE</span> 前置脚本</label>
+              <textarea v-model="formData.pre_script" rows="8" class="script-editor" placeholder="# 请求前执行\nctx['ts'] = now_ts()\nctx['nonce'] = rand_str(10)\nctx['sign'] = md5(ctx['ts'] + ctx['nonce'])"></textarea>
+            </div>
+            <div class="form-group">
+              <label><span class="script-badge post">POST</span> 后置脚本</label>
+              <textarea v-model="formData.post_script" rows="8" class="script-editor" placeholder="# 请求后执行\n# 可读取 response_json/response_text/status_code\nif response_json:\n    ctx['uid'] = response_json.get('data',{}).get('id')\nctx['done_at'] = now_str('%Y-%m-%d %H:%M:%S')"></textarea>
+            </div>
+          </div>
         </div>
       </div>
     </template>
-    <!-- 底部日志面板 -->
+    <!-- 底部日志面板（仅详情模式） -->
     <transition name="logpanel">
-      <div v-if="runLogs.length" class="run-log-panel">
+      <div v-if="runLogs.length && !editMode" class="run-log-panel">
         <div class="log-panel-header">
           <span class="log-panel-title">
             <span class="log-panel-dot" :class="isRunning ? 'dot-running' : 'dot-idle'"></span>
             执行日志
             <span class="log-panel-count">{{ runLogs.length }} 条记录</span>
           </span>
-          <button class="log-panel-close" @click="runLogs = []">✕ 清空</button>
+          <button class="btn btn-refresh log-refresh-btn" @click="loadRunLogs">↻ 刷新</button>
         </div>
         <div class="log-list">
           <div v-for="(record, idx) in runLogs" :key="record.id" class="log-record" :class="{ expanded: record.expanded }">
@@ -379,7 +406,7 @@
               <span v-if="!record.running && record.status_code" class="log-meta">状态码 {{ record.status_code }}</span>
               <span v-if="!record.running && record.duration" class="log-meta">{{ record.duration }}s</span>
               <span class="log-record-time">{{ record.time }}</span>
-              <button class="log-del-btn" @click.stop="runLogs.splice(idx, 1)" title="删除">🗑</button>
+              <button class="log-del-btn" @click.stop="removeRunLog(idx)" title="删除">🗑</button>
             </div>
             <!-- 展开的详情 -->
             <div v-if="record.expanded" class="log-record-body">
@@ -387,11 +414,70 @@
                 <span class="spinner-sm"></span> 正在执行，请稍候...
               </div>
               <template v-else>
+                <!-- DDT 多行结果 -->
+                <div v-if="record.ddt" class="ddt-summary">
+                  <div class="ddt-header">
+                    <span class="ddt-title">📋 参数化执行：{{ record.dataset_name }}</span>
+                    <span class="ddt-stat pass">✓ {{ record.ddt_passed }} 通过</span>
+                    <span v-if="record.ddt_failed" class="ddt-stat fail">✗ {{ record.ddt_failed }} 失败</span>
+                    <span class="ddt-stat total">共 {{ record.ddt_total }} 次</span>
+                  </div>
+                  <div v-for="r in record.ddt_results" :key="r.row_index" class="ddt-row-item" :class="r.success ? 'ddt-pass' : 'ddt-fail'">
+                    <span class="ddt-row-idx">第 {{ r.row_index }} 行</span>
+                    <span class="ddt-row-badge">{{ r.success ? '✓' : '✗' }}</span>
+                    <span class="ddt-row-params">{{ JSON.stringify(r.row_data) }}</span>
+                    <span v-if="r.status_code" class="ddt-row-code">{{ r.status_code }}</span>
+                    <span v-if="r.duration" class="ddt-row-dur">{{ r.duration }}s</span>
+                    <span v-if="r.error" class="ddt-row-err">{{ r.error }}</span>
+                  </div>
+                </div>
+
                 <!-- 错误信息 -->
-                <div v-if="record.error" class="log-error-msg">⚠ {{ record.error }}</div>
+                <div v-if="!record.ddt && record.error" class="log-error-msg">⚠ {{ record.error }}</div>
+
+                <!-- 请求信息 -->
+                <div v-if="!record.ddt && record.request_info" class="log-section">
+                  <div class="log-section-title">请求信息</div>
+                  <div class="req-line">
+                    <span class="req-method" :class="'m-' + (record.request_info.method || '').toLowerCase()">{{ record.request_info.method }}</span>
+                    <code class="req-url">{{ record.request_info.url }}</code>
+                  </div>
+                  <div v-if="record.request_info.headers && Object.keys(record.request_info.headers).length" class="req-kv-block">
+                    <span class="req-kv-label">Headers</span>
+                    <pre class="log-json">{{ JSON.stringify(record.request_info.headers, null, 2) }}</pre>
+                  </div>
+                  <div v-if="record.request_info.params && Object.keys(record.request_info.params).length" class="req-kv-block">
+                    <span class="req-kv-label">Query Params</span>
+                    <pre class="log-json">{{ JSON.stringify(record.request_info.params, null, 2) }}</pre>
+                  </div>
+                  <div v-if="record.request_info.json" class="req-kv-block">
+                    <span class="req-kv-label">JSON Body</span>
+                    <pre class="log-json">{{ JSON.stringify(record.request_info.json, null, 2) }}</pre>
+                  </div>
+                  <div v-if="record.request_info.data" class="req-kv-block">
+                    <span class="req-kv-label">Form Data</span>
+                    <pre class="log-json">{{ JSON.stringify(record.request_info.data, null, 2) }}</pre>
+                  </div>
+                </div>
+
+                <!-- 响应信息 -->
+                <div v-if="!record.ddt && record.status_code" class="log-section">
+                  <div class="log-section-title">响应信息</div>
+                  <div class="resp-status-line">
+                    <span class="resp-status" :class="record.status_code < 300 ? 'status-ok' : record.status_code < 400 ? 'status-rd' : 'status-err'">
+                      {{ record.status_code }}
+                    </span>
+                    <span class="resp-duration">{{ record.duration }}s</span>
+                  </div>
+                  <div v-if="record.response_body !== null" class="req-kv-block">
+                    <span class="req-kv-label">Response Body</span>
+                    <pre class="log-json">{{ typeof record.response_body === 'object' ? JSON.stringify(record.response_body, null, 2) : record.response_body }}</pre>
+                  </div>
+                </div>
+
                 <!-- 断言明细 -->
                 <div v-if="record.assertions.length" class="log-section">
-                  <div class="log-section-title">断言明细</div>
+                  <div class="log-section-title">断言结果</div>
                   <div v-for="a in record.assertions" :key="a.name" class="assert-result-row" :class="a.pass ? 'apass' : 'afail'">
                     <span class="ar-icon">{{ a.pass ? '✓' : '✗' }}</span>
                     <span class="ar-name">{{ a.name }}</span>
@@ -399,16 +485,18 @@
                     <span v-if="a.msg" class="ar-msg">{{ a.msg }}</span>
                   </div>
                 </div>
+
                 <!-- 提取变量 -->
                 <div v-if="Object.keys(record.extracted).length" class="log-section">
                   <div class="log-section-title">提取变量</div>
                   <div v-for="(val, key) in record.extracted" :key="key" class="extract-result-row">
-                    <code class="er-key">{{ '${'  + key + '}' }}</code>
+                    <code class="er-key">{{ '${' + key + '}' }}</code>
                     <span class="er-eq">=</span>
                     <code class="er-val">{{ val }}</code>
                   </div>
                 </div>
-                <!-- 无断言无错误时提示 -->
+
+                <!-- 无断言无错误时 -->
                 <div v-if="!record.error && !record.assertions.length" class="log-no-assert">
                   执行完成，未配置断言规则
                 </div>
@@ -422,32 +510,47 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { getCase, updateCase, deleteCase, getEndpoints, runCaseById } from '@/api/case'
+import { getSprints, getRequirements } from '@/api/sprint'
 import { getProjects } from '@/api/project'
+import { getEnvironments } from '@/api/suite'
 import { confirm } from '@/composables/useConfirm'
+import { alert } from '@/composables/useAlert'
+import { getDataSets } from '@/api/dataset'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const caseData = ref(null)
 const projects = ref([])
 const endpoints = ref([])
+const runEnvironments = ref([])
+const selectedRunEnvId = ref(null)
+const runDatasets = ref([])
+const selectedDatasetId = ref(null)
 const editMode = ref(false)
 const activeTab = ref('basic')
+const caseSprintList = ref([])
+const caseReqList = ref([])
 
 const tabs = [
   { key: 'basic',    label: '基本信息' },
   { key: 'params',   label: '接口参数' },
   { key: 'extract',  label: '数据提取' },
   { key: 'validate', label: '断言规则' },
+  { key: 'script',   label: '用例脚本' },
 ]
 
 const formData = ref({
   name: '', project: null, endpoint: null,
   alluer: '', api_args: '', validate: '',
-  paramType: 'json', jsonRows: [], formRows: [], queryRows: []
+  pre_script: '', post_script: '',
+  sprint: null, requirement: null,
+  paramType: 'json', jsonRows: [], formRows: [], queryRows: [], headerRows: []
 })
 
 // kv 行 <-> 对象 互转
@@ -466,15 +569,18 @@ const buildApiArgs = () => {
   if (formData.value.paramType === 'json') { const d = rowsToObj(formData.value.jsonRows);  if (d) obj.json   = d }
   if (formData.value.paramType === 'form') { const d = rowsToObj(formData.value.formRows);  if (d) obj.data   = d }
   if (formData.value.paramType === 'query'){ const d = rowsToObj(formData.value.queryRows); if (d) obj.params = d }
+  const headers = rowsToObj(formData.value.headerRows)
+  if (headers) obj.headers = headers
   return Object.keys(obj).length ? obj : null
 }
 
 const parseApiArgs = (api_args) => {
-  if (!api_args) return { paramType: 'json', jsonRows: [], formRows: [], queryRows: [], api_args: '' }
-  if (api_args.json)   return { paramType: 'json',  jsonRows: objToRows(api_args.json),    formRows: [], queryRows: [], api_args: '' }
-  if (api_args.data)   return { paramType: 'form',  formRows: objToRows(api_args.data),    jsonRows: [], queryRows: [], api_args: '' }
-  if (api_args.params) return { paramType: 'query', queryRows: objToRows(api_args.params), jsonRows: [], formRows: [],  api_args: '' }
-  return { paramType: 'raw', api_args: JSON.stringify(api_args, null, 2), jsonRows: [], formRows: [], queryRows: [] }
+  if (!api_args) return { paramType: 'json', jsonRows: [], formRows: [], queryRows: [], headerRows: [], api_args: '' }
+  const headers = objToRows(api_args.headers)
+  if (api_args.json)   return { paramType: 'json',  jsonRows: objToRows(api_args.json),    formRows: [], queryRows: [], headerRows: headers, api_args: '' }
+  if (api_args.data)   return { paramType: 'form',  formRows: objToRows(api_args.data),    jsonRows: [], queryRows: [], headerRows: headers, api_args: '' }
+  if (api_args.params) return { paramType: 'query', queryRows: objToRows(api_args.params), jsonRows: [], formRows: [],  headerRows: headers, api_args: '' }
+  return { paramType: 'raw', api_args: JSON.stringify(api_args, null, 2), jsonRows: [], formRows: [], queryRows: [], headerRows: headers }
 }
 
 // api_args 中除 headers 之外的参数部分（用于只读展示，兼容旧数据）
@@ -571,7 +677,21 @@ const loadCase = async () => {
       project:  c.project,
       endpoint: c.endpoint?.id || c.endpoint,
       alluer:   c.alluer   ? JSON.stringify(c.alluer,   null, 2) : '',
+      pre_script: c.pre_script || '',
+      post_script: c.post_script || '',
+      sprint: c.sprint || null,
+      requirement: c.requirement || null,
       ...parsed
+    }
+    // 加载迭代列表（按项目）
+    if (c.project) {
+      const sr = await getSprints({ project: c.project, page_size: 100 })
+      caseSprintList.value = sr.result?.list || sr.result || sr || []
+    }
+    // 加载需求列表（按迭代）
+    if (c.sprint) {
+      const rr = await getRequirements({ sprint: c.sprint, page_size: 200 })
+      caseReqList.value = rr.result?.list || rr.result || rr || []
     }
     editExtractRules.value = c.extract
       ? Object.entries(c.extract).map(([name, rule]) =>
@@ -593,6 +713,43 @@ const loadEndpoints = async () => {
   catch (e) { console.error(e) }
 }
 
+const onProjectChange = async () => {
+  formData.value.sprint = null
+  formData.value.requirement = null
+  caseSprintList.value = []
+  caseReqList.value = []
+  if (formData.value.project) {
+    const sr = await getSprints({ project: formData.value.project, page_size: 100 })
+    caseSprintList.value = sr.result?.list || sr.result || sr || []
+  }
+}
+
+const onSprintChange = async () => {
+  formData.value.requirement = null
+  caseReqList.value = []
+  if (formData.value.sprint) {
+    const rr = await getRequirements({ sprint: formData.value.sprint, page_size: 200 })
+    caseReqList.value = rr.result?.list || rr.result || rr || []
+  }
+}
+
+const loadRunEnvironments = async () => {
+  try {
+    const params = { page_size: 200 }
+    if (userStore.currentProductLine?.id) params.product_line = userStore.currentProductLine.id
+    const r = await getEnvironments(params)
+    runEnvironments.value = r.result?.list || []
+    if (!selectedRunEnvId.value && runEnvironments.value.length) {
+      selectedRunEnvId.value = runEnvironments.value[0].id
+    }
+    const dsParams = { page_size: 200 }
+    const dsRes = await getDataSets(dsParams)
+    runDatasets.value = dsRes.result?.list || dsRes.result || dsRes || []
+  } catch (e) {
+    console.error('加载运行环境失败:', e)
+  }
+}
+
 const enterEdit = () => { activeTab.value = 'basic'; editMode.value = true }
 const cancelEdit = () => { editMode.value = false }
 
@@ -608,6 +765,10 @@ const handleSubmit = async () => {
       api_args,
       extract:  buildExtractObj(),
       validate: assertList.length ? assertList : null,
+      pre_script: formData.value.pre_script || '',
+      post_script: formData.value.post_script || '',
+      sprint: formData.value.sprint || null,
+      requirement: formData.value.requirement || null,
     }
     await updateCase(route.params.id, data)
     editMode.value = false
@@ -621,16 +782,48 @@ const handleSubmit = async () => {
 const deleteCaseItem = async () => {
   const confirmed = await confirm('确定要删除这个用例吗？', { type: 'danger' })
   if (confirmed) {
-    try { await deleteCase(route.params.id); router.push('/cases') }
-    catch (e) { console.error('删除失败:', e) }
+    try {
+      await deleteCase(route.params.id)
+      router.push('/cases')
+    } catch (e) {
+      const msg = e.response?.data?.message || e.response?.data?.detail || '删除失败'
+      alert(msg)
+    }
   }
 }
 
 // ---- 运行日志面板 ----
-const runLogs = ref([])  // 最新在最前
+const runLogs = ref([])  // 仅保留最近一次
 const isRunning = computed(() => runLogs.value.some(r => r.running))
-const logPanelRef = ref(null)
 let _logId = 0
+
+const getRunLogKey = () => `case_run_log_${route.params.id}`
+const persistRunLogs = () => {
+  try {
+    const logs = runLogs.value.filter(r => !r.running)
+    localStorage.setItem(getRunLogKey(), JSON.stringify(logs))
+  } catch (_) {}
+}
+const loadRunLogs = () => {
+  try {
+    const raw = localStorage.getItem(getRunLogKey())
+    if (!raw) {
+      runLogs.value = []
+      return
+    }
+    const logs = JSON.parse(raw)
+    runLogs.value = Array.isArray(logs) ? logs : []
+    if (runLogs.value.length) {
+      _logId = Math.max(...runLogs.value.map(r => Number(r.id) || 0), 0)
+    }
+  } catch (_) {
+    runLogs.value = []
+  }
+}
+const removeRunLog = (idx) => {
+  runLogs.value.splice(idx, 1)
+  persistRunLogs()
+}
 
 const runCase = async () => {
   const caseId = caseData.value?.id
@@ -642,39 +835,68 @@ const runCase = async () => {
     success: null,
     status_code: null,
     duration: null,
+    request_info: null,
+    response_body: null,
     assertions: [],
     extracted: {},
     error: '',
     report_url: null,
     time: new Date().toLocaleString('zh-CN'),
   }
-  runLogs.value.unshift(record)
-  await nextTick()
-  logPanelRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  runLogs.value = [record]
+  persistRunLogs()
   try {
-    const res = await runCaseById(caseId)
-    const r = res.result || res
-    record.running     = false
-    record.success     = r.success
-    record.status_code = r.status_code
-    record.duration    = r.duration
-    record.assertions  = r.assertions  || []
+    const res = await runCaseById(caseId, {
+      timeout_seconds: 30,
+      environment_id: selectedRunEnvId.value || null,
+      dataset_id: selectedDatasetId.value || null,
+    })
+    // DDT 多行结果
+    if (res.ddt) {
+      record.running     = false
+      record.success     = res.failed === 0
+      record.ddt         = true
+      record.ddt_total   = res.total
+      record.ddt_passed  = res.passed
+      record.ddt_failed  = res.failed
+      record.ddt_results = res.results || []
+      record.dataset_name = res.dataset_name
+    } else {
+      const r = res.result || res
+      record.running     = false
+      record.success     = r.success
+      record.status_code = r.status_code
+      record.duration    = r.duration
+      record.request_info  = r.request_info  || null
+      record.response_body = r.response_body !== undefined ? r.response_body : null
+      record.assertions  = r.assertions  || []
+      record.extracted   = r.extracted   || {}
+      record.error       = r.error       || ''
+    }
     record.extracted   = r.extracted   || {}
     record.error       = r.error       || ''
+    persistRunLogs()
   } catch (e) {
     record.running = false
     record.success = false
     record.error   = e.response?.data?.message || e.message || '运行失败'
+    persistRunLogs()
   }
 }
 const formatDate = (d) => d ? new Date(d).toLocaleString('zh-CN') : '-'
 
-onMounted(() => { loadCase(); loadProjects(); loadEndpoints() })
+onMounted(async () => {
+  loadRunLogs()
+  await loadCase()
+  await Promise.all([loadProjects(), loadEndpoints(), loadRunEnvironments()])
+})
 </script>
 
 <style scoped>
 .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.header-actions { display: flex; gap: 12px; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
+.run-env-select { height: 36px; min-width: 220px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text); font-size: 13px; }
+.run-env-select:focus { outline: none; border-color: var(--accent); }
 .btn-back { background: white; border: 1px solid var(--border); color: var(--text); }
 .btn-success { background: #27ae60; color: white; }
 .btn-success:hover { background: #229954; }
@@ -816,8 +1038,26 @@ onMounted(() => { loadCase(); loadProjects(); loadEndpoints() })
 .dot-running { background: #f0883e; animation: pulse 1.2s ease-in-out infinite; }
 .dot-idle    { background: #3fb950; }
 @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.8); } }
-.log-clear-btn { margin-left: auto; background: none; border: 1px solid #30363d; color: #8b949e; font-size: 12px; padding: 2px 10px; border-radius: 4px; cursor: pointer; transition: all .18s; }
-.log-clear-btn:hover { background: #21262d; color: #e74c3c; border-color: #e74c3c; }
+.log-refresh-btn { padding: 4px 12px; font-size: 12px; border-radius: 6px; }
+
+/* ===== 请求/响应详情 ===== */
+.req-line { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.req-method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; font-family: monospace; flex-shrink: 0; }
+.m-get    { background: #0d2018; color: #3fb950; }
+.m-post   { background: #2d1a00; color: #f0883e; }
+.m-put    { background: #0d1f3c; color: #58a6ff; }
+.m-patch  { background: #1a0d2d; color: #d2a8ff; }
+.m-delete { background: #2d1114; color: #f85149; }
+.req-url { font-family: 'Monaco','Courier New',monospace; font-size: 12px; color: #c9d1d9; background: #161b22; padding: 2px 8px; border-radius: 4px; word-break: break-all; }
+.req-kv-block { margin-bottom: 8px; }
+.req-kv-label { display: inline-block; font-size: 10px; font-weight: 700; color: #8b949e; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.log-json { margin: 0; font-family: 'Monaco','Courier New',monospace; font-size: 11px; line-height: 1.6; color: #adbac7; background: #161b22; border: 1px solid #21262d; border-radius: 5px; padding: 8px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+.resp-status-line { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.resp-status { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; font-family: monospace; }
+.status-ok  { background: #0d2018; color: #3fb950; }
+.status-rd  { background: #1a1a00; color: #e3b341; }
+.status-err { background: #2d1114; color: #f85149; }
+.resp-duration { font-size: 11px; color: #8b949e; }
 .log-list { display: flex; flex-direction: column; gap: 4px; }
 .log-record { border: 1px solid #21262d; border-radius: 6px; overflow: hidden; }
 .log-record-head { display: flex; align-items: center; gap: 10px; padding: 7px 12px; cursor: pointer; user-select: none; background: #161b22; transition: background .15s; }
@@ -870,4 +1110,36 @@ onMounted(() => { loadCase(); loadProjects(); loadEndpoints() })
 .kv-row:hover { background: #f8fcff; }
 .kv-input { border: 1px solid #d0e8f8; border-radius: 4px; padding: 4px 7px; font-size: 12px; font-family: 'Monaco','Courier New',monospace; outline: none; width: 100%; box-sizing: border-box; }
 .kv-input:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,.12); }
+
+/* 用例脚本 */
+.script-tip { background:#fffbeb; border-left:3px solid #f59e0b; padding:10px 14px; border-radius:4px; font-size:12px; color:#92400e; margin-bottom:14px; }
+.script-tip code { background:#111827; color:#f9fafb; padding:1px 5px; border-radius:3px; font-size:11px; }
+.script-editor { width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:8px; padding:10px 12px; font-family:'Monaco','Courier New',monospace; font-size:12px; line-height:1.7; background:#0b1020; color:#d1fae5; outline:none; }
+.script-editor:focus { border-color:#10b981; box-shadow:0 0 0 2px rgba(16,185,129,.12); }
+.script-badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700; margin-right:6px; }
+.script-badge.pre { background:#dbeafe; color:#1d4ed8; }
+.script-badge.post { background:#d1fae5; color:#065f46; }
+.script-view-item { margin-bottom:10px; }
+.script-view-label { font-size:12px; color:var(--text-light); margin-bottom:4px; }
+.script-pre { margin:0; background:#0f172a; color:#e2e8f0; padding:12px 14px; border-radius:8px; font-family:'Monaco','Courier New',monospace; font-size:12px; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+
+/* DDT 参数化结果 */
+.ddt-summary { padding: 12px; }
+.ddt-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.ddt-title { font-size:13px; font-weight:600; color:#58a6ff; }
+.ddt-stat { font-size:12px; padding:2px 8px; border-radius:10px; font-weight:600; }
+.ddt-stat.pass  { background:#1a3a2a; color:#3fb950; }
+.ddt-stat.fail  { background:#3a1a1a; color:#f85149; }
+.ddt-stat.total { background:#1c2128; color:#8b949e; }
+.ddt-row-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; margin-bottom:4px; font-size:12px; flex-wrap:wrap; }
+.ddt-pass { background:#0d1f12; border:1px solid #1a3a2a; }
+.ddt-fail { background:#1f0d0d; border:1px solid #3a1a1a; }
+.ddt-row-idx  { color:#8b949e; min-width:48px; }
+.ddt-row-badge { font-weight:700; min-width:16px; }
+.ddt-pass .ddt-row-badge { color:#3fb950; }
+.ddt-fail .ddt-row-badge { color:#f85149; }
+.ddt-row-params { color:#c9d1d9; font-family:monospace; flex:1; word-break:break-all; }
+.ddt-row-code { color:#79c0ff; background:#1c2128; padding:1px 6px; border-radius:4px; }
+.ddt-row-dur  { color:#8b949e; }
+.ddt-row-err  { color:#f85149; font-style:italic; }
 </style>

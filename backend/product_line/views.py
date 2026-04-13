@@ -8,6 +8,20 @@ from .models import ProductLine, ProductLineMember
 from .serializers import ProductLineSerializer, ProductLineMemberSerializer
 
 
+def _is_platform_admin(user):
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    roles = getattr(user, 'roles', None)
+    if roles is None:
+        return False
+    try:
+        return roles.filter(permissions__code='*').exists() or roles.filter(name__in=['超级管理员', 'admin']).exists()
+    except Exception:
+        return False
+
+
 @extend_schema(tags=['ProductLine'])
 class ProductLineViewSet(viewsets.ModelViewSet):
     serializer_class = ProductLineSerializer
@@ -16,8 +30,7 @@ class ProductLineViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         # 超管看全部，普通用户只看自己所属产品线
-        if user.roles.filter(permissions__code='*').exists() or \
-                user.roles.filter(name__in=['超级管理员', 'admin']).exists():
+        if _is_platform_admin(user):
             return ProductLine.objects.all().order_by('id')
         return ProductLine.objects.filter(members__user=user).order_by('id')
 
@@ -30,7 +43,7 @@ class ProductLineViewSet(viewsets.ModelViewSet):
     def mine(self, request):
         """我所属的产品线列表（超管返回全部）"""
         user = request.user
-        if user.is_staff or user.is_superuser:
+        if _is_platform_admin(user):
             qs = ProductLine.objects.all().order_by('id')
         else:
             qs = ProductLine.objects.filter(members__user=user).order_by('id')
@@ -41,7 +54,7 @@ class ProductLineViewSet(viewsets.ModelViewSet):
     def my_permissions(self, request, pk=None):
         """我在该产品线的权限码列表"""
         # 超管直接返回 '*'
-        if request.user.is_staff or request.user.is_superuser:
+        if _is_platform_admin(request.user):
             return Response(['*'])
         pl = self.get_object()
         try:

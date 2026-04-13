@@ -31,6 +31,18 @@ const router = createRouter({
           component: () => import('@/views/ProjectView.vue')
         },
         {
+          path: 'sprints',
+          name: 'sprints',
+          meta: { permission: 'project:list' },
+          component: () => import('@/views/SprintView.vue')
+        },
+        {
+          path: 'sprints/:id',
+          name: 'sprint-detail',
+          meta: { permission: 'project:detail' },
+          component: () => import('@/views/SprintDetailView.vue')
+        },
+        {
           path: 'projects/:id',
           name: 'project-detail',
           meta: { permission: 'project:detail' },
@@ -65,6 +77,24 @@ const router = createRouter({
           name: 'case-detail',
           meta: { permission: 'case:detail' },
           component: () => import('@/views/CaseDetailView.vue')
+        },
+        {
+          path: 'ui-cases',
+          name: 'ui-cases',
+          meta: { permission: 'case:list' },
+          component: () => import('@/views/UICaseView.vue')
+        },
+        {
+          path: 'ui-cases/new',
+          name: 'ui-case-new',
+          meta: { permission: 'case:create' },
+          component: () => import('@/views/UICaseDetailView.vue')
+        },
+        {
+          path: 'ui-cases/:id',
+          name: 'ui-case-detail',
+          meta: { permission: 'case:detail' },
+          component: () => import('@/views/UICaseDetailView.vue')
         },
         {
           path: 'suites',
@@ -119,6 +149,26 @@ const router = createRouter({
           name: 'product-lines',
           meta: { permission: 'product_line:list' },
           component: () => import('@/views/ProductLineView.vue')
+        },
+        {
+          path: 'performance',
+          name: 'performance',
+          component: () => import('@/views/PerformanceView.vue')
+        },
+        {
+          path: 'datasets',
+          name: 'datasets',
+          component: () => import('@/views/DataSetView.vue')
+        },
+        {
+          path: 'automation',
+          name: 'automation',
+          component: () => import('@/views/AutomationView.vue')
+        },
+        {
+          path: 'automation/runs/:id',
+          name: 'automation-run-detail',
+          component: () => import('@/views/AutomationRunDetailView.vue')
         }
       ]
     }
@@ -126,14 +176,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  const access = localStorage.getItem('access')
 
   // 未登录 → 跳登录页
-  if (!token && to.path !== '/login') {
+  if (!access && to.path !== '/login') {
     return next('/login')
   }
   // 已登录访问登录页 → 跳首页
-  if (token && to.path === '/login') {
+  if (access && to.path === '/login') {
     return next('/dashboard')
   }
   // 403 页无需权限检查

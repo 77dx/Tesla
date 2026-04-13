@@ -69,12 +69,22 @@
   --color-text-on-dark: var(--color-text-primary);
   --color-error-crimson: var(--color-error);
 
+  /* ===== 缺失的兼容性变量 ===== */
+  --accent-light: var(--color-accent-orange-light);
+  --radius-maximum: var(--radius-pill);
+
+  /* ===== 原设计系统颜色变量映射 ===== */
+  --color-ring-warm: var(--color-accent-orange);
+  --color-ring-deep: var(--color-accent-blue);
+  --color-ring-brand: var(--color-accent-orange);
+  --color-ring-dark: var(--color-dark-border);
+
   /* ===== 阴影兼容性变量 ===== */
-  --shadow-ring-warm: var(--shadow-ring-warm);
+  --shadow-ring-warm: 0 0 0 2px var(--color-accent-orange);
   --shadow-ring-deep: 0 0 0 2px var(--color-accent-blue);
-  --shadow-ring-brand: var(--shadow-ring-warm);
+  --shadow-ring-brand: 0 0 0 2px var(--color-accent-orange);
   --shadow-ring-dark: 0 0 0 2px var(--color-dark-border);
-  --shadow-ring-subtle: var(--shadow-ring-subtle);
+  --shadow-ring-subtle: 0 0 0 1px rgba(255, 255, 255, 0.1);
 
   /* ===== 排版兼容性变量 ===== */
   --font-size-subheading: var(--font-size-xl);

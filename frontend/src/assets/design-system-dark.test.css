@@ -17,11 +17,27 @@
 }
 
 .test-typography-system {
-  /* 验证排版系统（将在后续任务中添加） */
+  /* 验证排版系统 */
   font-family: var(--font-family-ui);
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
+  font-weight: var(--font-weight-normal);
+
+  /* 标题字体测试 */
+  .test-heading {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  /* 小字体测试 */
+  .test-small {
+    font-family: var(--font-family-ui);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-tight);
+  }
 }
 
 .test-spacing-system {

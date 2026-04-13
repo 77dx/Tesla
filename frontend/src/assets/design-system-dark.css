@@ -13,6 +13,9 @@
          将在后续任务中逐步添加。
    ════════════════════════════════════════════ */
 
+/* Inter字体导入 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* ────────────────────────────────────────────
    1. 颜色系统 (Color System) - 深色主题
    ──────────────────────────────────────────── */
@@ -53,4 +56,40 @@
   --text: var(--color-text-primary);
   --text-light: var(--color-text-secondary);
   --border: var(--color-dark-border);
+
+  /* ────────────────────────────────────────────
+     2. 排版系统 (Typography System)
+     ──────────────────────────────────────────── */
+
+  /* 字体家族 */
+  --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+
+  /* 字重 */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* 字号 */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+
+  /* 行高 */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* 字间距 */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.01em;
 }

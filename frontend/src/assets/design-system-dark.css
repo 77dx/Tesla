@@ -1,0 +1,46 @@
+/* ════════════════════════════════════════════
+   Tesla Design System — Dark Theme
+   基于DESIGN.md的深色技术主题设计系统
+   ════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────
+   1. 颜色系统 (Color System) - 深色主题
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== 核心色彩 (Core Colors) ===== */
+  --color-near-black: #0b0b0b;          /* 近黑色背景 */
+  --color-dark-surface: #1a1a1a;        /* 深色表面 */
+  --color-dark-border: #2a2a2a;         /* 深色边框 */
+
+  /* ===== 中性灰度 (Neutral Grayscale) ===== */
+  --color-pure-white: #ffffff;          /* 纯白色文本 */
+  --color-text-primary: #f0f0f0;        /* 主要文本 */
+  --color-text-secondary: #b0b0b0;      /* 次要文本 */
+  --color-text-tertiary: #808080;       /* 三级文本 */
+
+  /* ===== 强调色 (Accent Colors) ===== */
+  --color-accent-orange: #ff6b35;       /* 橙色强调色 */
+  --color-accent-orange-light: #ff8c42; /* 浅橙色 */
+  --color-accent-blue: #3a86ff;         /* 蓝色强调色 */
+  --color-accent-green: #38b000;        /* 绿色强调色 */
+  --color-accent-red: #e63946;          /* 红色强调色 */
+
+  /* ===== 状态色 (Status Colors) ===== */
+  --color-success: #38b000;
+  --color-warning: #ff9e00;
+  --color-error: #e63946;
+  --color-info: #3a86ff;
+
+  /* ===== 兼容性映射 (Compatibility Mapping) ===== */
+  --primary: var(--color-text-primary);
+  --accent: var(--color-accent-orange);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-error);
+  --bg: var(--color-near-black);
+  --card-bg: var(--color-dark-surface);
+  --text: var(--color-text-primary);
+  --text-light: var(--color-text-secondary);
+  --border: var(--color-dark-border);
+}

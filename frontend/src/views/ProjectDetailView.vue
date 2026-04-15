@@ -119,45 +119,13 @@
       </div>
     </div>
 
-    <!-- 编辑对话框 -->
-    <div v-if="showEditDialog" class="modal" @click.self="closeDialog">
-      <div class="modal-content">
-        <h3>编辑项目</h3>
-        <form @submit.prevent="handleSubmit" novalidate>
-          <div class="form-group">
-            <label>项目名称 <span class="required">*</span></label>
-            <input v-model="formData.name" :class="{ 'input-error': errors.name }" @input="errors.name = ''"/>
-            <span v-if="errors.name" class="error-tip">{{ errors.name }}</span>
-          </div>
-          <div class="form-group">
-            <label>项目简介</label>
-            <textarea v-model="formData.intro" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label>项目地址</label>
-            <input v-model="formData.url" placeholder="http://example.com" />
-          </div>
-          <div class="form-group">
-            <label>项目负责人</label>
-            <select v-model="formData.pm">
-              <option :value="null">请选择负责人</option>
-              <option v-for="u in userList" :key="u.id" :value="u.id">{{ u.profile?.nickname || u.username }}</option>
-            </select>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="closeDialog" class="btn">取消</button>
-            <button type="submit" class="btn btn-primary">保存</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getProjectDetail, updateProject, deleteProject, runProject, getProjectCaseRefs, getProjectSuiteRefs, createProjectCaseRef, createProjectSuiteRef, deleteProjectCaseRef, deleteProjectSuiteRef } from '@/api/project'
+import { getProjectDetail, deleteProject, runProject, getProjectCaseRefs, getProjectSuiteRefs, createProjectCaseRef, createProjectSuiteRef, deleteProjectCaseRef, deleteProjectSuiteRef } from '@/api/project'
 import { getEndpoints, getCases } from '@/api/case'
 import { getSuites, uploadImportCaseFile, startImportJob } from '@/api/suite'
 import { getAllUsers } from '@/api/account'
@@ -175,31 +143,15 @@ const caseRefs = ref([])
 const suiteRefs = ref([])
 const importFileRef = ref(null)
 const userList = ref([])
-const showEditDialog = ref(false)
 const showCaseRefDialog = ref(false)
 const showSuiteRefDialog = ref(false)
 const selectedCaseId = ref(null)
 const selectedSuiteId = ref(null)
-const errors = ref({ name: '' })
-const formData = ref({ name: '', intro: '', url: '', pm: null })
-
-const validate = () => {
-  let valid = true
-  errors.value = { name: '' }
-  if (!formData.value.name.trim()) { errors.value.name = '项目名称不能为空'; valid = false }
-  return valid
-}
 
 const loadProject = async () => {
   try {
     const res = await getProjectDetail(route.params.id)
     project.value = res.result || res
-    formData.value = {
-      name: project.value.name,
-      intro: project.value.intro || '',
-      url: project.value.url || '',
-      pm: project.value.pm || null,
-    }
     return project.value
   } catch (error) {
     console.error('加载项目详情失败:', error)
@@ -229,7 +181,7 @@ const loadRelatedData = async (projectObj) => {
 }
 
 const editProject = () => {
-  showEditDialog.value = true
+  router.push(`/projects/${route.params.id}/edit`)
 }
 
 const runProjectSuites = async () => {
@@ -314,25 +266,6 @@ const onImportFileChange = async (e) => {
   }
 }
 
-const handleSubmit = async () => {
-  if (!validate()) return
-  try {
-    await updateProject(route.params.id, formData.value)
-    closeDialog()
-    loadProject()
-  } catch (error) {
-    const data = error.response?.data
-    if (data) {
-      if (data.name) errors.value.name = Array.isArray(data.name) ? data.name[0] : data.name
-      if (data.url) errors.value.url = Array.isArray(data.url) ? data.url[0] : data.url
-      if (!data.name && !data.url) {
-        const msg = data.message || data.detail || data.msg || JSON.stringify(data)
-        alert('保存失败：' + msg)
-      }
-    }
-  }
-}
-
 const deleteProjectItem = async () => {
   const confirmed = await confirm('确定要删除这个项目吗？这将删除所有关联数据！', { type: 'danger' })
   if (confirmed) {
@@ -343,11 +276,6 @@ const deleteProjectItem = async () => {
       console.error('删除失败:', error)
     }
   }
-}
-
-const closeDialog = () => {
-  showEditDialog.value = false
-  errors.value = { name: '', url: '' }
 }
 
 const viewEndpoint = (id) => {
@@ -574,8 +502,8 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #e8f4fd;
-  color: #1565c0;
+  background: rgba(59, 130, 246, 0.08);
+  color: #3B82F6;
   padding: 3px 10px 3px 4px;
   border-radius: 20px;
   font-size: 13px;
@@ -585,7 +513,7 @@ onMounted(async () => {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #1565c0;
+  background: #3B82F6;
   color: white;
   font-size: 11px;
   font-weight: 700;

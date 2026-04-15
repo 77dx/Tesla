@@ -4,25 +4,25 @@
    ════════════════════════════════════════════ */
 
 /* 引入设计系统变量 */
-@import 'design-system-dark.css';
+@import 'design-system-light.css';
 
 /* 兼容性变量映射（确保现有组件正常工作） */
 :root {
-  /* 原系统变量映射到新深色系统 */
-  --primary: var(--color-text-primary);
-  --primary-light: var(--color-dark-surface);
-  --accent: var(--color-accent-orange);
-  --accent-hover: var(--color-accent-orange-light);
+  /* 原系统变量映射到新浅色系统 */
+  --primary: var(--color-primary);
+  --primary-light: var(--color-primary-bg);
+  --accent: var(--color-primary);
+  --accent-hover: var(--color-primary-hover);
   --success: var(--color-success);
   --warning: var(--color-warning);
   --danger: var(--color-error);
-  --bg: var(--color-near-black);
-  --card-bg: var(--color-dark-surface);
+  --bg: var(--color-bg-layout);
+  --card-bg: var(--color-bg-container);
   --text: var(--color-text-primary);
   --text-light: var(--color-text-secondary);
-  --border: var(--color-dark-border);
-  --shadow: rgba(0, 0, 0, 0.3);
-  --shadow-hover: rgba(0, 0, 0, 0.5);
+  --border: var(--color-border-base);
+  --shadow: rgba(0, 0, 0, 0.03);
+  --shadow-hover: rgba(0, 0, 0, 0.08);
 
   /* 原排版变量映射 */
   --font-base: var(--font-size-base);

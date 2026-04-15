@@ -260,13 +260,58 @@ class UICaseRunner:
                                 self._log(f'步骤 {idx} 截图完成：{shot}', result)
 
                     for rule in case.validate or []:
-                        if rule.get('type') == 'url_contains':
+                        rule_type = rule.get('type')
+                        rule_name = rule.get('name') or rule_type or 'assert'
+                        locator = self.resolver.resolve(rule.get('locator') or '')
+                        locator_type = rule.get('locator_type') or 'css'
+                        expect = self.resolver.resolve(rule.get('expected') or '')
+                        obj = self._prefer_visible_locator(self._resolve_locator(page, locator_type, locator))
+
+                        if rule_type == 'url_contains':
                             actual = page.url
-                            expect = self.resolver.resolve(rule.get('expected') or '')
                             passed = expect in actual
-                            result.assertions.append({'name': rule.get('name') or 'url_contains', 'type': 'contains', 'expect': expect, 'actual': actual, 'pass': passed, 'msg': '' if passed else f'URL 不包含 {expect!r}'})
+                            result.assertions.append({'name': rule_name, 'type': 'contains', 'expect': expect, 'actual': actual, 'pass': passed, 'msg': '' if passed else f'URL 不包含 {expect!r}'})
+                            self._log(f'用例断言 URL：{"通过" if passed else "失败"}', result)
                             if not passed:
                                 raise AssertionError(f'URL 不包含 {expect!r}')
+                        elif rule_type == 'text_contains' and obj:
+                            self._wait_until_visible(obj)
+                            actual = obj.text_content() or ''
+                            passed = expect in actual
+                            result.assertions.append({'name': rule_name, 'type': 'contains', 'expect': expect, 'actual': actual, 'pass': passed, 'msg': '' if passed else f'文本不包含 {expect!r}'})
+                            self._log(f'用例断言文本：{"通过" if passed else "失败"}', result)
+                            if not passed:
+                                raise AssertionError(f'文本不包含 {expect!r}')
+                        elif rule_type == 'visible' and obj:
+                            self._wait_until_visible(obj)
+                            actual = obj.is_visible()
+                            passed = bool(actual)
+                            result.assertions.append({'name': rule_name, 'type': 'visible', 'expect': True, 'actual': actual, 'pass': passed, 'msg': '' if passed else '元素不可见'})
+                            self._log(f'用例断言可见：{"通过" if passed else "失败"}', result)
+                            if not passed:
+                                raise AssertionError('元素不可见')
+
+                    for rule in case.extract or []:
+                        rule_type = rule.get('type')
+                        save_as = rule.get('name')
+                        locator = self.resolver.resolve(rule.get('locator') or '')
+                        locator_type = rule.get('locator_type') or 'css'
+                        obj = self._prefer_visible_locator(self._resolve_locator(page, locator_type, locator))
+                        if not save_as or not obj:
+                            continue
+                        self._wait_until_visible(obj)
+                        if rule_type == 'text':
+                            extracted = obj.text_content() or ''
+                        elif rule_type == 'value':
+                            extracted = obj.input_value()
+                        elif rule_type == 'attr':
+                            attr_name = rule.get('attr') or 'value'
+                            extracted = obj.get_attribute(attr_name) or ''
+                        else:
+                            continue
+                        self.ctx.set(save_as, extracted)
+                        result.extracted[save_as] = extracted
+                        self._log(f'用例提取完成：{save_as}={extracted}', result)
 
                     self._run_script(case.post_script, page, case)
                     context.close()

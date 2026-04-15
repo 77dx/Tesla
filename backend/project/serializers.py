@@ -22,6 +22,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
+        extra_kwargs = {
+            'name': {'required': False},
+        }
 
     def get_pm_name(self, obj):
         if obj.pm:

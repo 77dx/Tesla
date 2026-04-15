@@ -12,6 +12,9 @@ export const updateProject = (id, data) => api.put(`/project/project/${id}/`, da
 // 删除项目
 export const deleteProject = (id) => api.delete(`/project/project/${id}/`)
 
+// 批量删除项目
+export const batchDeleteProjects = (ids) => api.post('/project/project/delete/', { ids })
+
 // 获取项目详情
 export const getProjectDetail = (id) => api.get(`/project/project/${id}/`)
 

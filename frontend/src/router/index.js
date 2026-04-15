@@ -31,6 +31,24 @@ const router = createRouter({
           component: () => import('@/views/ProjectView.vue')
         },
         {
+          path: 'projects/new',
+          name: 'project-new',
+          meta: { permission: 'project:create' },
+          component: () => import('@/views/ProjectFormView.vue')
+        },
+        {
+          path: 'projects/:id/edit',
+          name: 'project-edit',
+          meta: { permission: 'project:change' },
+          component: () => import('@/views/ProjectFormView.vue')
+        },
+        {
+          path: 'projects/:id',
+          name: 'project-detail',
+          meta: { permission: 'project:detail' },
+          component: () => import('@/views/ProjectDetailView.vue')
+        },
+        {
           path: 'sprints',
           name: 'sprints',
           meta: { permission: 'project:list' },

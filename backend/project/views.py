@@ -39,6 +39,16 @@ class ProjectViewSet(BaseViewSet):
     search_fields = ['name', 'id']
     product_line_field = 'product_line_id'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status = self.request.query_params.get('status')
+        if status:
+            qs = qs.filter(status=status)
+        pm_id = self.request.query_params.get('pm')
+        if pm_id:
+            qs = qs.filter(pm_id=pm_id)
+        return qs
+
     @action(methods=['POST'], detail=True, url_path='run')
     def run_project(self, request, pk=None):
         project = self.get_object()

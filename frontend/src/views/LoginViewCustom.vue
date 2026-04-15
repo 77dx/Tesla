@@ -56,75 +56,74 @@
 
     <!-- 右侧登录区域 -->
     <div class="login-content">
-      <div class="login-card">
-        <div class="login-header">
-          <h2>欢迎回来</h2>
-          <p>请登录您的账号以继续使用Tesla平台</p>
-        </div>
+      <BaseCard class="login-card" :bordered="false" shadow="normal" padding="comfortable">
+        <template #title>
+          <div class="login-header">
+            <h2>欢迎回来</h2>
+            <p>请登录您的账号以继续使用Tesla平台</p>
+          </div>
+        </template>
 
-        <a-form
-          ref="formRef"
-          :model="formState"
-          :rules="formRules"
+        <BaseForm
           layout="vertical"
-          class="login-form"
-          @finish="handleLogin"
+          :submitting="loading"
+          submit-text="登录"
+          @submit="handleLogin"
         >
-          <a-form-item label="用户名" name="username" required>
-            <a-input
-              v-model:value="formState.username"
-              placeholder="请输入用户名"
-              size="middle"
-              allow-clear
-            >
-              <template #prefix>
-                <UserOutlined style="color: rgba(0, 0, 0, 0.25)" />
-              </template>
-            </a-input>
-          </a-form-item>
+          <BaseInput
+            v-model="formState.username"
+            label="用户名"
+            placeholder="请输入用户名"
+            :required="true"
+            :clearable="true"
+            size="middle"
+            :error="errors.username"
+            @blur="validateField('username')"
+          >
+            <template #prefix>
+              <UserIcon size="16" />
+            </template>
+          </BaseInput>
 
-          <a-form-item label="密码" name="password" required>
-            <a-input-password
-              v-model:value="formState.password"
-              placeholder="请输入密码"
-              size="middle"
-              allow-clear
-            >
-              <template #prefix>
-                <LockOutlined style="color: rgba(0, 0, 0, 0.25)" />
-              </template>
-            </a-input-password>
-          </a-form-item>
+          <BaseInput
+            v-model="formState.password"
+            type="password"
+            label="密码"
+            placeholder="请输入密码"
+            :required="true"
+            :clearable="true"
+            size="middle"
+            :error="errors.password"
+            @blur="validateField('password')"
+          >
+            <template #prefix>
+              <LockIcon size="16" />
+            </template>
+          </BaseInput>
 
-          <a-form-item>
-            <a-checkbox v-model:checked="formState.remember">记住密码</a-checkbox>
-            <a-button type="link" style="float: right; padding: 0;">忘记密码？</a-button>
-          </a-form-item>
-
-          <a-form-item>
-            <a-button
-              type="primary"
-              html-type="submit"
-              size="large"
-              :loading="loading"
-              block
-              class="login-btn"
-            >
-              {{ loading ? '登录中...' : '登录' }}
-            </a-button>
-          </a-form-item>
+          <div class="form-options">
+            <label class="checkbox-wrapper">
+              <input type="checkbox" v-model="formState.remember" />
+              <span>记住密码</span>
+            </label>
+            <BaseButton type="button" variant="link" @click="handleForgotPassword">
+              忘记密码？
+            </BaseButton>
+          </div>
 
           <div v-if="error" class="error-message">
-            <AlertOutlined style="margin-right: 8px;" />
+            <AlertIcon size="16" />
             {{ error }}
           </div>
-        </a-form>
+        </BaseForm>
 
-        <div class="login-footer">
-          <p>还没有账号？<a-button type="link" style="padding: 0;">联系管理员开通</a-button></p>
-          <p class="version-info">Tesla测试平台 v1.0.0</p>
-        </div>
-      </div>
+        <template #footer>
+          <div class="login-footer">
+            <p>还没有账号？<BaseButton type="button" variant="link" @click="handleContactAdmin">联系管理员开通</BaseButton></p>
+            <p class="version-info">Tesla测试平台 v1.0.0</p>
+          </div>
+        </template>
+      </BaseCard>
     </div>
   </div>
 </template>
@@ -133,11 +132,8 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import {
-  UserOutlined,
-  LockOutlined,
-  AlertOutlined
-} from '@ant-design/icons-vue'
+import { BaseCard, BaseForm, BaseInput, BaseButton } from '@/components/UI'
+import { UserIcon, LockIcon, AlertIcon } from '@/components/UI/icons'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -151,16 +147,32 @@ const formState = reactive({
   remember: false
 })
 
-const formRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
+const errors = reactive({
+  username: '',
+  password: ''
+})
+
+const validateField = (field) => {
+  const value = formState[field]
+  if (!value || value.trim() === '') {
+    errors[field] = field === 'username' ? '请输入用户名' : '请输入密码'
+  } else {
+    errors[field] = ''
+  }
+}
+
+const validateForm = () => {
+  validateField('username')
+  validateField('password')
+  
+  return !errors.username && !errors.password
 }
 
 const handleLogin = async () => {
+  if (!validateForm()) {
+    return
+  }
+
   loading.value = true
   error.value = ''
   
@@ -177,6 +189,16 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleForgotPassword = () => {
+  // 忘记密码逻辑
+  console.log('忘记密码')
+}
+
+const handleContactAdmin = () => {
+  // 联系管理员逻辑
+  console.log('联系管理员')
 }
 </script>
 
@@ -353,10 +375,6 @@ const handleLogin = async () => {
 .login-card {
   width: 100%;
   max-width: 440px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  padding: 48px;
   animation: slideIn 0.6s ease-out;
 }
 
@@ -390,63 +408,39 @@ const handleLogin = async () => {
   line-height: 1.5;
 }
 
-.login-form {
-  margin-bottom: 32px;
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-.login-form :deep(.ant-form-item-label) {
-  font-weight: 500;
-  margin-bottom: 8px;
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
 }
 
-.login-form :deep(.ant-input),
-.login-form :deep(.ant-input-password) {
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 16px;
+.checkbox-wrapper input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  cursor: pointer;
 }
 
-.login-form :deep(.ant-input-affix-wrapper) {
-  border-radius: 10px;
-  padding: 8px 14px;
-}
-
-.login-form :deep(.ant-input-affix-wrapper-focused) {
+.checkbox-wrapper input[type="checkbox"]:checked {
+  background-color: #1890ff;
   border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-}
-
-.login-form :deep(.ant-checkbox-wrapper) {
-  font-size: 14px;
-  color: #666;
-}
-
-.login-form :deep(.ant-btn-link) {
-  font-size: 14px;
-  color: #666;
-}
-
-.login-btn {
-  border-radius: 10px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  height: auto;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-}
-
-.login-btn:active {
-  transform: translateY(0);
 }
 
 .error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: #fff2f0;
   border: 1px solid #ffccc7;
   color: #ff4d4f;
@@ -454,8 +448,6 @@ const handleLogin = async () => {
   border-radius: 10px;
   font-size: 14px;
   margin-top: 16px;
-  display: flex;
-  align-items: center;
   animation: fadeIn 0.3s ease;
 }
 
@@ -472,7 +464,6 @@ const handleLogin = async () => {
 
 .login-footer {
   text-align: center;
-  border-top: 1px solid #f0f0f0;
   padding-top: 24px;
 }
 
@@ -484,11 +475,6 @@ const handleLogin = async () => {
 
 .login-footer p:last-child {
   margin-bottom: 0;
-}
-
-.login-footer .ant-btn-link {
-  padding: 0;
-  font-size: 14px;
 }
 
 .version-info {
@@ -513,7 +499,6 @@ const handleLogin = async () => {
   }
   
   .login-card {
-    padding: 32px;
     margin-top: -60px;
     position: relative;
     z-index: 2;
@@ -576,51 +561,9 @@ const handleLogin = async () => {
     font-size: 12px;
   }
   
-  .login-card {
-    padding: 24px;
-  }
-  
   .login-header h2 {
     font-size: 24px;
   }
   
   .login-header p {
-    font-size: 13px;
-  }
-  
-  .login-form :deep(.ant-input),
-  .login-form :deep(.ant-input-password),
-  .login-form :deep(.ant-input-affix-wrapper) {
-    padding: 8px 14px;
-    font-size: 14px;
-  }
-  
-  .login-btn {
-    padding: 12px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 360px) {
-  .login-decoration {
-    min-height: 250px;
-  }
-  
-  .login-card {
-    padding: 20px;
-  }
-  
-  .login-header h2 {
-    font-size: 20px;
-  }
-  
-  .login-form {
-    margin-bottom: 24px;
-  }
-  
-  .error-message {
-    font-size: 12px;
-    padding: 10px 14px;
-  }
-}
-</style>
+    font-size

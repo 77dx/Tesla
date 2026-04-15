@@ -74,7 +74,7 @@
             <a-input
               v-model:value="formState.username"
               placeholder="请输入用户名"
-              size="middle"
+              size="large"
               allow-clear
             >
               <template #prefix>
@@ -87,7 +87,7 @@
             <a-input-password
               v-model:value="formState.password"
               placeholder="请输入密码"
-              size="middle"
+              size="large"
               allow-clear
             >
               <template #prefix>
@@ -153,10 +153,12 @@ const formState = reactive({
 
 const formRules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '用户名长度在3到20个字符之间', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度在6到20个字符之间', trigger: 'blur' }
   ]
 }
 
@@ -402,13 +404,13 @@ const handleLogin = async () => {
 .login-form :deep(.ant-input),
 .login-form :deep(.ant-input-password) {
   border-radius: 10px;
-  padding: 8px 14px;
+  padding: 12px 16px;
   font-size: 16px;
 }
 
 .login-form :deep(.ant-input-affix-wrapper) {
   border-radius: 10px;
-  padding: 8px 14px;
+  padding: 12px 16px;
 }
 
 .login-form :deep(.ant-input-affix-wrapper-focused) {
@@ -591,7 +593,7 @@ const handleLogin = async () => {
   .login-form :deep(.ant-input),
   .login-form :deep(.ant-input-password),
   .login-form :deep(.ant-input-affix-wrapper) {
-    padding: 8px 14px;
+    padding: 10px 14px;
     font-size: 14px;
   }
   

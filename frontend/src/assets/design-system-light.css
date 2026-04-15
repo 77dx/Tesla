@@ -1,0 +1,555 @@
+/* ════════════════════════════════════════════
+   Tesla Design System — Light Theme
+   基于Ant Design Pro的浅色企业级后台设计系统
+
+   设计理念：
+   1. 浅色优先：以#ffffff白色为背景，创建清晰明亮的界面
+   2. Ant Design风格：采用Ant Design蓝色主题色(#1677ff)和设计规范
+   3. 企业级体验：类似ant-design-pro的专业后台界面
+   4. 8px基准：所有间距基于8px倍数，确保视觉一致性
+   ════════════════════════════════════════════ */
+
+/* Inter字体导入 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ────────────────────────────────────────────
+   1. 颜色系统 (Color System) - 浅色主题
+   ──────────────────────────────────────────── */
+
+:root {
+  /* ===== Ant Design 核心色彩 ===== */
+  --color-primary: #1677ff;              /* Ant Design主蓝色 */
+  --color-primary-hover: #4096ff;
+  --color-primary-active: #0958d9;
+  --color-primary-bg: #e6f4ff;
+  
+  /* ===== 中性灰度 (Neutral Grayscale) ===== */
+  --color-white: #ffffff;
+  --color-gray-1: #fafafa;
+  --color-gray-2: #f5f5f5;
+  --color-gray-3: #f0f0f0;
+  --color-gray-4: #d9d9d9;
+  --color-gray-5: #bfbfbf;
+  --color-gray-6: #8c8c8c;
+  --color-gray-7: #595959;
+  --color-gray-8: #434343;
+  --color-gray-9: #262626;
+  --color-gray-10: #1f1f1f;
+  --color-black: #000000;
+
+  /* ===== 表面色 (Surface Colors) ===== */
+  --color-bg-layout: #f5f5f5;            /* 布局背景 */
+  --color-bg-container: #ffffff;         /* 容器背景 */
+  --color-bg-container-secondary: #fafafa; /* 次要容器背景 */
+  --color-bg-container-disabled: rgba(0, 0, 0, 0.04); /* 禁用状态背景 */
+
+  /* ===== 文本色 (Text Colors) ===== */
+  --color-text-base: #000000;            /* 基础文本 */
+  --color-text-primary: rgba(0, 0, 0, 0.88); /* 主要文本 */
+  --color-text-secondary: rgba(0, 0, 0, 0.65); /* 次要文本 */
+  --color-text-tertiary: rgba(0, 0, 0, 0.45); /* 三级文本 */
+  --color-text-quaternary: rgba(0, 0, 0, 0.25); /* 四级文本 */
+  --color-text-disabled: rgba(0, 0, 0, 0.25); /* 禁用文本 */
+
+  /* ===== 边框色 (Border Colors) ===== */
+  --color-border-base: #d9d9d9;          /* 基础边框 */
+  --color-border-secondary: #f0f0f0;     /* 次要边框 */
+  --color-border-primary: var(--color-primary); /* 主要边框 */
+
+  /* ===== 状态色 (Status Colors) ===== */
+  --color-success: #52c41a;
+  --color-success-bg: #f6ffed;
+  --color-success-border: #b7eb8f;
+  
+  --color-warning: #faad14;
+  --color-warning-bg: #fffbe6;
+  --color-warning-border: #ffe58f;
+  
+  --color-error: #ff4d4f;
+  --color-error-bg: #fff2f0;
+  --color-error-border: #ffccc7;
+  
+  --color-info: #1677ff;
+  --color-info-bg: #e6f4ff;
+  --color-info-border: #91caff;
+
+  /* ===== 链接色 (Link Colors) ===== */
+  --color-link: #1677ff;
+  --color-link-hover: #4096ff;
+  --color-link-active: #0958d9;
+
+  /* ===== 兼容性映射 (Compatibility Mapping) ===== */
+  --primary: var(--color-primary);
+  --primary-light: var(--color-primary-bg);
+  --accent: var(--color-primary);
+  --accent-hover: var(--color-primary-hover);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-error);
+  --info: var(--color-info);
+  --bg: var(--color-bg-layout);
+  --card-bg: var(--color-bg-container);
+  --text: var(--color-text-primary);
+  --text-light: var(--color-text-secondary);
+  --border: var(--color-border-base);
+
+  /* ===== 原系统兼容性变量 ===== */
+  --color-near-black: var(--color-black);
+  --color-dark-surface: var(--color-gray-2);
+  --color-dark-border: var(--color-gray-4);
+  --color-pure-white: var(--color-white);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary: var(--color-text-tertiary);
+  --color-accent-orange: var(--color-primary);
+  --color-accent-orange-light: var(--color-primary-hover);
+  --color-accent-blue: var(--color-primary);
+  --color-accent-green: var(--color-success);
+  --color-accent-red: var(--color-error);
+  
+  /* ===== Ant Design组件变量 ===== */
+  --ant-color-primary: var(--color-primary);
+  --ant-color-primary-hover: var(--color-primary-hover);
+  --ant-color-primary-active: var(--color-primary-active);
+  --ant-color-primary-bg: var(--color-primary-bg);
+  --ant-color-text: var(--color-text-primary);
+  --ant-color-text-secondary: var(--color-text-secondary);
+  --ant-color-text-tertiary: var(--color-text-tertiary);
+  --ant-color-border: var(--color-border-base);
+  --ant-color-border-secondary: var(--color-border-secondary);
+  --ant-color-bg-container: var(--color-bg-container);
+  --ant-color-bg-layout: var(--color-bg-layout);
+  --ant-color-bg-container-disabled: var(--color-bg-container-disabled);
+
+  /* ────────────────────────────────────────────
+     2. 排版系统 (Typography System)
+     ──────────────────────────────────────────── */
+
+  /* 字体家族 */
+  --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+
+  /* 字重 */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* 字号 - Ant Design规范 */
+  --font-size-xs: 12px;      /* 小号文本 */
+  --font-size-sm: 14px;      /* 正文（小） */
+  --font-size-base: 16px;    /* 正文 */
+  --font-size-lg: 20px;      /* 小标题 */
+  --font-size-xl: 24px;      /* 标题 */
+  --font-size-2xl: 30px;     /* 大标题 */
+  --font-size-3xl: 38px;     /* 特大标题 */
+  --font-size-4xl: 46px;     /* 超大标题 */
+
+  /* 行高 */
+  --line-height-xs: 1.66667;  /* 20px / 12px */
+  --line-height-sm: 1.57143;  /* 22px / 14px */
+  --line-height-base: 1.5;    /* 24px / 16px */
+  --line-height-lg: 1.4;      /* 28px / 20px */
+  --line-height-xl: 1.33333;  /* 32px / 24px */
+
+  /* 字间距 */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.01em;
+
+  /* ────────────────────────────────────────────
+     3. 间距系统 (Spacing System) - 8px基准
+     ──────────────────────────────────────────── */
+
+  /* 8px基准间距系统 */
+  --space-0: 0;
+  --space-1: 2px;    /* 微小间距 */
+  --space-2: 4px;    /* 超小间距 */
+  --space-3: 8px;    /* 小间距 */
+  --space-4: 12px;   /* 中小间距 */
+  --space-5: 16px;   /* 基础间距 */
+  --space-6: 20px;   /* 中间距 */
+  --space-7: 24px;   /* 中大间距 */
+  --space-8: 32px;   /* 大间距 */
+  --space-9: 40px;   /* 超大间距 */
+  --space-10: 48px;  /* 特大间距 */
+  --space-11: 64px;  /* 巨大间距 */
+  --space-12: 80px;  /* 超巨大间距 */
+  --space-13: 96px;  /* 最大间距 */
+  --space-14: 128px; /* 极端间距 */
+
+  /* Ant Design组件间距 */
+  --ant-margin-xs: 4px;
+  --ant-margin-sm: 8px;
+  --ant-margin: 12px;
+  --ant-margin-md: 16px;
+  --ant-margin-lg: 20px;
+  --ant-margin-xl: 24px;
+  --ant-margin-xxl: 32px;
+
+  --ant-padding-xs: 4px;
+  --ant-padding-sm: 8px;
+  --ant-padding: 12px;
+  --ant-padding-md: 16px;
+  --ant-padding-lg: 20px;
+  --ant-padding-xl: 24px;
+  --ant-padding-xxl: 32px;
+
+  /* ────────────────────────────────────────────
+     4. 圆角系统 (Border Radius System)
+     ──────────────────────────────────────────── */
+
+  /* Ant Design圆角规范 */
+  --radius-none: 0;
+  --radius-xs: 2px;     /* 超小圆角 */
+  --radius-sm: 4px;     /* 小圆角 */
+  --radius-base: 6px;   /* 基础圆角 */
+  --radius-md: 8px;     /* 中圆角 */
+  --radius-lg: 12px;    /* 大圆角 */
+  --radius-xl: 16px;    /* 超大圆角 */
+  --radius-pill: 9999px; /* 药丸形 */
+
+  /* Ant Design组件圆角 */
+  --ant-border-radius-xs: var(--radius-xs);
+  --ant-border-radius-sm: var(--radius-sm);
+  --ant-border-radius-base: var(--radius-base);
+  --ant-border-radius-md: var(--radius-md);
+  --ant-border-radius-lg: var(--radius-lg);
+
+  /* ────────────────────────────────────────────
+     5. 阴影系统 (Shadow System)
+     ──────────────────────────────────────────── */
+
+  /* Ant Design阴影层级 */
+  --shadow-none: none;
+  --shadow-1: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  --shadow-2: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --shadow-3: 0 6px 16px -8px rgba(0, 0, 0, 0.08), 0 9px 28px 0 rgba(0, 0, 0, 0.05), 0 12px 48px 16px rgba(0, 0, 0, 0.03);
+  
+  /* 组件阴影 */
+  --shadow-card: 0 1px 2px -2px rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.12), 0 5px 12px 4px rgba(0, 0, 0, 0.09);
+  --shadow-modal: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --shadow-dropdown: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --shadow-tooltip: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+
+  /* 聚焦阴影 */
+  --shadow-focus: 0 0 0 2px rgba(22, 119, 255, 0.1);
+
+  /* 兼容性变量 */
+  --shadow-level-0: var(--shadow-none);
+  --shadow-level-1: var(--shadow-1);
+  --shadow-level-2: var(--shadow-2);
+  --shadow-level-3: var(--shadow-3);
+  --shadow-ring-warm: 0 0 0 2px var(--color-primary);
+}
+
+/* ────────────────────────────────────────────
+   6. 基础样式重置 (Base Resets)
+   ──────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-layout);
+  margin: 0;
+  padding: 0;
+}
+
+/* ────────────────────────────────────────────
+   7. 排版工具类 (Typography Utilities)
+   ──────────────────────────────────────────── */
+
+/* 标题样式 - Ant Design规范 */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-xl);
+  margin-bottom: var(--space-8);
+}
+
+h2 {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-xl);
+  margin-bottom: var(--space-7);
+}
+
+h3 {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-lg);
+  margin-bottom: var(--space-6);
+}
+
+h4 {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-lg);
+  margin-bottom: var(--space-5);
+}
+
+h5 {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  margin-bottom: var(--space-4);
+}
+
+h6 {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  margin-bottom: var(--space-3);
+}
+
+/* 正文样式 */
+p {
+  margin: 0 0 var(--space-5);
+  line-height: var(--line-height-base);
+}
+
+/* 链接样式 */
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+a:active {
+  color: var(--color-link-active);
+}
+
+/* 代码样式 */
+code,
+pre {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-gray-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-gray-3);
+}
+
+pre {
+  padding: var(--space-5);
+  overflow-x: auto;
+  margin-bottom: var(--space-5);
+}
+
+/* 列表样式 */
+ul, ol {
+  margin: 0 0 var(--space-5);
+  padding-left: var(--space-7);
+}
+
+li {
+  margin-bottom: var(--space-2);
+  line-height: var(--line-height-base);
+}
+
+/* ────────────────────────────────────────────
+   8. 布局工具类 (Layout Utilities)
+   ──────────────────────────────────────────── */
+
+/* 容器 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+.container-wide {
+  max-width: 1400px;
+}
+
+.container-narrow {
+  max-width: 800px;
+}
+
+/* Flex布局工具类 */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-5 { gap: var(--space-5); }
+.gap-6 { gap: var(--space-6); }
+.gap-7 { gap: var(--space-7); }
+.gap-8 { gap: var(--space-8); }
+
+/* 间距工具类 */
+.m-0 { margin: 0 !important; }
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.ml-0 { margin-left: 0 !important; }
+.mr-0 { margin-right: 0 !important; }
+
+.m-1 { margin: var(--space-1) !important; }
+.mt-1 { margin-top: var(--space-1) !important; }
+.mb-1 { margin-bottom: var(--space-1) !important; }
+
+.m-2 { margin: var(--space-2) !important; }
+.mt-2 { margin-top: var(--space-2) !important; }
+.mb-2 { margin-bottom: var(--space-2) !important; }
+
+.m-3 { margin: var(--space-3) !important; }
+.mt-3 { margin-top: var(--space-3) !important; }
+.mb-3 { margin-bottom: var(--space-3) !important; }
+
+.m-4 { margin: var(--space-4) !important; }
+.mt-4 { margin-top: var(--space-4) !important; }
+.mb-4 { margin-bottom: var(--space-4) !important; }
+
+.m-5 { margin: var(--space-5) !important; }
+.mt-5 { margin-top: var(--space-5) !important; }
+.mb-5 { margin-bottom: var(--space-5) !important; }
+
+.p-0 { padding: 0 !important; }
+.pt-0 { padding-top: 0 !important; }
+.pb-0 { padding-bottom: 0 !important; }
+
+.p-1 { padding: var(--space-1) !important; }
+.pt-1 { padding-top: var(--space-1) !important; }
+.pb-1 { padding-bottom: var(--space-1) !important; }
+
+.p-2 { padding: var(--space-2) !important; }
+.pt-2 { padding-top: var(--space-2) !important; }
+.pb-2 { padding-bottom: var(--space-2) !important; }
+
+.p-3 { padding: var(--space-3) !important; }
+.pt-3 { padding-top: var(--space-3) !important; }
+.pb-3 { padding-bottom: var(--space-3) !important; }
+
+.p-4 { padding: var(--space-4) !important; }
+.pt-4 { padding-top: var(--space-4) !important; }
+.pb-4 { padding-bottom: var(--space-4) !important; }
+
+.p-5 { padding: var(--space-5) !important; }
+.pt-5 { padding-top: var(--space-5) !important; }
+.pb-5 { padding-bottom: var(--space-5) !important; }
+
+/* 显示工具类 */
+.d-block { display: block !important; }
+.d-inline { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+.d-none { display: none !important; }
+
+/* 文本对齐 */
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-justify { text-align: justify !important; }
+
+/* 圆角工具类 */
+.rounded-sm { border-radius: var(--radius-sm) !important; }
+.rounded-md { border-radius: var(--radius-md) !important; }
+.rounded-lg { border-radius: var(--radius-lg) !important; }
+.rounded-xl { border-radius: var(--radius-xl) !important; }
+.rounded-full { border-radius: var(--radius-pill) !important; }
+
+/* 阴影工具类 */
+.shadow-sm { box-shadow: var(--shadow-1) !important; }
+.shadow-md { box-shadow: var(--shadow-2) !important; }
+.shadow-lg { box-shadow: var(--shadow-3) !important; }
+.shadow-card { box-shadow: var(--shadow-card) !important; }
+.shadow-modal { box-shadow: var(--shadow-modal) !important; }
+
+/* 背景色工具类 */
+.bg-white { background-color: var(--color-white) !important; }
+.bg-gray-1 { background-color: var(--color-gray-1) !important; }
+.bg-gray-2 { background-color: var(--color-gray-2) !important; }
+.bg-gray-3 { background-color: var(--color-gray-3) !important; }
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-primary-bg { background-color: var(--color-primary-bg) !important; }
+.bg-success-bg { background-color: var(--color-success-bg) !important; }
+.bg-warning-bg { background-color: var(--color-warning-bg) !important; }
+.bg-error-bg { background-color: var(--color-error-bg) !important; }
+.bg-info-bg { background-color: var(--color-info-bg) !important; }
+
+/* 文本颜色工具类 */
+.text-primary { color: var(--color-primary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-error { color: var(--color-error) !important; }
+.text-info { color: var(--color-info) !important; }
+.text-base { color: var(--color-text-base) !important; }
+.text-secondary { color: var(--color-text-secondary) !important; }
+.text-tertiary { color: var(--color-text-tertiary) !important; }
+.text-quaternary { color: var(--color-text-quaternary) !important; }
+.text-disabled { color: var(--color-text-disabled) !important; }
+
+/* 边框工具类 */
+.border { border: 1px solid var(--color-border-base) !important; }
+.border-secondary { border: 1px solid var(--color-border-secondary) !important; }
+.border-primary { border: 1px solid var(--color-primary) !important; }
+.border-success { border: 1px solid var(--color-success) !important; }
+.border-warning { border: 1px solid var(--color-warning) !important; }
+.border-error { border: 1px solid var(--color-error) !important; }
+.border-info { border: 1px solid var(--color-info) !important; }
+.border-none { border: none !important; }
+
+/* 响应式断点 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+  
+  h1 { font-size: var(--font-size-2xl); }
+  h2 { font-size: var(--font-size-xl); }
+  h3 { font-size: var(--font-size-lg); }
+  h4 { font-size: var(--font-size-base); }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 var(--space-3);
+  }
+  
+  h1 { font-size: var(--font-size-xl); }
+  h2 { font-size: var(--font-size-lg); }
+  h3 { font-size: var(--font-size-base); }
+  h4 { font-size: var(--font-size-sm); }
+}

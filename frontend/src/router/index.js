@@ -79,6 +79,12 @@ const router = createRouter({
           component: () => import('@/views/EndpointFormView.vue')
         },
         {
+          path: 'endpoints/edit/:id',
+          name: 'endpoint-edit',
+          meta: { permission: 'endpoint:edit' },
+          component: () => import('@/views/EndpointFormView.vue')
+        },
+        {
           path: 'endpoints/:id',
           name: 'endpoint-detail',
           meta: { permission: 'endpoint:detail' },
@@ -95,6 +101,18 @@ const router = createRouter({
           name: 'case-detail',
           meta: { permission: 'case:detail' },
           component: () => import('@/views/CaseDetailView.vue')
+        },
+        {
+          path: 'cases/new',
+          name: 'case-new',
+          meta: { permission: 'case:create' },
+          component: () => import('@/views/CaseFormView.vue')
+        },
+        {
+          path: 'cases/:id/edit',
+          name: 'case-edit',
+          meta: { permission: 'case:update' },
+          component: () => import('@/views/CaseFormView.vue')
         },
         {
           path: 'ui-cases',

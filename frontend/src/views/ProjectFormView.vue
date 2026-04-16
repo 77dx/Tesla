@@ -1,18 +1,9 @@
 <template>
   <div class="project-form-view">
-    <!-- 页面大标题区 -->
-    <div class="page-hero">
-      <div class="page-hero__left">
-        <div class="page-hero__icon-wrap">
-          <FolderOpenOutlined class="page-hero__icon" />
-        </div>
-        <div class="page-hero__text">
-          <h1 class="page-hero__title">{{ isEdit ? '编辑项目' : '新建项目' }}</h1>
-          <p class="page-hero__desc">{{ isEdit ? '修改项目基本信息' : '创建一个新的测试项目，开始你的测试之旅' }}</p>
-        </div>
-      </div>
-      <button class="btn-back-circle" @click="$router.back()" title="返回">
-        <ArrowLeftOutlined />
+    <!-- 顶部返回栏 -->
+    <div class="page-header">
+      <button class="btn-back" @click="$router.back()">
+        <ArrowLeftOutlined /> 返回项目列表
       </button>
     </div>
 
@@ -308,7 +299,6 @@ import { getAllUsers } from '@/api/account'
 import { useUserStore } from '@/stores/user'
 import {
   ArrowLeftOutlined,
-  FolderOpenOutlined,
   FileTextOutlined,
   CalendarOutlined,
   GlobalOutlined,
@@ -322,6 +312,12 @@ import {
   CloseOutlined,
   LoadingOutlined,
 } from '@ant-design/icons-vue'
+import {
+  PROJECT_STATUS_LIST,
+  PROJECT_PRIORITY_LIST,
+  getProductLineColor,
+  stringToColor,
+} from '@/components/UI'
 
 const router = useRouter()
 const route = useRoute()
@@ -332,23 +328,12 @@ const currentProductLine = computed(() => userStore.currentProductLine)
 
 const plColor = computed(() => {
   if (!currentProductLine.value) return '#9CA3AF'
-  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
-  return colors[currentProductLine.value.id % colors.length]
+  return getProductLineColor(currentProductLine.value.id)
 })
 
-const statusOptions = [
-  { value: 'planning', label: '规划中', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
-  { value: 'active',   label: '进行中', color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0' },
-  { value: 'testing',  label: '测试中', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A' },
-  { value: 'done',     label: '已完成', color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC' },
-  { value: 'archived', label: '已归档', color: '#9CA3AF', bg: '#F9FAFB', border: '#E5E7EB' },
-]
-
-const priorityOptions = [
-  { value: 2, label: '高', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
-  { value: 1, label: '中', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
-  { value: 0, label: '低', color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB' },
-]
+// 复用常量
+const statusOptions = PROJECT_STATUS_LIST
+const priorityOptions = PROJECT_PRIORITY_LIST
 
 const formData = reactive({
   name: '',
@@ -374,16 +359,6 @@ const getPmColor = computed(() => {
   if (!selectedPmUser.value) return '#9CA3AF'
   return stringToColor(selectedPmUser.value.username)
 })
-
-const stringToColor = (str) => {
-  if (!str) return '#9CA3AF'
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
-  return colors[Math.abs(hash) % colors.length]
-}
 
 const selectPm = (userId) => {
   formData.pm = userId
@@ -495,100 +470,31 @@ const loadProject = async () => {
   margin: 0 auto;
 }
 
-/* ─── 大标题区 ─── */
-.page-hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover, #2563EB) 100%);
-  border-radius: 16px;
-  padding: 28px 32px;
+/* ─── 顶部返回栏 ─── */
+.page-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
+  padding: 0 4px;
 }
 
-.page-hero::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-}
-
-.page-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -60px;
-  right: 80px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-}
-
-.page-hero__left {
-  display: flex;
+.btn-back {
+  display: inline-flex;
   align-items: center;
-  gap: 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.page-hero__icon-wrap {
-  width: 56px;
-  height: 56px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-}
-
-.page-hero__icon {
-  font-size: 26px;
-  color: white;
-}
-
-.page-hero__title {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 4px;
-  line-height: 1.2;
-}
-
-.page-hero__desc {
+  gap: 6px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
   font-size: 14px;
-  color: rgba(255,255,255,0.8);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.btn-back-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.3);
-  color: white;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
   transition: all 0.2s;
-  backdrop-filter: blur(8px);
-  position: relative;
-  z-index: 1;
 }
 
-.btn-back-circle:hover {
-  background: rgba(255,255,255,0.25);
-  transform: translateX(-2px);
+.btn-back:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-primary);
+  background: #f0f7ff;
 }
 
 /* ─── 表单布局 ─── */
@@ -1118,15 +1024,6 @@ const loadProject = async () => {
 }
 
 @media (max-width: 768px) {
-  .page-hero {
-    padding: 20px;
-    border-radius: 12px;
-  }
-
-  .page-hero__title {
-    font-size: 20px;
-  }
-
   .form-card__body {
     padding: 16px;
   }

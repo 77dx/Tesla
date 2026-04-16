@@ -1,280 +1,134 @@
 <template>
   <button
-    :type="type"
+    class="ui-btn"
+    :class="[
+      `ui-btn--${type}`,
+      `ui-btn--${size}`,
+      { 'ui-btn--loading': loading }
+    ]"
     :disabled="disabled || loading"
-    :class="buttonClasses"
-    @click="handleClick"
-    ref="buttonRef"
+    @click="$emit('click', $event)"
   >
-    <span v-if="loading" class="button-loading">
-      <svg class="loading-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
-        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
-      </svg>
-    </span>
-    
-    <span v-if="$slots.icon && !loading" class="button-icon">
-      <slot name="icon"></slot>
-    </span>
-    
-    <span class="button-content">
-      <slot>{{ label }}</slot>
-    </span>
-    
-    <span v-if="$slots.suffix" class="button-suffix">
-      <slot name="suffix"></slot>
-    </span>
+    <LoadingOutlined v-if="loading" class="ui-btn__icon" />
+    <slot v-else name="icon" />
+    <span class="ui-btn__text"><slot /></span>
   </button>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { LoadingOutlined } from '@ant-design/icons-vue'
 
-const props = defineProps({
+defineProps({
   type: {
     type: String,
-    default: 'button',
-    validator: (value) => ['button', 'submit', 'reset'].includes(value)
-  },
-  variant: {
-    type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link'].includes(value)
+    validator: (v) => ['primary', 'ghost', 'danger', 'text'].includes(v)
   },
   size: {
     type: String,
-    default: 'middle',
-    validator: (value) => ['small', 'middle', 'large'].includes(value)
+    default: 'medium',
+    validator: (v) => ['small', 'medium', 'large'].includes(v)
   },
   disabled: Boolean,
-  loading: Boolean,
-  block: Boolean,
-  label: String,
-  rounded: {
-    type: Boolean,
-    default: true
-  }
+  loading: Boolean
 })
 
-const emit = defineEmits(['click'])
-
-const buttonRef = ref(null)
-
-const buttonClasses = computed(() => {
-  const classes = ['base-button']
-  classes.push(`variant-${props.variant}`)
-  classes.push(`size-${props.size}`)
-  if (props.block) classes.push('block')
-  if (props.rounded) classes.push('rounded')
-  if (props.disabled) classes.push('disabled')
-  if (props.loading) classes.push('loading')
-  return classes
-})
-
-const handleClick = (event) => {
-  if (!props.disabled && !props.loading) {
-    emit('click', event)
-  }
-}
-
-defineExpose({
-  focus: () => buttonRef.value?.focus(),
-  blur: () => buttonRef.value?.blur()
-})
+defineEmits(['click'])
 </script>
 
 <style scoped>
-.base-button {
-  position: relative;
+.ui-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xs, 8px);
-  border: 1px solid transparent;
-  font-family: inherit;
+  gap: 6px;
+  border: none;
+  border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
+  transition: all var(--transition-base);
   white-space: nowrap;
   outline: none;
 }
 
-.base-button:focus-visible {
-  outline: 2px solid var(--color-focus-blue, #3898ec);
-  outline-offset: 2px;
-}
-
-.base-button.disabled,
-.base-button.loading {
+.ui-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
-/* 尺寸变体 */
-.base-button.size-small {
-  padding: var(--space-xs, 8px) var(--space-sm, 12px);
-  font-size: var(--font-size-caption, 14px);
-  min-height: 32px;
+/* ─── 类型 ─── */
+.ui-btn--primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-.base-button.size-middle {
-  padding: var(--space-sm, 12px) var(--space-md, 16px);
-  font-size: var(--font-size-body, 17px);
-  min-height: 40px;
-}
-
-.base-button.size-large {
-  padding: var(--space-md, 16px) var(--space-lg, 20px);
-  font-size: var(--font-size-body-lg, 19px);
-  min-height: 48px;
-}
-
-/* 圆角 */
-.base-button.rounded {
-  border-radius: var(--radius-generous, 10px);
-}
-
-/* 块级按钮 */
-.base-button.block {
-  display: flex;
-  width: 100%;
-}
-
-/* 变体样式 */
-.base-button.variant-primary {
-  background: linear-gradient(135deg, var(--color-terracotta-brand, #c96442), var(--color-coral-accent, #d97757));
-  color: var(--color-ivory, #faf9f5);
-  border: none;
-}
-
-.base-button.variant-primary:hover:not(.disabled):not(.loading) {
+.ui-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary-active));
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(201, 100, 66, 0.3);
 }
 
-.base-button.variant-primary:active:not(.disabled):not(.loading) {
-  transform: translateY(0);
+.ui-btn--ghost {
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1.5px solid var(--color-border);
 }
 
-.base-button.variant-secondary {
-  background-color: var(--color-warm-sand, #e8e6dc);
-  color: var(--color-text-primary, #4d4c48);
-  border-color: var(--color-border-warm, #e8e6dc);
+.ui-btn--ghost:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
 }
 
-.base-button.variant-secondary:hover:not(.disabled):not(.loading) {
-  background-color: var(--color-border-cream, #f0eee6);
+.ui-btn--danger {
+  background: var(--color-error);
+  color: white;
+  border: 1.5px solid var(--color-error);
 }
 
-.base-button.variant-outline {
-  background-color: transparent;
-  color: var(--color-terracotta-brand, #c96442);
-  border-color: var(--color-terracotta-brand, #c96442);
+.ui-btn--danger:hover:not(:disabled) {
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
 }
 
-.base-button.variant-outline:hover:not(.disabled):not(.loading) {
-  background-color: rgba(201, 100, 66, 0.05);
+.ui-btn--text {
+  background: transparent;
+  color: var(--color-primary);
+  padding: 4px 8px;
 }
 
-.base-button.variant-ghost {
-  background-color: transparent;
-  color: var(--color-text-primary, #4d4c48);
-  border-color: transparent;
+.ui-btn--text:hover:not(:disabled) {
+  background: var(--color-primary-bg);
 }
 
-.base-button.variant-ghost:hover:not(.disabled):not(.loading) {
-  background-color: var(--color-warm-sand, #e8e6dc);
+/* ─── 尺寸 ─── */
+.ui-btn--small {
+  padding: 6px 12px;
+  font-size: var(--text-xs);
 }
 
-.base-button.variant-danger {
-  background-color: var(--color-error-crimson, #b53333);
-  color: var(--color-ivory, #faf9f5);
-  border: none;
+.ui-btn--medium {
+  padding: 10px 18px;
+  font-size: var(--text-sm);
 }
 
-.base-button.variant-danger:hover:not(.disabled):not(.loading) {
-  background-color: #9c2b2b;
+.ui-btn--large {
+  padding: 12px 24px;
+  font-size: var(--text-base);
 }
 
-.base-button.variant-link {
-  background-color: transparent;
-  color: var(--color-terracotta-brand, #c96442);
-  border-color: transparent;
-  text-decoration: underline;
-  padding: 0;
-  min-height: auto;
+/* ─── 图标 ─── */
+.ui-btn__icon {
+  font-size: 14px;
 }
 
-.base-button.variant-link:hover:not(.disabled):not(.loading) {
-  color: var(--color-coral-accent, #d97757);
-  text-decoration: none;
-}
-
-/* 图标 */
-.button-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.button-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.base-button.size-small .button-icon svg {
-  width: 14px;
-  height: 14px;
-}
-
-.base-button.size-large .button-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* 加载状态 */
-.button-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loading-spinner {
-  width: 16px;
-  height: 16px;
+.ui-btn__icon--spin {
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.base-button.size-small .loading-spinner {
-  width: 14px;
-  height: 14px;
-}
-
-.base-button.size-large .loading-spinner {
-  width: 18px;
-  height: 18px;
-}
-
-/* 内容区域 */
-.button-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.button-suffix {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

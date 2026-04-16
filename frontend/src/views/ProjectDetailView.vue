@@ -7,33 +7,6 @@
       </button>
     </div>
 
-    <!-- 顶部统计卡片区（无背景色） -->
-    <div class="stats-strip" v-if="project">
-      <div class="stat-chip">
-        <ApiOutlined class="stat-chip__icon stat-chip__icon--blue" />
-        <span class="stat-chip__value">{{ stats.endpoints }}</span>
-        <span class="stat-chip__label">关联接口</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-chip">
-        <FileProtectOutlined class="stat-chip__icon stat-chip__icon--green" />
-        <span class="stat-chip__value">{{ stats.cases }}</span>
-        <span class="stat-chip__label">引用用例</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-chip">
-        <ProfileOutlined class="stat-chip__icon stat-chip__icon--orange" />
-        <span class="stat-chip__value">{{ stats.suites }}</span>
-        <span class="stat-chip__label">引用套件</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-chip">
-        <ThunderboltOutlined class="stat-chip__icon stat-chip__icon--purple" />
-        <span class="stat-chip__value">{{ stats.executions }}</span>
-        <span class="stat-chip__label">累计执行</span>
-      </div>
-    </div>
-
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-state">
       <a-spin size="large" />
@@ -339,6 +312,16 @@ import { getEndpoints, getCases } from '@/api/case'
 import { getSuites, uploadImportCaseFile, startImportJob } from '@/api/suite'
 import { confirm } from '@/composables/useConfirm'
 import { alert } from '@/composables/useAlert'
+import {
+  PROJECT_STATUS_LIST,
+  PROJECT_PRIORITY_LIST,
+  getProjectStatusConfig,
+  getProjectPriorityConfig,
+  stringToColor,
+  getProductLineColor,
+  formatDate,
+  formatPeriod,
+} from '@/components/UI'
 
 const route = useRoute()
 const router = useRouter()
@@ -366,57 +349,21 @@ const tabs = computed(() => [
 
 const plColor = computed(() => {
   if (!project.value?.product_line) return '#9CA3AF'
-  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
-  return colors[project.value.product_line % colors.length]
+  return getProductLineColor(project.value.product_line)
 })
 
-const statusOptions = [
-  { value: 'planning', label: '规划中', color: '#3B82F6', bg: '#EFF6FF' },
-  { value: 'active',   label: '进行中', color: '#10B981', bg: '#ECFDF5' },
-  { value: 'testing',  label: '测试中', color: '#F59E0B', bg: '#FFFBEB' },
-  { value: 'done',     label: '已完成', color: '#06B6D4', bg: '#ECFEFF' },
-  { value: 'archived', label: '已归档', color: '#9CA3AF', bg: '#F9FAFB' },
-]
+// 复用常量
+const statusOptions = PROJECT_STATUS_LIST
+const priorityOptions = PROJECT_PRIORITY_LIST
 
-const priorityOptions = [
-  { value: 2, label: '紧急', color: '#DC2626' },
-  { value: 1, label: '重要', color: '#D97706' },
-  { value: 0, label: '普通', color: '#6B7280' },
-]
-
-const getStatusColor = (status) => statusOptions.find(s => s.value === status)?.color || '#9CA3AF'
-const getStatusBg = (status) => statusOptions.find(s => s.value === status)?.bg || '#F9FAFB'
-const getStatusText = (status) => statusOptions.find(s => s.value === status)?.label || '未知'
-const getPriorityColor = (priority) => priorityOptions.find(p => p.value === priority)?.color || '#6B7280'
-const getPriorityText = (priority) => priorityOptions.find(p => p.value === priority)?.label || '普通'
+const getStatusColor = (status) => getProjectStatusConfig(status)?.color || '#9CA3AF'
+const getStatusBg = (status) => getProjectStatusConfig(status)?.bg || '#F9FAFB'
+const getStatusText = (status) => getProjectStatusConfig(status)?.label || '未知'
+const getPriorityColor = (priority) => getProjectPriorityConfig(priority)?.color || '#6B7280'
+const getPriorityText = (priority) => getProjectPriorityConfig(priority)?.label || '普通'
 const getPriorityClass = (priority) => {
-  const map = { 0: 'priority-low', 1: 'priority-medium', 2: 'priority-high' }
-  return map[priority] ?? 'priority-low'
-}
-
-const stringToColor = (str) => {
-  if (!str) return '#9CA3AF'
-  let hash = 0
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
-  return colors[Math.abs(hash) % colors.length]
-}
-
-const formatPeriod = (start, end) => {
-  if (!start && !end) return '—'
-  const fmt = (d) => {
-    if (!d) return '—'
-    const date = new Date(d)
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
-  }
-  return `${fmt(start)} ~ ${fmt(end)}`
-}
-
-const formatDate = (d) => {
-  if (!d) return '—'
-  const date = new Date(d)
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const classMap = { 0: 'priority-low', 1: 'priority-medium', 2: 'priority-high' }
+  return classMap[priority] ?? 'priority-low'
 }
 
 const loadProject = async () => {
@@ -618,9 +565,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   padding: 20px 24px;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(31, 41, 55, 0.15);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
   gap: 0;
 }
 
@@ -642,10 +589,10 @@ onMounted(async () => {
   opacity: 0.9;
 }
 
-.stat-chip__icon--blue   { color: #60a5fa; }
-.stat-chip__icon--green  { color: #34d399; }
-.stat-chip__icon--orange { color: #fbbf24; }
-.stat-chip__icon--purple { color: #a78bfa; }
+.stat-chip__icon--blue   { color: #bfdbfe; }
+.stat-chip__icon--green  { color: #86efac; }
+.stat-chip__icon--orange { color: #fcd34d; }
+.stat-chip__icon--purple { color: #c4b5fd; }
 
 .stat-chip__value {
   font-size: 24px;
@@ -1043,31 +990,55 @@ onMounted(async () => {
 .ref-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ref-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: #f9fafb;
+  gap: 14px;
+  padding: 14px 18px;
+  background: white;
   border: 1px solid #f0f0f0;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ref-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #3B82F6, #2563EB);
+  opacity: 0;
+  transition: opacity 0.25s;
 }
 
 .ref-item:hover {
   background: #f0f7ff;
   border-color: #dbeafe;
-  transform: translateX(3px);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.ref-item:hover::before {
+  opacity: 1;
 }
 
 .ref-item__icon {
-  font-size: 16px;
+  font-size: 18px;
   color: var(--color-text-tertiary, #9CA3AF);
   flex-shrink: 0;
+  transition: color 0.25s;
+}
+
+.ref-item:hover .ref-item__icon {
+  color: var(--color-primary, #3B82F6);
 }
 
 .ref-item__name {
@@ -1097,11 +1068,14 @@ onMounted(async () => {
   font-size: 12px;
   flex-shrink: 0;
   opacity: 0;
-  transition: opacity 0.2s;
+  transform: translateX(-8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ref-item:hover .ref-item__arrow {
   opacity: 1;
+  transform: translateX(0);
+  color: var(--color-primary, #3B82F6);
 }
 
 /* ─── HTTP 方法标签 ─── */

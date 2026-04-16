@@ -99,7 +99,7 @@
           <template v-if="column.key === 'status'">
             <a-dropdown :trigger="['click']" placement="bottomLeft">
               <span class="status-tag status-tag--clickable" :style="{ background: getStatusColor(record.status) + '22', color: getStatusColor(record.status) }">
-                <span class="status-dot-sm" :style="{ background: getStatusDotColor(record.status) }"></span>
+                <span class="status-dot-sm" :style="{ background: getStatusColor(record.status) }"></span>
                 {{ getStatusText(record.status) }}
                 <DownOutlined style="font-size: 10px; margin-left: 2px;" />
               </span>
@@ -256,6 +256,14 @@ import {
 } from '@ant-design/icons-vue'
 import { getProjects, deleteProject, batchDeleteProjects, updateProject } from '@/api/project'
 import { getAllUsers } from '@/api/account'
+import {
+  PROJECT_STATUS_LIST,
+  PROJECT_PRIORITY_LIST,
+  getProjectStatusConfig,
+  getProjectPriorityConfig,
+  stringToColor,
+  formatDate,
+} from '@/components/UI'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -305,62 +313,25 @@ const columns = [
   { title: '操作', key: 'actions', width: 120, fixed: 'right', align: 'center' },
 ]
 
-// 状态颜色（hex，透明度通过 +'22' 实现）
-const getStatusColor = (status) => {
-  const map = {
-    planning: '#3B82F6',
-    active: '#10B981',
-    testing: '#F59E0B',
-    done: '#06B6D4',
-    archived: '#9CA3AF',
-  }
-  return map[status] || '#9CA3AF'
-}
-
-const getStatusDotColor = (status) => {
-  const map = { planning: '#3B82F6', active: '#10B981', testing: '#F59E0B', done: '#06B6D4', archived: '#9CA3AF' }
-  return map[status] || '#9CA3AF'
-}
-
-const getStatusText = (status) => {
-  const map = { planning: '规划中', active: '进行中', testing: '测试中', done: '已完成', archived: '已归档' }
-  return map[status] || '未知'
-}
+// 状态颜色（使用常量）
+const getStatusColor = (status) => getProjectStatusConfig(status)?.color || '#9CA3AF'
+const getStatusBg = (status) => getProjectStatusConfig(status)?.bg || '#F9FAFB'
+const getStatusText = (status) => getProjectStatusConfig(status)?.label || '未知'
 
 const pmColorList = ['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EF4444', '#06B6D4']
 
-const getPmColor = (name) => {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return pmColorList[Math.abs(hash) % pmColorList.length]
-}
+const getPmColor = (name) => stringToColor(name)
 
-const statusOptions = [
-  { value: 'planning', label: '规划中', color: '#3B82F6' },
-  { value: 'active', label: '进行中', color: '#10B981' },
-  { value: 'testing', label: '测试中', color: '#F59E0B' },
-  { value: 'done', label: '已完成', color: '#06B6D4' },
-  { value: 'archived', label: '已归档', color: '#9CA3AF' },
-]
+// 复用常量
+const statusOptions = PROJECT_STATUS_LIST
+const priorityOptions = PROJECT_PRIORITY_LIST
 
-// 优先级（0=普通, 1=重要, 2=紧急）
-const getPriorityText = (priority) => {
-  const map = { 0: '普通', 1: '重要', 2: '紧急' }
-  return map[priority] ?? '普通'
-}
-
+// 优先级
+const getPriorityText = (priority) => getProjectPriorityConfig(priority)?.label || '普通'
 const getPriorityClass = (priority) => {
-  const map = { 0: 'priority-low', 1: 'priority-medium', 2: 'priority-high' }
-  return map[priority] ?? 'priority-low'
+  const classMap = { 0: 'priority-low', 1: 'priority-medium', 2: 'priority-high' }
+  return classMap[priority] ?? 'priority-low'
 }
-
-const priorityOptions = [
-  { value: 0, label: '普通', color: '#6B7280', bg: '#F3F4F6', border: '#D1D5DB' },
-  { value: 1, label: '重要', color: '#D97706', bg: '#FEF3C7', border: '#FCD34D' },
-  { value: 2, label: '紧急', color: '#DC2626', bg: '#FEE2E2', border: '#FCA5A5' },
-]
 
 // 周期
 const formatPeriod = (start, end) => {
@@ -497,29 +468,6 @@ const handlePriorityChange = async (record, priority) => {
   } catch {
     message.error('更新优先级失败')
   }
-}
-
-// 工具函数
-const formatDate = (d) => {
-  if (!d) return '—'
-  const date = new Date(d)
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-}
-
-const avatarColors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4', '#EC4899']
-const getAvatarColor = (name) => {
-  if (!name) return avatarColors[0]
-  let hash = 0
-  for (let c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash)
-  return avatarColors[Math.abs(hash) % avatarColors.length]
-}
-
-const stringToColor = (str) => {
-  if (!str) return '#3B82F6'
-  let hash = 0
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  return avatarColors[Math.abs(hash) % avatarColors.length]
 }
 
 onMounted(async () => {
